@@ -1,0 +1,669 @@
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+from tools.training import *
+from tools.preprocessing import *
+from tools.graph import *
+from tools.cleaning import *
+import pickle, re, math, ast, os
+
+<<<<<<< HEAD
+=======
+
+>>>>>>> 780a998 (local changes)
+def build_graph_attributes(graph, descriptors, target, bd_name, alpha, typeset, graph_type, train_data = None, test_data = None,
+                            discretization_type = None):
+    
+    print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
+    
+    graph_descriptors = pd.DataFrame()
+    graph_copy = graph.copy()
+    
+    if typeset == "train":
+        for row in train_data.itertuples():
+            nodes_for_personalization = []
+            dict_row = row._asdict()
+            del dict_row['Index']
+            if (graph_type == 'BIP'):
+                graph_copy.remove_edge('l' + str(row.Index), target + '_' + str(dict_row[target]) + '_' + discretization_type + '_' +graph_type.lower())
+                
+                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], None, descriptors)
+            elif graph_type == 'MOD':
+                for k, w in dict_row.items():
+                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
+                
+                pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
+            else:
+                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], 'weight', descriptors)
+            
+            graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+            
+       
+        graph_descriptors = graph_descriptors.astype(float)
+        directory='outputs/'+bd_name+'/new_descriptors/'+ graph_type +'/train'
+        os.makedirs(directory, exist_ok=True)
+        if discretization_type is None:
+            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + graph_type +'_'+str(alpha)+'.csv')
+        else:
+            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + discretization_type + '_' + graph_type +'_'+str(alpha)+'.csv') 
+    else:
+        for row in test_data.itertuples():
+            nodes_for_personalization = []
+            dict_row = row._asdict()
+            dict_row_copy = row._asdict()
+            del dict_row['Index']
+            # graph_copy = graph.copy()
+    
+            if graph_type == "BIP":
+                augmented_graph = graph_bipartite_modality(graph_copy, None, dict_row, discretization_type)
+                pagerank_attributes  = pagerank_personalized(augmented_graph, alpha, ['nl'], None, descriptors )
+                # print(augmented_graph.number_of_edges()) 
+                
+            elif graph_type == "MOD":
+                for k, w in dict_row.items():
+                   nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
+                augmented_graph = graph_modality(graph_copy, None, dict_row, discretization_type)
+                pagerank_attributes = pagerank_personalized(augmented_graph, alpha, nodes_for_personalization, "weight", descriptors)
+                # print(augmented_graph.number_of_edges())  
+                
+            else:
+                data_row = pd.DataFrame([dict_row], index=[row.Index])
+                data = pd.concat([train_data, data_row], axis=0)
+                augmented_graph = graph_loans(graph_copy, data, target, dict_row_copy)
+                pagerank_attributes = pagerank_personalized(augmented_graph, alpha, ['l'+ str(row.Index)], "weight", descriptors)
+                
+            
+                      
+            graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+            
+       
+
+        graph_descriptors = graph_descriptors[descriptors]
+        graph_descriptors = graph_descriptors.astype(float)
+        directory='outputs/'+bd_name+'/new_descriptors/'+ graph_type.lower() +'/test'
+        
+        os.makedirs(directory, exist_ok=True)
+        if discretization_type is None:
+            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + graph_type.lower() +'_'+str(alpha)+'.csv')
+        else:
+            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + discretization_type + '_' + graph_type.lower() +'_'+str(alpha)+'.csv')
+
+    print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
+    # print(augmented_graph.edges) 
+    
+    
+def build_predictions(models, trainset, testset, configurations, target, classic_result = None):
+    results_real = {}
+    results_with_real = {}
+
+    tr = trainset.copy()
+    ts = testset.copy()
+
+    for config_name, config_att in configurations.items():
+        print(config_name)
+        if len(config_att) > 1:
+            tr_set = tr[config_att]
+            ts_set = ts[config_att]
+            results_real[config_name], results_with_real[config_name]  = train(models, tr_set, ts_set, target, classic_result)
+    return results_real, results_with_real
+
+def  arrange_result(dir, ptype, nb_metrics):
+    inter ={}
+    results = {}
+
+    t = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    t2 = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    t3 = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    directory = dir + "predictions/"+ ptype.lower() +"/"
+    paths = []
+    for item in os.listdir(directory):
+        dir = directory
+        paths.append(os.path.join(dir, item))
+
+    if nb_metrics == 3:
+        for path in paths:
+            with open(path,"rb" ) as f:
+                conf = pickle.load(f)
+            alpha = re.findall(r'\d+\.\d+', path)
+
+            for k, l in conf.items():
+                for i, v in l.items():
+                        t[i] = v['acc']
+                        t2[i] = v['f1']
+                        t3[i] = v['cost']
+                t_ = t.copy()
+                t2_ = t2.copy()
+                t3_ = t3.copy()
+                inter[k] = {}
+                inter[k]['acc'] = t_
+                inter[k]['f1'] = t2_
+                inter[k]['cost'] = t3_
+            results[alpha[0]] = inter
+            inter = {}
+
+        return results
+    else:
+        for path in paths:
+            with open(path,"rb" ) as f:
+                conf = pickle.load(f)
+            alpha = re.findall(r'\d+\.\d+', path)
+            for k, l in conf.items():
+                for i, v in l.items():
+                        t[i] = v['acc']
+                        t2[i] = v['f1']
+                t_ = t.copy()
+                t2_ = t2.copy()
+                inter[k] = {}
+                inter[k]['acc'] = t_
+                inter[k]['f1'] = t2_
+            results[alpha[0]] = inter
+            inter = {}
+
+        return results
+
+def  arrange_one_result(dir, ptype, nb_metrics):
+    inter ={}
+    t = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    t2 = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    t3 = {'log': 0, 'svm': 0, 'dtree': 0, 'rf': 0, 'xgb': 0, 'lda':0}
+    directory = dir + "predictions/"+ ptype.lower() +"/"
+    paths = []
+
+    for item in os.listdir(directory):
+        dir = directory
+        paths.append(os.path.join(dir, item))
+
+    if nb_metrics == 3:
+        for path in paths:
+            with open(path,"rb" ) as f:
+                conf = pickle.load(f)
+
+            for k, l in conf.items():
+                for i, v in l.items():
+                        t[i] = v['acc']
+                        t2[i] = v['f1']
+                        t3[i] = v['cost']
+                t_ = t.copy()
+                t2_ = t2.copy()
+                t3_ = t3.copy()
+                inter[k] = {}
+                inter[k]['acc'] = t_
+                inter[k]['f1'] = t2_
+                inter[k]['cost'] = t3_
+
+        return inter
+    else:
+         for path in paths:
+            with open(path,"rb" ) as f:
+                conf = pickle.load(f)
+
+            for k, l in conf.items():
+                for i, v in l.items():
+                        t[i] = v['acc']
+                        t2[i] = v['f1']
+                t_ = t.copy()
+                t2_ = t2.copy()
+                inter[k] = {}
+                inter[k]['acc'] = t_
+                inter[k]['f1'] = t2_
+         return inter
+
+def select_best_result(results, db_name, ptype):
+    best_params = {}
+    result = {}
+
+    for k, j in results.items():
+        for ka, ja in j.items():
+            result[ka] = {}
+            best_params[ka] = {}
+            for kb, jb in ja.items():
+                result[ka][kb] = {}
+                for kc, _ in jb.items():
+                    best_params[ka][kc] = 0
+                    result[ka][kb][kc] = -math.inf
+        break
+
+    for k, j in results.items():
+        for ka, ja in j.items():
+            for kb, jb in ja.items():
+                for kc, _ in jb.items():
+                    if float(results[k][ka][kb][kc]) > result[ka][kb][kc]:
+                        result[ka][kb][kc] = float(results[k][ka][kb][kc])
+                        best_params[ka][kc] = k
+
+    directory = 'outputs/'+ db_name +'/results/'
+    os.makedirs(directory, exist_ok=True)
+    with open(directory +'best_alpha_values_'+ptype.lower() , 'wb') as file:
+        pickle.dump(best_params, file)
+
+    return result
+
+def print_result_html(results, models, p_type, dir, nb_metrics):
+    html = "<table > \n"
+    html += "<tr > <th> Config</th> \n "
+    html += "<th> Metrics</th> \n "
+    for m in models:
+        html += "<th> {}</th>".format(m)
+    html += "</tr> \n"
+    html += "<tr>"
+
+    for key, value in results.items():
+        html += "<th rowspan='{0}'>{1}</th>".format(*[nb_metrics, key])
+        t = 0
+        for k, col in value.items():
+            t += 1
+            html +="<td>{}</td>".format(k)
+            for k_, v in col.items():
+                html+= "<td>{}</td>".format(v)
+            html += "</tr>"
+
+            if t < len(value):
+                html += "<tr>"
+
+    html += "</table>"
+
+    html_with_styles = """
+    <style>
+    table {
+        width: 60%;
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    th, td{
+        padding: 5px;
+        border: 2px solid black;
+    }
+    </style>
+    """ + html
+    directory = dir + "print/"
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + "/result_" +p_type.lower()+".html", "w", encoding="utf-8") as file:
+        file.write(html_with_styles)
+
+def print_result_latex(results, models, p_type, dir, nb_metrics, db_name):
+    latex_code = r"\begin{table}[H]" + "\n"
+    latex_code += r"\centering" + "\n"
+    latex_code += r"\begin{tabular}{c|c|c" + "c" * len(models) + "}" + "\n"
+    latex_code += r"\hline" + "\n"
+
+    latex_code += "Données & Config & Métrique "
+    for m in models:
+        latex_code += " & {}".format(m)
+    latex_code += r" \\" + "\n"
+    latex_code += r"\hline" + "\n"
+    l = len(results) * nb_metrics
+
+    i = 0
+    latex_code += r"\multirow{" + str(l) + r"}{*}{" + db_name + "}"
+
+    for key, value in results.items():
+        latex_code += r" & \multirow{" + str(nb_metrics) + r"}{*}{" + key + "}"
+        t = 0
+        for k, col in value.items():
+
+            latex_code += r" & "
+
+            latex_code += "{}".format(k)
+
+            for _, v in col.items():
+                latex_code += " & {}".format(v)
+
+            t += 1
+            i += 1
+
+            if t < len(value):
+                latex_code += r" \\  " + "\cline{3-9}"+ " \n"
+                latex_code += r" & "
+
+        if i < l:
+            latex_code += r" \\  " + "\cline{2-9}"+ " \n"
+        else:
+            latex_code += r" \\  " + "\n"+ "\hline" + " \n"
+
+    latex_code += r"\end{tabular}" + "\n"
+    latex_code += r"\caption{Your Caption Here}" + "\n"
+    latex_code += r"\label{tab:your_label}" + "\n"
+    latex_code += r"\end{table}" + "\n"
+
+
+    directory = dir + "print/"
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + "/result_o_" +p_type.lower()+".latex", "w", encoding="utf-8") as file:
+        file.write(latex_code)
+
+def save_result_latex(models, metrics, results, dir):
+    latex_code = r"\begin{table}[H]" + "\n"
+    latex_code += r"\centering" + "\n"
+    latex_code += r"\scalebox{0.65}{" + "\n"
+    latex_code += r"\begin{tabular}{"
+
+    nb_columns = len(models) * len(metrics)
+    latex_code += r"|c"
+    for _ in range(nb_columns):
+        latex_code += r"|c"
+    latex_code += r"} "   + "\n" + "  \hline" + "\n"
+    latex_code += r"\multicolumn{" + "{}".format(nb_columns + 1) + r"}{|c|}{Modèles} \\  \hline" + "\n"
+
+    latex_code +=r"\multirow{2}{*}{Config}"
+
+    for model in models:
+        latex_code+= "& "+ r"\multicolumn{"+ "{}".format(len(metrics)) +r"}{c}{" +"{}".format(model)+ r"}"
+    latex_code += r"\\" + "  " + r"\cline{2-" +"{}".format(nb_columns + 1) + r"}" + "\n"
+
+    for model in models:
+        for metric in metrics:
+            latex_code += "& {}".format(metric)
+    latex_code +=  r"\\"  + "  \hline" + "\n"
+
+    for config_name, metric_values in results.items():
+        latex_code += "{}".format(config_name)
+        for value in metric_values:
+            temp = float(value)
+            if  temp < 0:
+               latex_code +=  " &  \cellcolor{red!25} " + " {}".format(value)
+            elif temp == 0:
+                latex_code +=  " & " + "{}".format(value)
+            elif temp  > 0:
+                latex_code +=  " & \cellcolor{green!25} " + "{}".format(value)
+
+
+        latex_code+= r"\\"  + " \hline" + "\n"
+
+    latex_code += r"\end{tabular}" + "\n"
+    latex_code += r"}" + "\n"
+    latex_code += r"\caption{Your Caption Here}" + "\n"
+    latex_code += r"\label{tab:your_label}" + "\n"
+    latex_code += r"\end{table}" + "\n"
+
+    directory = dir + "print/"
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + "/results.tex", "w", encoding="utf-8") as file:
+        file.write(latex_code)
+
+# def  merge_result(dir, ptype, db_name):
+#     inter = {}
+#     directory = dir + "predictions/"+ ptype.lower() +"/"
+#     paths = []
+#
+#     for item in os.listdir(directory):
+#         dir = directory
+#         paths.append(os.path.join(dir, item))
+#
+#     if ptype == "UNS" or ptype == "SUP" or ptype == "CAT":
+#         max_result = {}
+#         best_alphas = {}
+#
+#         for path in paths:
+#             with open(path,"r" ) as f:
+#                 conf = f.read()
+#                 conf = ast.literal_eval(conf)
+#
+#             for config_name, models in conf.items():
+#                 max_result[config_name] = {}
+#                 for model , metrics in models.items():
+#                     max_result[config_name][model] = {}
+#                     for metric , _ in metrics.items():
+#                         max_result[config_name][model][metric] = -math.inf
+#             break
+#
+#         for path in paths:
+#             with open(path,"r" ) as f:
+#                 conf = f.read()
+#                 conf = ast.literal_eval(conf)
+#
+#                 for config_name, models in conf.items():
+#                         for model , metrics in models.items():
+#                             for metric, value in metrics.items():
+#                                 if float(max_result[config_name][model][metric]) < float(value):
+#                                         max_result[config_name][model][metric] = float(value)
+#
+#         directory = 'outputs/'+ db_name +'/results/'
+#         os.makedirs(directory, exist_ok=True)
+#         with open(directory +'best_alpha_values_'+ptype.lower() , 'wb') as file:
+#             pickle.dump(best_alphas, file)
+#
+#         for config_name, models in max_result.items():
+#             inter[config_name] = []
+#             for _, metrics in models.items():
+#                 for _, value in metrics.items():
+#                     inter[config_name].append(value)
+#
+#     else:
+#         for path in paths:
+#             print(path)
+#             with open(path,"r" ) as f:
+#                 conf = f.read()
+#                 conf = ast.literal_eval(conf)
+#                 # exit()
+#             for config_name, models in conf.items():
+#                 inter[config_name] = []
+#                 for _, metrics in models.items():
+#                     for _, value in metrics.items():
+#                         inter[config_name].append(value)
+#
+#     return inter
+
+def result(directory, discretization_type, graph_type):
+    print(discretization_type, graph_type, "\n")
+    max_result = {}
+    paths = []
+    best_alpha_values = {}
+
+    if discretization_type != "None" and graph_type != "None":
+        files_dir = directory + "real/predictions/" + graph_type.lower() + "/" + discretization_type.lower()
+
+        for item in os.listdir(files_dir):
+            paths.append(os.path.join(files_dir, item))
+
+        for path in paths:
+            with open(path, "r") as f:
+                file = ast.literal_eval(f.read())
+
+            for config_name, models in file.items():
+                 max_result[config_name] = {}
+                 for model, metrics in models.items():
+                     max_result[config_name][model] = {}
+                     for metric, _ in metrics.items():
+                         max_result[config_name][model][metric] = -math.inf
+            break
+
+        for path in paths:
+            with open(path, "r") as f:
+                file = ast.literal_eval(f.read())
+            alpha = re.findall(r'\d+\.\d+', path)
+            for config_name, models in file.items():
+                for model, metrics in models.items():
+                     for metric, value in metrics.items():
+                         if float(max_result[config_name][model][metric]) < float(value):
+                             max_result[config_name][model][metric] = float(value)
+                             best_alpha_values[model] = alpha[0]
+
+        with open(directory + "real/predictions/" + graph_type.lower()  + '/main_results_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
+            file.write(str(max_result))
+
+        with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
+            file.write(str(best_alpha_values))
+
+
+    elif  discretization_type == "None" and graph_type != "None":
+        files_dir = directory + "real/predictions/" + graph_type.lower() + "/na/"
+        for item in os.listdir(files_dir):
+            paths.append(os.path.join(files_dir, item))
+
+        for path in paths:
+            with open(path, "r") as f:
+                file = ast.literal_eval(f.read())
+
+            for config_name, models in file.items():
+                max_result[config_name] = {}
+                for model, metrics in models.items():
+                    max_result[config_name][model] = {}
+                    for metric, _ in metrics.items():
+                        max_result[config_name][model][metric] = -math.inf
+            break
+
+        for path in paths:
+            with open(path, "r") as f:
+                file = ast.literal_eval(f.read())
+            alpha = re.findall(r'\d+\.\d+', path)
+            for config_name, models in file.items():
+                for model, metrics in models.items():
+                    for metric, value in metrics.items():
+                        if float(max_result[config_name][model][metric]) < float(value):
+                            max_result[config_name][model][metric] = float(value)
+                            best_alpha_values[model] = alpha[0]
+
+        os.makedirs(files_dir, exist_ok=True)
+        with open(directory + "real/predictions/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
+            file.write(str(max_result))
+
+        with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_r.txt', 'w') as file:
+            file.write(str(best_alpha_values))
+
+    elif discretization_type != "None" and graph_type == "None":
+        files_dir = directory + "real/predictions/na/"
+        max_result = load_result(files_dir)
+        os.makedirs(files_dir, exist_ok=True)
+        with open(files_dir + '/main_results_r.txt', 'w') as file:
+            file.write(str(max_result))
+    else:
+        files_dir = directory + "predictions/classic/"
+        max_result = load_result(files_dir)
+        os.makedirs(files_dir, exist_ok=True)
+        with open(files_dir + '/main_results_r.txt', 'w') as file:
+            file.write(str(max_result))
+
+def load_result(directory):
+    paths = []
+    max_result = {}
+
+    for item in os.listdir(directory):
+        paths.append(os.path.join(directory, item))
+
+    for path in paths:
+        with open(path) as f:
+            file = ast.literal_eval(f.read())
+            # print(file, path)
+
+        for config_name, models in file.items():
+            max_result[config_name] = {}
+            for model, metrics in models.items():
+                max_result[config_name][model] = {}
+                for metric, value in metrics.items():
+                    max_result[config_name][model][metric] = float(value)
+    return max_result
+
+def save_global_result(data, db_names, metrics, model):
+    code = r"\begin{table}[H]" + "\n"
+    code += r"\centering" + "\n"
+    code += r"\scalebox{0.7}{" + "\n"
+    code += r"\begin{tabular}{"
+    nb_db = len(db_names) * len(metrics)
+    code += r"|l|"
+    for _ in range(nb_db):
+        code += r"c|"
+    code += r"} \hline" + "\n"
+
+    code += r"\multirow{2}{*}{Configurations}"
+
+    for db in db_names:
+        code += r"& \multicolumn{" + r"2}{" + r"c|}{"+ r"{}".format(db) + r"}"
+    code += r" \\ \cline{2-13}" + "\n"
+
+    for _ in db_names:
+        for metric in metrics:
+            code += "& {}".format(metric)
+    code +=  r"\\"  + "  \hline" + "\n"
+
+
+    for conf, dbs in data.items():
+        code += r"{}".format(conf)
+        for db, metrics in dbs.items():
+            for metric, value in metrics.items():
+                code += r" & {}".format(value)
+        code += r" \\ \hline " + "\n"
+
+
+    code += r"\end{tabular}" + "\n"
+    code += r"}" + "\n"
+    code += r"\caption{" +"Résulats généraux suivant le modèle " + r"{}".format(model)  + "} \n"
+    code += r"\label{global-results}" +"\n"
+    code += r"\end{table}" + "\n"
+
+    directory = "outputs/general_results"
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + "/general_results_"+ model + "_.tex", "w", encoding="utf-8") as file:
+        file.write(code)
+
+# def plot_shap_latex(data):
+#     latex_code = r"\begin{tikzpicture}" + "\n"
+#     latex_code += r"\begin{axis}["  + "\n"
+#     latex_code += r"xbar,"
+#     latex_code += r"symbolic y coords={" + r"{}".format(data.columns) + r"}"
+#     latex_code += r"]"
+#
+#     for key, value in
+#     latex_code += r"\addplot coordinates{(" + r"{}".format() + "\n"
+
+    # latex_code += r"\scalebox{0.65}{" + "\n"
+    # latex_code += r"\begin{tabular}{"
+
+
+def save_global_result_(data, models, metrics, db):
+    code = r"\begin{table}[H]" + "\n"
+    code += r"\centering" + "\n"
+    code += r"\scalebox{0.7}{" + "\n"
+    code += r"\begin{tabular}{"
+    nb_db = len(models) * len(metrics)
+    code += r"|l|"
+    for _ in range(nb_db):
+        code += r"c|"
+    code += r"} \hline" + "\n"
+
+    code += r"\multirow{2}{*}{Configurations}"
+
+    for model in models:
+        code += r"& \multicolumn{" + r"2}{" + r"c|}{"+ r"{}".format(model) + r"}"
+    code += r" \\ \cline{2-" +r"{}".format(nb_db-1) + "} \n"
+
+    for _ in models:
+        for metric in metrics:
+            code += "& {}".format(metric)
+    code +=  r"\\"  + "  \hline" + "\n"
+
+    for conf_name, conf_values in data.items():
+        code += r"{}".format(conf_name)
+        # exit(conf_values)
+        for metric_name, metric_values in conf_values.items():
+            for name, value in metric_values.items():
+                    code += "& {}".format(value)
+
+        code +=  r"\\"  + "  \hline" + "\n"
+
+
+    # for conf, dbs in data.items():
+    #     code += r"{}".format(conf)
+    #     for db, metrics in dbs.items():
+    #         for metric, value in metrics.items():
+    #             code += r" & {}".format(value)
+    #     code += r" \\ \hline " + "\n"
+
+
+    code += r"\end{tabular}" + "\n"
+    code += r"}" + "\n"
+    code += r"\caption{" +"Résulats généraux suivant le modèle " + r"{}".format(db)  + "} \n"
+    code += r"\label{global-results}" +"\n"
+    code += r"\end{table}" + "\n"
+
+    directory = "outputs/general_results"
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + "/general_results_"+ db + "_r.tex", "w", encoding="utf-8") as file:
+        file.write(code)
+
+
+
+
+                    
+       
+    
+
+  
