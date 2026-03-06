@@ -7,7 +7,7 @@ from sklearn.metrics import f1_score, confusion_matrix, classification_report , 
 from sklearn.model_selection import learning_curve
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from tools.cleaning import delete_attribute
+from ..tools.cleaning import delete_attribute
 from sklearn.preprocessing import KBinsDiscretizer
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -17,43 +17,49 @@ import ast
 warnings.filterwarnings("ignore", category=UserWarning)
 
 ### preprocessing functions ### 
-def standardization(df ,attributes, val1, val2):
-    for col in attributes:
-        j = 0
-        q1 = df[col].quantile(val1)
-        q3 = df[col].quantile(val2)
-        iqr = q3 - q1
-         
-        inf = q1 - (1.5 * iqr)
-        sup = q3 + (1.5 * iqr)
+def standardization_engine(df ,attribute, val1, val2):
+    q1 = df[attribute].quantile(val1)
+    q3 = df[attribute].quantile(val2)
+    iqr = q3 - q1
         
-        cmax = df[col].max()
-        
-        if cmax == 0 or iqr == 0:
-            # print(col, "cmax ->", cmax, "iqr ->", iqr)
-            df = df.drop(col,axis=1)
-            
-        elif cmax > sup:
-            for i, _ in df.iterrows():
-                if (df.loc[i,col] < inf):
-                    df.loc[i,col]  = inf / sup  
-                    j= j +1
-                    
-                elif (df.loc[i,col] > sup):
-                    df.loc[i,col]  = 1
-                    j = j+ 1
-                
-                else: df.loc[i,col] = df.loc[i,col] / sup
-        elif cmax <= sup:  
-            for i, _ in df.iterrows():
-                if (df.loc[i,col] < inf):
-                    df.loc[i,col]  = inf / cmax  
-                    j = j + 1
-                else: df.loc[i,col] = df.loc[i,col] / cmax
+    inf = q1 - (1.5 * iqr)
+    sup = q3 + (1.5 * iqr)
+    
+    cmax = df[attribute].max()
+    
+    parameters = {
+        'cmax': cmax, 
+        'sup': sup, 
+        'inf': inf, 
+        'iqr': iqr
+        }
                    
-    return df 
+    return parameters
 
-
+def standardization(cmax, sup, inf, iqr, df, col):
+    j = 0
+    if cmax == 0 or iqr == 0:
+        df = df.drop(col,axis=1)
+    elif cmax > sup:
+        for i, _ in df.iterrows():
+            if (df.loc[i,col] < inf):
+                df.loc[i,col]  = inf / sup  
+                j= j +1
+                
+            elif (df.loc[i,col] > sup):
+                df.loc[i,col]  = 1
+                j = j+ 1
+            
+            else: df.loc[i,col] = df.loc[i,col] / sup
+    elif cmax <= sup:  
+        for i, _ in df.iterrows():
+            if (df.loc[i,col] < inf):
+                df.loc[i,col]  = inf / cmax  
+                j = j + 1
+            else: df.loc[i,col] = df.loc[i,col] / cmax
+            
+    return df                
+    
 def plot_float_attribute(df,attributes,first,third,length):
     for col in attributes:
         q1 = df[col].quantile(first)
@@ -77,7 +83,6 @@ def plot_float_attribute(df,attributes,first,third,length):
         plt.legend(bbox_to_anchor = (1.0, 1), loc = 'upper right')
         plt.show()
         plt.savefig(str(col)+".jpg", dpi=300)
-
 
 def label_encoder(df, attributes):
     encoder = LabelEncoder()
@@ -239,7 +244,6 @@ def process_discretization(data):
     
     return tr_var, tr_data
         
-
 def discretization(data):
     tr  = discretization_engine(data)
     tr_discretized = discretization_encoding(tr)
@@ -276,19 +280,17 @@ def fill_nan_attributes2(data, attributes):
     
     return df  
     
-
-
-def one_hot_encoder(data, attributes):
+def one_hot_encoder(data):
     
     encoder = OneHotEncoder(sparse_output=False)
+    
+    encoder.fit(data)
+    
+    return encoder
 
-    columns_encoded = encoder.fit_transform(data[attributes])
-
-    data_one_hot_encoded = pd.DataFrame(columns_encoded, columns=encoder.get_feature_names_out(attributes), index=data.index)
-
-
-    return data_one_hot_encoded
-
+    # columns_encoded = encoder.fit_transform(data[attributes])
+    # data_one_hot_encoded = pd.DataFrame(columns_encoded, columns=encoder.get_feature_names_out(attributes), index=data.index)
+    # return data_one_hot_encoded
 
 def manual_encoder(data, att):
     for i in range(len(att[0])):
@@ -317,26 +319,32 @@ def KMeans_discretisation(data):
         att = data[col].values
         
         att = att.reshape(-1, 1)
-        optimal_discretization = {
-            'score' : 0,
-            'data' : []
-        }
         
-        for i in  range(2, 10):
-            kmeans = KMeans(n_clusters=i)
-            kmeans.fit(att)
-            cluster_labels = kmeans.predict(att)
-            
-            silhouette_avg = silhouette_score(att, cluster_labels)
-            
-            if silhouette_avg > optimal_discretization['score']:
-                optimal_discretization['score'] = silhouette_avg
-                optimal_discretization['data'] = cluster_labels
-                    
-        data.loc[:, col] = optimal_discretization['data']   
+        KMeans_discretization_engine(att)  
     
     return data
 
+def KMeans_discretization_engine(attribute):
+    optimal_discretization = {
+            'score' : 0,
+            # 'data' : []
+            'engine' : None
+        }
+    
+    for i in  range(2, 10):
+        kmeans = KMeans(n_clusters=i)
+        kmeans.fit(attribute)
+        cluster_labels = kmeans.predict(attribute)
+        
+        silhouette_avg = silhouette_score(attribute, cluster_labels)
+        
+        if silhouette_avg > optimal_discretization['score']:
+            optimal_discretization['score'] = silhouette_avg
+            optimal_discretization['engine'] = kmeans
+            # optimal_discretization['data'] = cluster_labels
+    
+    
+    return optimal_discretization['engine']
 
 def convert_int_to_object(data, attributes):
     for col in attributes:

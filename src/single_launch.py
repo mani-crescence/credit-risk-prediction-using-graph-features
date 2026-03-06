@@ -5,9 +5,6 @@ import numpy as np
 import pandas as pd
 import logging
 
-# logger = logging.getLogger(__name__)
-# logging.basicConfig(filename='error_log.txt', level=logging.ERROR,
-#                        format='%(asctime)s - %(levelname)s - %(message)s')
 
 discretization_types =  ["SUP"]#, "UNS"]#, "SUP"]
 discretization_for_attributes_types = ["UNS_", "SUP_"]
@@ -24,13 +21,37 @@ metrics = ["acc", "f1"]
 
 load_dotenv()
 
+def launch_split(db_name):
+    commands = []
+    commands.append(""" make run_splitting_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
+
+    processes = []   
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()
+
+def launch_build_engine_for_preprocessing(db_name):
+    commands = []
+    commands.append(""" make run_engine_building_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
+
+    processes = []   
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()
+    
 def launch_preprocess(db_name):
     commands = []
     commands.append(""" make run_preprocess_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
 
     processes = []   
     for cmd in commands:
-        process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        process = subprocess.Popen(cmd, shell=True)
         processes.append(process)
         
     for p in processes:
@@ -279,10 +300,12 @@ def launch_plot(db_name):
 if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
-    launch_preprocess(db_name)
-    launch_disc(db_name)
-    launch_graph_modeling(db_name)
-    launch_silm(db_name)
+    # launch_split(db_name)
+    launch_build_engine_for_preprocessing(db_name)
+    # launch_preprocess(db_name)
+    # launch_disc(db_name)
+    # launch_graph_modeling(db_name)
+    # launch_silm(db_name)
     # launch_conf(db_name)
     # launch_predict_classic(db_name)
     # launch_predict(db_name)

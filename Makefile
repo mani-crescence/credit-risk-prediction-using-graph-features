@@ -1,8 +1,9 @@
 include .env
 export QT_QPA_PLATFORM=offscreen
 # Variables
-PYTHON_INTERPRETER = python3
+PYTHON_INTERPRETER= python3
 SRC_DIR = src/
+PRE_DIR = -m src.data.
 
 all: run
 #LC
@@ -188,6 +189,12 @@ run_plot_australian:
 run_summarize_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
+run_splitting_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_AUSTRALIAN)	$(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TARGET_VALUES_AUSTRALIAN)
+
+run_engine_building_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN)	 
+
 run_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
 
@@ -329,7 +336,8 @@ run_main_print:
 run_general_launch:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)general_launch.py $(DB_NAME)
 
-run_all:	run_main_single_launch	run_general_launch
+run_all:	run_main_single_launch	
+#run_general_launch
 
 
 

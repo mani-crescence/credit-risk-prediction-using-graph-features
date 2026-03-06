@@ -1,11 +1,16 @@
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-from numeric_attributes_discretization import *
+from features.numeric_attributes_discretization import *
 import sys, os
 
 def main(partial_preprocessed_data, target, train_index, test_index, ptype, db_name):
+    
     discretized_data = discretize(partial_preprocessed_data, target, ptype)
+    
+    
+    
     discretized_data_train = discretized_data.loc[train_index]
     discretized_data_test = discretized_data.loc[test_index]
+    
     directory='outputs/'+ db_name +'/data/discretized/graph'
     os.makedirs(directory, exist_ok=True)
     discretized_data_train.to_csv(directory + '/discretized_train_' + ptype.lower() + '.csv')

@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
-from preprocessing import preprocess_main
+from data.preprocessing import preprocess_main
 #
 def sampling(file, db_name, data_size, target, unuseful_attributes, attributes_for_manual_encoding = None, values_for_manual_encoding = None):
     data = pd.read_csv(file, low_memory=False)
