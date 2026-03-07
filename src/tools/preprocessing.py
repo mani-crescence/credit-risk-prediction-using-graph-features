@@ -37,6 +37,11 @@ def standardization_engine(df ,attribute, val1, val2):
     return parameters
 
 def standardization(cmax, sup, inf, iqr, df, col):
+    cmax = float(cmax)
+    sup = float(sup)
+    inf = float(inf)
+    iqr = float(iqr)    
+    
     j = 0
     if cmax == 0 or iqr == 0:
         df = df.drop(col,axis=1)

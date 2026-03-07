@@ -17,7 +17,7 @@ if __name__== "__main__":
     unuseful_attributes = ast.literal_eval(unuseful_attributes)
     target_values = ast.literal_eval(target_values)
 
-    data = pd.read_csv(path, low_memory=False)
+    data = pd.read_csv(path, low_memory=False, na_values=['?'])
     
     ########### DELETION OF UNUSEFUL ATTRIBUTES #########
     del_un_data = delete_attribute(data, unuseful_attributes)

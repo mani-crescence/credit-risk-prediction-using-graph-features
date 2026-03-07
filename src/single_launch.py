@@ -45,9 +45,9 @@ def launch_build_engine_for_preprocessing(db_name):
     for p in processes:
         p.wait()
     
-def launch_preprocess(db_name):
+def launch_preprocess_train(db_name):
     commands = []
-    commands.append(""" make run_preprocess_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
+    commands.append(""" make run_preprocess_train_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
 
     processes = []   
     for cmd in commands:
@@ -56,7 +56,19 @@ def launch_preprocess(db_name):
         
     for p in processes:
         p.wait()
-    # log_error(processes, db_name, "Preprocessing")
+        
+        
+def launch_preprocess_test(db_name):
+    commands = []
+    commands.append(""" make run_preprocess_test_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
+
+    processes = []   
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()        
 
 def launch_sampling(db_name):
     commands = [""" make run_sampling_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()])]
@@ -301,8 +313,9 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
     # launch_split(db_name)
-    launch_build_engine_for_preprocessing(db_name)
-    # launch_preprocess(db_name)
+    # launch_build_engine_for_preprocessing(db_name)
+    launch_preprocess_train(db_name)
+    launch_preprocess_test(db_name)
     # launch_disc(db_name)
     # launch_graph_modeling(db_name)
     # launch_silm(db_name)

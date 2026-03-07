@@ -97,15 +97,18 @@ run_plot_lgd:
 
 run_lgd:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+  
+#JAPANESE  
+run_preprocess_train_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TRAIN_LABEL)
 
-#JAPANESE
-run_preprocess_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TARGET_VALUES_JAPANESE)
+run_preprocess_test_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TEST_LABEL)
 
 run_discretization_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_JAPANESE) $(DB_NAME) $(T)
 
-run_graph_modeling_japanese:
+run_graph_modeling_japanese: 
 	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_JAPANESE) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_compute_descriptors_japanese:
@@ -126,10 +129,22 @@ run_plot_japanese:
 run_summarize_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
+run_splitting_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_JAPANESE)  $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TARGET_VALUES_JAPANESE)
+
+run_engine_building_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE)	
+
 run_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
 
 #HMEQ
+run_preprocess_train_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_HMEQ) $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TRAIN_LABEL)
+
+run_preprocess_test_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_HMEQ) $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TEST_LABEL)
+
 run_preprocess_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_HMEQ) $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TARGET_VALUES_HMEQ)
 
@@ -157,28 +172,37 @@ run_plot_hmeq:
 run_summarize_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
+run_splitting_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_HMEQ)  $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TARGET_VALUES_HMEQ)
+
+run_engine_building_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_HMEQ) $(TARGET_NAME_HMEQ)	
+
 run_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
 
 
 #AUSTRALIAN
-run_preprocess_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TARGET_VALUES_AUSTRALIAN)
+run_preprocess_train_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TRAIN_LABEL)
+
+run_preprocess_test_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TEST_LABEL)	
 
 run_discretization_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_AUSTRALIAN) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization $(TARGET_NAME_AUSTRALIAN) $(DB_NAME) $(T)
 
 run_graph_modeling_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_AUSTRALIAN) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling $(DB_NAME) $(TARGET_NAME_AUSTRALIAN) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_compute_descriptors_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_make_configurations_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
@@ -193,7 +217,7 @@ run_splitting_australian:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_AUSTRALIAN)	$(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TARGET_VALUES_AUSTRALIAN)
 
 run_engine_building_australian:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN)	 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN)	$(TARGET_NAME_AUSTRALIAN)
 
 run_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)

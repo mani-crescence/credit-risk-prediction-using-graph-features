@@ -10,8 +10,8 @@ import pickle
 
 load_dotenv()
 
-def preprocess_main(data, db_name):
-    
+def preprocess_main(data, db_name, target):
+    data[target]  = data[target].astype('object') 
     ############# STANDARDIZATION  ###############
     int_attributes = data.select_dtypes('int').columns
     numerical_data = convert_int_to_float(data, int_attributes)
@@ -25,22 +25,26 @@ def preprocess_main(data, db_name):
         with open(directory + col + '_params_stan.txt' , 'w') as file:
             file.write(str(parameters))
             
-    ############# ENCODING ###############
-    categorical_data = data.select_dtypes('object') 
-    engine = one_hot_encoder(categorical_data)
+    ############# ENCODING ############### 
+    categorical_data = data.select_dtypes('object').drop(columns=[target]) 
     
-    with open(directory + '/one_hot_encoder_engine', 'wb') as file:
+    if not categorical_data.empty :
+       engine = one_hot_encoder(categorical_data)
+       
+       with open(directory + '/one_hot_encoder_engine', 'wb') as file:
         pickle.dump(engine, file)
+    
           
 
 if __name__== "__main__":
     args = sys.argv[1:]
     db_name = args[0]
     path = args[1]
+    target = args[2]
     
     data = pd.read_csv(path, low_memory=False)
  
-    preprocess_main(data, db_name)
+    preprocess_main(data, db_name, target)
 
 
 
