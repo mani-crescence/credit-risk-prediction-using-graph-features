@@ -10,7 +10,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, new_descriptors
     configurations = {}
     targets = []
     
-    directory='outputs/'+db_name+'/configurations'
+    directory='data/configurations/' + db_name +'/'
     os.makedirs(directory, exist_ok=True)
     
     if graph_type is not None and disc_type is not None:
@@ -24,28 +24,28 @@ def  build_configurations(ordinary_descriptors, target, db_name, new_descriptors
         with open(directory + '/configuration_'+graph_type.lower() + '_'+ disc_type.lower() + '.txt', 'w') as f:
             f.write(str(configurations))
       
-    elif  graph_type is None and disc_type is None:
+    else:
         configurations['CLASSIC'] = ordinary_descriptors + [target]
         with open(directory + '/configuration_classic.txt', 'w') as f:
             f.write(str(configurations))
        
-    elif  graph_type is not None and disc_type is None:
-        for t in target_values:
-            targets.append(str(target)+'_'+str(t))
+    # elif  graph_type is not None and disc_type is None:
+    #     for t in target_values:
+    #         targets.append(str(target)+'_'+str(t))
 
-        # configurations[graph_type + '_GX_ORD'] = list(set(new_descriptors) - set(targets)) + ordinary_descriptors +  [target]
-        # configurations[graph_type + '_GY_ORD'] =  targets + ordinary_descriptors + [target]
-        configurations[graph_type + '_GXY_ORD'] = new_descriptors + ordinary_descriptors + [target]
+    #     # configurations[graph_type + '_GX_ORD'] = list(set(new_descriptors) - set(targets)) + ordinary_descriptors +  [target]
+    #     # configurations[graph_type + '_GY_ORD'] =  targets + ordinary_descriptors + [target]
+    #     configurations[graph_type + '_GXY_ORD'] = new_descriptors + ordinary_descriptors + [target]
         
-        with open(directory + '/configuration_' + graph_type.lower() + '.txt', 'w') as f:
-            f.write(str(configurations))
+    #     with open(directory + '/configuration_' + graph_type.lower() + '.txt', 'w') as f:
+    #         f.write(str(configurations))
         
-    else:
-        configurations[disc_type] = new_descriptors + [target]
-        configurations[disc_type+"_ORD"] = ordinary_descriptors + new_descriptors + [target]
+    # else:
+    #     configurations[disc_type] = new_descriptors + [target]
+    #     configurations[disc_type+"_ORD"] = ordinary_descriptors + new_descriptors + [target]
 
-        with open(directory + '/configuration_' + disc_type.lower() + '.txt', 'w') as f:
-            f.write(str(configurations))
+    #     with open(directory + '/configuration_' + disc_type.lower() + '.txt', 'w') as f:
+    #         f.write(str(configurations))
         
                 
 if __name__ == '__main__':
@@ -55,11 +55,12 @@ if __name__ == '__main__':
     disc_type = args[2]
     graph_type = args[3]
 
-    preprocessed_data = pd.read_csv("outputs/"+db_name+"/data/classic/trainset.csv", index_col=0)
-    train_ = pd.read_csv("outputs/"+db_name+"/preprocessed_sets/partial_preprocessed_data.csv", index_col=0)
+    preprocessed_data = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", index_col=0)
+    train_ = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_train.csv", index_col=0)
     target_values = train_[target].unique()
     
-    ordinary_descriptors= preprocessed_data.columns.tolist()
+    
+    ordinary_descriptors = preprocessed_data.columns.tolist()
     ordinary_descriptors.remove(target)
     
     if disc_type == 'None':
@@ -69,21 +70,21 @@ if __name__ == '__main__':
         graph_type = ast.literal_eval(graph_type)
         
     if graph_type is not None and disc_type is not None:
-        train_new_descriptors = pd.read_csv("outputs/"+db_name+"/new_descriptors/"+graph_type.lower() +"/train/new_descriptors_data_"+ disc_type.lower() + '_' + graph_type.lower() +"_0.1.csv", index_col=0)
+        train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/"+ disc_type.lower() +"/"+ graph_type.lower() + '/train/' +"new_features_0.1.csv", index_col=0)
         new_descriptors = list(train_new_descriptors.columns)
         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, disc_type, target_values)
         
-    elif graph_type is None and disc_type is None:
+    else:
         build_configurations(ordinary_descriptors, target, db_name)
         
-    elif graph_type is not None and disc_type is None:
-         train_new_descriptors = pd.read_csv("outputs/"+db_name+"/new_descriptors/"+graph_type.lower() +"/train/new_descriptors_data_"+ graph_type.lower() +"_0.1.csv", index_col=0)
-         new_descriptors = list(train_new_descriptors.columns)
-         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)
-    else:
-        train_new_descriptors = pd.read_csv("outputs/"+db_name+"/data/discretized/new_discretized_train_"+disc_type.lower()+".csv", index_col=0)
-        new_descriptors = list(train_new_descriptors.columns)
-        build_configurations(ordinary_descriptors, target, db_name, new_descriptors, None, disc_type)
+    # elif graph_type is not None and disc_type is None:
+    #      train_new_descriptors = pd.read_csv("outputs/"+db_name+"/new_descriptors/"+graph_type.lower() +"/train/new_descriptors_data_"+ graph_type.lower() +"_0.1.csv", index_col=0)
+    #      new_descriptors = list(train_new_descriptors.columns)
+    #      build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)
+    # else:
+    #     train_new_descriptors = pd.read_csv("outputs/"+db_name+"/data/discretized/new_discretized_train_"+disc_type.lower()+".csv", index_col=0)
+    #     new_descriptors = list(train_new_descriptors.columns)
+    #     build_configurations(ordinary_descriptors, target, db_name, new_descriptors, None, disc_type)
 
 
 

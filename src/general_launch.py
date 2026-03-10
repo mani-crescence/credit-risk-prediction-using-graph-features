@@ -2,15 +2,15 @@ import subprocess
 import sys, ast, os
 from dotenv import load_dotenv
 import numpy as np
-from tools.execute import save_global_result, save_global_result_
+from .tools.execute import save_global_result, save_global_result_
 import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["australian", "japanese", "hmeq"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
+db_names = ["hmeq"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
 discretization_types =  ["SUP", "UNS"]
-graphs = ["bip", "bip", "mod", "mod", None, None]
-discretizations = ["uns", "sup", "uns", "sup", "na", None]
+graphs = [None, "bip", "bip", "mod", "mod"]
+discretizations = [None, "uns", "sup", "uns", "sup"]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
 models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
 metrics = ["acc", "f1"]
@@ -36,17 +36,17 @@ def generate_result():
     for db in db_names:
         global_results[db] = {}
         for graph, discretization in zip(graphs, discretizations):
-            if discretization is None and graph is not None:
-                with open('outputs/general_results/results/' + db + '/real/predictions/' + graph + '/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            elif discretization is not None and graph is None:
-                with open('outputs/general_results/results/'+ db +'/real/predictions/na/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            elif discretization is None and graph is None:
-                with open('outputs/general_results/results/'+ db +'/predictions/classic/main_results.txt') as file:
+            # if discretization is None and graph is not None:
+            #     with open('reports/' + db + '/real/metrics/' + graph + '/main_results_r.txt') as file:
+            #         result = ast.literal_eval(file.read())
+            # elif discretization is not None and graph is None:
+            #     with open('outputs/general_results/results/'+ db +'/real/predictions/na/main_results_r.txt') as file:
+            #         result = ast.literal_eval(file.read())
+            if discretization is None and graph is None:
+                with open('reports/'+ db +'/metrics/classic/main_results_r.txt') as file:
                     result = ast.literal_eval(file.read())
             else:
-                with open('outputs/general_results/results/'+ db +'/real/predictions/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
+                with open('reports/'+ db +'/metrics/real/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
                     result = ast.literal_eval(file.read())
             global_results[db].update(result)
 
@@ -74,22 +74,22 @@ def generate_result():
     #
     #         save_global_result(data, db_names, model, metric)
 
-    for db in db_names:
-        for conf, values in global_results[db].items():
-            data[conf] = {}
-        break
+    # for db in db_names:
+    #     for conf, values in global_results[db].items():
+    #         data[conf] = {}
+    #     break
 
-    for model in models:
-        for db in db_names:
-            for conf, values in global_results[db].items():
-                data[conf][db] = {}
-                for metric in metrics:
-                    data[conf][db][metric] = values[model][metric]
+    # for model in models:
+    #     for db in db_names:
+    #         for conf, values in global_results[db].items():
+    #             data[conf][db] = {}
+    #             for metric in metrics:
+    #                 data[conf][db][metric] = values[model][metric]
 
-        directory = "outputs/general_results/for_best_combination/"
-        os.makedirs(directory, exist_ok=True)
-        with open(directory + 'general_result_' + model + '.txt', 'w') as file:
-            file.write(str(data))
+    #     directory = "outputs/general_results/for_best_combination/"
+    #     os.makedirs(directory, exist_ok=True)
+    #     with open(directory + 'general_result_' + model + '.txt', 'w') as file:
+    #         file.write(str(data))
     #
     #         save_global_result(data, db_names, metrics, model)
 
@@ -257,8 +257,7 @@ def generate_best_combination():
             file.write(code)
 
 if __name__ == "__main__":
-    print('hi')
-    # generate_result()
+    generate_result()
     # launch_attributes_importance()
     # attributes_classification()
     # generate_best_combination()

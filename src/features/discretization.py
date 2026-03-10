@@ -1,50 +1,57 @@
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-from features.numeric_attributes_discretization import *
-import sys, os
+import sys, os, pickle
 
-def main(partial_preprocessed_data, target, train_index, test_index, ptype, db_name):
+def main(data, target, label, discretization_type, db_name):
     
-    discretized_data = discretize(partial_preprocessed_data, target, ptype)
-    
-    
-    
-    discretized_data_train = discretized_data.loc[train_index]
-    discretized_data_test = discretized_data.loc[test_index]
-    
-    directory='outputs/'+ db_name +'/data/discretized/graph'
+    directory = "engine/discretization/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)
-    discretized_data_train.to_csv(directory + '/discretized_train_' + ptype.lower() + '.csv')
-    discretized_data_test.to_csv(directory + '/discretized_test_' + ptype.lower() + '.csv')
-
-    new_discretized_data_train = build_discretized_attributes(discretized_data.loc[train_index], ptype)
-    new_discretized_data_test = build_discretized_attributes(discretized_data.loc[test_index], ptype)
-    directory='outputs/'+ db_name +'/data/discretized'
-    new_discretized_data_train.to_csv(directory+'/new_discretized_train_'+ptype.lower()+ '.csv')
-    new_discretized_data_test.to_csv(directory+'/new_discretized_test_'+ptype.lower()+ '.csv')
-       
+    numeric_data = data.select_dtypes('float')
+    
+    if discretization_type == "UNS":
+        discretized_data = pd.DataFrame()
+        for col in numeric_data.columns:
+            
+            att = data[col].values
+            att = att.reshape(-1, 1)    
+            
+            with open(directory + 'kmeans_engine_'+ col , 'rb') as file:
+                kmeans_engine = pickle.load(file) 
+            discretized_data[col] = kmeans_engine['engine'].predict(att).astype("int").astype("object")    
+            
+        new_data = data.drop(columns=numeric_data.columns)
+        data = pd.concat([new_data, discretized_data], axis=1)    
+            
+        directory = "data/discretized/" + db_name+ "/"
+        os.makedirs(directory, exist_ok=True)  
+        data.to_csv(directory + 'discretized_' + label + '_data_' + discretization_type.lower() + '.csv')  
+         
+    else:
+        os.makedirs(directory, exist_ok=True)
+        with open(directory + 'tree_discretization_engine' , 'rb') as file:
+           tree_engine = pickle.load(file)
+           
+        discretized_data = tree_engine.transform(numeric_data)   
+        new_data = data.drop(columns=numeric_data.columns)
+        data = pd.concat([new_data, discretized_data], axis=1)
+        
+        directory = "data/discretized/" + db_name+ "/"
+        os.makedirs(directory, exist_ok=True)  
+        data.to_csv(directory + 'discretized_' + label + '_data_' + discretization_type.lower() + '.csv')
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    target = args[0]
-    db_name = args[1]
-    ptype = args[2]
+    target = args[3]
+    db_name = args[0]
+    discretization_type = args[1]
+    label = args[2]
+    
 
-    partial_preprocessed_data  = pd.read_csv("outputs/"+db_name+"/preprocessed_sets/partial_preprocessed_data.csv", keep_default_na=False)
-    partial_preprocessed_data.set_index('Unnamed: 0', inplace=True)
-    partial_preprocessed_data.index.name = None
-
-
-    trainset = pd.read_csv('outputs/' + db_name + '/data/classic/trainset.csv')
-    trainset.set_index('Unnamed: 0', inplace=True)
-    trainset.index.name = None
-    testset = pd.read_csv('outputs/' + db_name + '/data/classic/testset.csv')
-    testset.set_index('Unnamed: 0', inplace=True)
-    testset.index.name = None
-    train_index = trainset.index
-    test_index = testset.index
+    partial_preprocessed_data  = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_" + label + ".csv", keep_default_na=False)
+    partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace=True)
+   
 
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
-    main(partial_preprocessed_data, target, train_index, test_index, ptype, db_name)
+    main(partial_preprocessed_data, target, label,  discretization_type, db_name)
     
 
 

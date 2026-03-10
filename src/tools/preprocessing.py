@@ -317,23 +317,23 @@ def convert_int_to_float(data, attributes):
         
     return data    
 
-def KMeans_discretisation(data):
+# def KMeans_discretisation(data):
     
-    for col in data.select_dtypes('float').columns:
+#     for col in data.select_dtypes('float').columns:
 
-        att = data[col].values
+#         att = data[col].values
         
-        att = att.reshape(-1, 1)
+#         att = att.reshape(-1, 1)
         
-        KMeans_discretization_engine(att)  
+#         KMeans_discretization_engine(att)  
     
-    return data
+#     return data
 
-def KMeans_discretization_engine(attribute):
+def kmeans_discretization_engine(attribute) :
     optimal_discretization = {
             'score' : 0,
-            # 'data' : []
-            'engine' : None
+            'engine' : None,
+            'n_bins' : 0
         }
     
     for i in  range(2, 10):
@@ -346,10 +346,10 @@ def KMeans_discretization_engine(attribute):
         if silhouette_avg > optimal_discretization['score']:
             optimal_discretization['score'] = silhouette_avg
             optimal_discretization['engine'] = kmeans
-            # optimal_discretization['data'] = cluster_labels
+            optimal_discretization['n_bins'] = i
     
     
-    return optimal_discretization['engine']
+    return optimal_discretization
 
 def convert_int_to_object(data, attributes):
     for col in attributes:

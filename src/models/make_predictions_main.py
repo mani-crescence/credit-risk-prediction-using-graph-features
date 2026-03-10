@@ -3,7 +3,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn import svm
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from tools.execute import *
+from ..tools.execute import *
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from xgboost import XGBClassifier
 from sklearn.neural_network import MLPClassifier
@@ -12,27 +12,21 @@ import pickle
 import ast
 
 def processing(configurations, original_directory, path, alpha = None, discretization_type = None):
-    classic_result_path = "outputs/general_results/results/" + db_name + "/predictions/classic/metrics_results.txt"
+    classic_result_path = "reports/" + db_name + "/metrics/classic/metrics_results.txt"
+    trainset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_train.csv")
+    testset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_test.csv")
+    trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    testset.drop(columns=['Unnamed: 0'], inplace=True)
 
     with open(classic_result_path, "r") as file:
         classic_result = file.read()
     classic_result = ast.literal_eval(classic_result)
 
-    preprocessed_data = pd.read_csv("outputs/" + db_name + "/preprocessed_sets/preprocessed_data.csv")
-    preprocessed_data.set_index('Unnamed: 0', inplace=True)
-    preprocessed_data.index.name = None
-
     train_new_descriptors = pd.read_csv(train_data_path)
-    train_new_descriptors.set_index('Unnamed: 0', inplace=True)
-    train_new_descriptors.index.name = None
+    train_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True)
     test_new_descriptors = pd.read_csv(test_data_path)
-    test_new_descriptors.set_index('Unnamed: 0', inplace=True)
-    test_new_descriptors.index.name = None
-
-    train_index = train_new_descriptors.index
-    test_index = test_new_descriptors.index
-    trainset = preprocessed_data.loc[train_index]
-    testset = preprocessed_data.loc[test_index]
+    test_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True)
+    
     final_trainset = pd.concat([trainset, train_new_descriptors], axis=1)
     final_testset = pd.concat([testset, test_new_descriptors], axis=1)
 
@@ -73,7 +67,7 @@ if __name__ == "__main__":
     cost_data = None
     cost_attributes = None
     
-    directory = 'outputs/general_results/results/'+ db_name
+    directory = 'reports/'+ db_name + '/metrics/'
     os.makedirs(directory, exist_ok=True )
     
     ############ MODELS #############
@@ -92,36 +86,33 @@ if __name__ == "__main__":
 
         classic_result = None
         final_trainset = pd.read_csv(train_data_path)
-        final_trainset.set_index('Unnamed: 0', inplace=True)
-        final_trainset.index.name = None
+        final_trainset.drop(columns=['Unnamed: 0'], inplace=True)
         final_testset = pd.read_csv(test_data_path)
-        final_testset.set_index('Unnamed: 0', inplace=True)
-        final_testset.index.name = None  
-        test_index = final_testset.index
+        final_testset.drop(columns=['Unnamed: 0'], inplace=True)
 
         real_results, _ = build_predictions(models, final_trainset, final_testset, configurations, target,
                                     classic_result)
-        directory_ = directory + '/predictions/classic'
+        directory_ = directory + '/classic'
         os.makedirs(directory_, exist_ok=True)
         with open(directory_ + '/metrics_results.txt', 'w') as file:
             file.write(str(real_results))
 
     elif discretization_type != 'None' and graph_type != 'None':
         alpha = args[7]
-        directory_ = '/predictions/' + graph_type.lower() +'/'+ discretization_type.lower()
+        directory_ = '/' + graph_type.lower() +'/'+ discretization_type.lower()
 
         processing(configurations, directory, directory_, alpha)
 
-    elif discretization_type == 'None' and graph_type != 'None':
-        alpha = args[7]
-        directory_ = '/predictions/' + graph_type.lower() + '/na/'
+    # elif discretization_type == 'None' and graph_type != 'None':
+    #     alpha = args[7]
+    #     directory_ = '/predictions/' + graph_type.lower() + '/na/'
 
-        processing(configurations, directory, directory_, alpha)
+    #     processing(configurations, directory, directory_, alpha)
 
-    else:
-        directory_ = '/predictions/na/'
+    # else:
+    #     directory_ = '/predictions/na/'
 
-        processing(configurations, directory, directory_, None, discretization_type)
+    #     processing(configurations, directory, directory_, None, discretization_type)
 
 
 

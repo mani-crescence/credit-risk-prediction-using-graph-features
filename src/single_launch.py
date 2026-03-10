@@ -6,14 +6,14 @@ import pandas as pd
 import logging
 
 
-discretization_types =  ["SUP"]#, "UNS"]#, "SUP"]
+discretization_types =  ["SUP", "UNS"]#, ]#, "SUP"]
 discretization_for_attributes_types = ["UNS_", "SUP_"]
-alphas =   [0.1]#, 0.7, 0.8, 0.85, 0.9]# [0.1, 0.2, 0.3, 0.4, 0.5]#,
+alphas =   [0.1, 0.2, 0.3]# [0.1, 0.2, 0.3, 0.4, 0.5]#,
 process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
 plot_type = ["UNS","SUP"]
 pagerank_type = ["PER", "GLO"]
-graph_types = ["MOD"]#, "BIP",  "MOD"] #"LOAN",
-graph_type_for_prediction = ["MOD"]#, "BIP"]
+graph_types = ["MOD", "BIP"]#,  "MOD"] #"LOAN",
+graph_type_for_prediction = ["MOD", "BIP"]
 graphs = ["bip", "bip", "mod", "mod", None, None]
 discretizations = ["uns", "sup", "uns", "sup", "na", None]
 models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]#, "mlp"] #["log", "svm", ]
@@ -35,7 +35,7 @@ def launch_split(db_name):
 
 def launch_build_engine_for_preprocessing(db_name):
     commands = []
-    commands.append(""" make run_engine_building_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
+    commands.append(""" make run_engine_building_pre_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
 
     processes = []   
     for cmd in commands:
@@ -56,8 +56,7 @@ def launch_preprocess_train(db_name):
         
     for p in processes:
         p.wait()
-        
-        
+             
 def launch_preprocess_test(db_name):
     commands = []
     commands.append(""" make run_preprocess_test_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
@@ -82,15 +81,30 @@ def launch_sampling(db_name):
 
     # log_error(processes)
 
+def launch_build_engine_for_discretization(db_name):
+    commands = []
+    
+    for type in discretization_types:
+            commands.append(""" make run_engine_building_disc_{0} DB_NAME={1} DISCRETIZATION_TYPE={2} """.format(*[db_name.lower(), db_name.lower(),  type]))
+
+    processes = []   
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()
+   
 def launch_disc(db_name):
     commands = []
-    for type in discretization_types:
-            commands.append("""make run_discretization_{0} DB_NAME={1} T={2} """.format(*[db_name.lower(), db_name.lower(), type]))
+    for label in ["train", "test"]:
+         for discretization_type  in discretization_types:
+             commands.append("""make run_discretization_{0} DB_NAME={1} DISCRETIZATION_TYPE={2} LABEL={3} """.format(*[db_name.lower(), db_name.lower(), discretization_type, label]))
    
     processes = []
     
     for cmd in commands:
-        process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        process = subprocess.Popen(cmd, shell=True)
         processes.append(process)
         
     for p in processes:
@@ -107,7 +121,6 @@ def launch_graph_modeling(db_name):
             commands.append("""make run_graph_modeling_{0} DB_NAME={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(*[db_name.lower(), db_name.lower(), None, graph_type]))
         else:    
             for discretization_type in discretization_types:
-                print('poli')
                 commands.append("""make run_graph_modeling_{0} DB_NAME={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(*[db_name.lower(), db_name.lower(), discretization_type, graph_type]))
     
     processes = []
@@ -124,14 +137,11 @@ def launch_graph_modeling(db_name):
 
 def launch_silm(db_name):
     commands = []
-    for graph_type in graph_types:
-        if graph_type == 'LOAN':
-            for alpha in alphas:
-                commands.append("""make run_compute_descriptors_{0}  BD_NAME={1} ALPHA={2} GRAPH_TYPE={3}""".format(*[db_name.lower(), db_name.lower(), alpha, graph_type]))
-        else:
+    for label in ["train", "test"]:#, "test"]: ,
+        for graph_type in graph_types:
             for discretization_type in discretization_types:
                 for alpha in alphas:
-                    commands.append("""make run_compute_descriptors_{0}  BD_NAME={1} ALPHA={3} GRAPH_TYPE={4} DISCRETIZATION_TYPE={2} """.format(*[db_name.lower(), db_name.lower(), discretization_type, alpha, graph_type]))
+                    commands.append(""" make run_compute_descriptors_{0}  BD_NAME={1} ALPHA={3} GRAPH_TYPE={4} DISCRETIZATION_TYPE={2} LABEL={5} """.format(*[db_name.lower(), db_name.lower(), discretization_type, alpha, graph_type, label]))
     processes = []
     
     for cmd in commands:
@@ -149,52 +159,46 @@ def launch_conf(db_name):
     commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), None, None]))
 
     for graph_type in graph_types:
-        if graph_type == "LOAN":
-             commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), None, graph_type]))
-        else:
-            for type_id in discretization_types:
-                commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), type_id, graph_type]))
-
-    for disc_type in discretization_types:
-        commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), disc_type, None]))
+        for discretization_type in discretization_types:
+            commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), discretization_type, graph_type]))
 
     processes = []
     for cmd in commands:
-        process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        process = subprocess.Popen(cmd, shell=True)
         processes.append(process)
 
     for p in  processes:
         p.wait()
-    # log_error(processes, db_name, "Configuration")
 
 def launch_predict(db_name):
     commands = []
-    for graph_type in graph_types:
-        if graph_type == "LOAN":
-            train_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/train'
-            test_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/test'
-            config_path = "outputs/"+db_name.lower()+"/configurations/configuration_" +graph_type.lower() + ".txt"
+    for disc_type in discretization_types:
+        # if graph_type == "LOAN":
+        #     train_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/train'
+        #     test_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/test'
+        #     config_path = "outputs/"+db_name.lower()+"/configurations/configuration_" +graph_type.lower() + ".txt"
 
-            for alpha in alphas:
-                train_path = train_directory+'/new_descriptors_data_' + graph_type.lower()+'_'+str(alpha)+'.csv'
-                test_path = test_directory+'/new_descriptors_data_' + graph_type.lower()+'_'+str(alpha)+'.csv'
-                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} ALPHA={7}""".format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, alpha]))
-        else:
-            for disc_type in discretization_types:
-                train_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/train'
-                test_directory = 'outputs/'+db_name.lower()+'/new_descriptors/'+graph_type.lower()+'/test'
-                config_path = "outputs/"+db_name.lower()+"/configurations/configuration_" +graph_type.lower()+"_"+disc_type.lower()+ ".txt"
+        #     for alpha in alphas:
+        #         train_path = train_directory+'/new_descriptors_data_' + graph_type.lower()+'_'+str(alpha)+'.csv'
+        #         test_path = test_directory+'/new_descriptors_data_' + graph_type.lower()+'_'+str(alpha)+'.csv'
+        #         commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} ALPHA={7}""".format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, alpha]))
+        # else:
+        for graph_type in graph_types:
+            train_directory = 'data/graph_features/'+ db_name.lower() +'/'+ disc_type.lower()+ "/" + graph_type .lower() + '/train'
+            test_directory = 'data/graph_features/'+ db_name.lower() +'/'+ disc_type.lower()+ "/" + graph_type .lower() + '/test'
+            
+            config_path = "data/configurations/" + db_name.lower()+"/configuration_" +graph_type.lower()+"_"+disc_type.lower()+ ".txt"
 
-                for alpha in alphas:
-                    train_path = train_directory+'/new_descriptors_data_'+ disc_type.lower()+ '_'+graph_type.lower()+'_'+str(alpha)+'.csv'
-                    test_path = test_directory+'/new_descriptors_data_'+ disc_type.lower()+ '_'+ graph_type.lower()+'_'+str(alpha)+'.csv'
-                    commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} ALPHA={7}""".format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, graph_type, config_path, alpha]))
+            for alpha in alphas: 
+                train_path = train_directory + '/new_features_' + str(alpha) + '.csv'
+                test_path = test_directory + '/new_features_' + str(alpha) + '.csv'
+                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} ALPHA={7}""".format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, graph_type, config_path, alpha]))
 
-    for disc_type in discretization_types :
-        train_path = 'outputs/'+db_name.lower()+'/data/discretized/new_discretized_train_'+disc_type.lower()+'.csv'
-        test_path = 'outputs/'+db_name.lower()+'/data/discretized/new_discretized_test_'+disc_type.lower()+'.csv'
-        config_path = "outputs/"+db_name.lower()+"/configurations/configuration_" + disc_type.lower() + ".txt"
-        commands.append("""make run_make_predictions_{0}  DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3} DISCRETIZATION_TYPE={4} CONFIG_PATH={5} GRAPH_TYPE={6} """.format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, config_path,  None]))
+    # for disc_type in discretization_types :
+    #     train_path = 'outputs/'+db_name.lower()+'/data/discretized/new_discretized_train_'+disc_type.lower()+'.csv'
+    #     test_path = 'outputs/'+db_name.lower()+'/data/discretized/new_discretized_test_'+disc_type.lower()+'.csv'
+    #     config_path = "outputs/"+db_name.lower()+"/configurations/configuration_" + disc_type.lower() + ".txt"
+    #     commands.append("""make run_make_predictions_{0}  DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3} DISCRETIZATION_TYPE={4} CONFIG_PATH={5} GRAPH_TYPE={6} """.format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, config_path,  None]))
 
 
     processes = []
@@ -208,11 +212,11 @@ def launch_predict(db_name):
     # log_error(processes, db_name, "Prediction With New Descriptors")
 
 def launch_predict_classic(db_name):
-    train_path = 'outputs/'+db_name.lower()+'/data/classic/trainset.csv'
-    test_path = 'outputs/'+db_name.lower()+'/data/classic/testset.csv'
-    config_path = "outputs/"+db_name+"/configurations/configuration_classic" +".txt"
+    train_path = 'data/preprocessed/'+db_name.lower()+'/preprocessed_data_train.csv'
+    test_path = 'data/preprocessed/'+db_name.lower()+'/preprocessed_data_test.csv'
+    config_path = "data/configurations/"+ db_name+"/configuration_classic.txt" 
     command = """make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3} DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} """.format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, None, config_path, "CLASSIC"])
-    process = subprocess.run(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    process = subprocess.run(command, shell=True)
     # log_error([process], db_name, "Prediction For Ordinary Attributes")
 
 def launch_print(db_name):
@@ -222,10 +226,10 @@ def launch_print(db_name):
             *[db_name.lower(), db_name.lower(), 'na', None])]
 
     for graph in graph_types:
-        if graph == "LOAN":
-            commands.append("""make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
-                *[db_name.lower(), db_name.lower(), None, graph]))
-        else:
+        # if graph == "LOAN":
+        #     commands.append("""make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
+        #         *[db_name.lower(), db_name.lower(), None, graph]))
+        # else:
             for discretization in discretization_types:
                 commands.append(
                     """make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
@@ -235,7 +239,7 @@ def launch_print(db_name):
     processes = []
     
     for cmd in commands:
-        process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        process = subprocess.Popen(cmd, shell=True)
         processes.append(process)
         
     for p in processes: 
@@ -314,8 +318,9 @@ if __name__ == "__main__":
     db_name = args[0]
     # launch_split(db_name)
     # launch_build_engine_for_preprocessing(db_name)
-    launch_preprocess_train(db_name)
-    launch_preprocess_test(db_name)
+    # launch_preprocess_train(db_name)
+    # launch_preprocess_test(db_name)
+    # launch_build_engine_for_discretization(db_name)
     # launch_disc(db_name)
     # launch_graph_modeling(db_name)
     # launch_silm(db_name)

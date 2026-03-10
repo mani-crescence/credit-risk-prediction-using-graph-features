@@ -15,19 +15,21 @@ def graph_bipartite_modality(graph, data, new_loan = None, discretization_type =
         graph = nx.Graph()
 
         for i , row in data.iterrows():
-            graph.add_node('l'+ str(i), type='loan', bipartite=0)
+            graph.add_node('tr_u'+ str(i), type='loan', bipartite=0)
             
             for j, w in row.items():
                 if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
                     graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
                     
-                graph.add_edge('l'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+                graph.add_edge('tr_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
 
         # bipartite_0_nodes = [node for node, attr in graph.nodes(data=True) if attr.get('bipartite') == 0]
         # node_colors = ['red' if node in bipartite_0_nodes else 'skyblue' for node in graph.nodes]
         # top = nx.bipartite.sets(graph)[0]
         # pos = nx.bipartite_layout(graph, top)
-        # nx.draw(graph, pos=pos, with_labels=True, node_color = node_colors, node_size=200, font_size=5, font_weight='bold', width=1)
+        
+        # plt.figure(figsize=(12, 10))
+        # nx.draw(graph, pos=pos, with_labels=True, node_color = node_colors, node_size=200, font_size=5, font_weight='bold', width=2)
         # plt.savefig("bip.png")
         # plt.close()
         # print(graph.edges)
@@ -35,21 +37,24 @@ def graph_bipartite_modality(graph, data, new_loan = None, discretization_type =
         
     else:
         edges = []
-        nodes = []
-        graph.add_node('nl', type = 'loan')
-        nodes.append('nl')
-        # print(new_loan)
+        nodes = [] 
+        new_node = 'ts_'+str(new_loan['Index'])
+        
+        graph.add_node(new_node, type = 'loan')
+        nodes.append(new_node)
+        
+        del new_loan['Index']
+        
         for j, w in new_loan.items():
             if graph.has_node(str(j)+ '_' + str(w) + '_' + discretization_type + '_bip') is False:
                 graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type = 'attribute')
-            graph.add_edge('nl', str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+            graph.add_edge(new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
             # print(('nl', str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
-            edges.append(('nl', str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
+            edges.append((new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
         
         return graph     
         
 def graph_modality(graph, data, new_loan = None, discretization_type = None):
-    # data = data.drop(columns = ['st'])
     if graph is None:
         graph = nx.Graph()
         for i, row in data.iterrows():
@@ -66,7 +71,7 @@ def graph_modality(graph, data, new_loan = None, discretization_type = None):
                         graph[str(k) + '_' + str(w) + '_' + discretization_type + '_mod'][str(k2) + '_' + str(y) + '_' + discretization_type + '_mod']['weight'] += 1
                         # print("already existed")
 
-        # Draw the graph with node and edge attributes
+        # # Draw the graph with node and edge attributes
         # print_graph(graph)
         # Print the graph
         # pos = nx.spring_layout(graph)
@@ -85,25 +90,25 @@ def graph_modality(graph, data, new_loan = None, discretization_type = None):
         # output_file("modality_graph.html")
         
         # exit(graph.edges)  
-        weights = nx.get_edge_attributes(graph, "weight")
-        for edge, w in weights.items():
-            print(f"Arête: {edge}  | Poids: {w}")
+        # weights = nx.get_edge_attributes(graph, "weight")
+        # for edge, w in weights.items():
+        #     print(f"Arête: {edge}  | Poids: {w}")
       
         return graph
     
     else:
-        print(new_loan)
+        
         for j , (k,w)  in enumerate(new_loan.items()):
             if graph.has_node(str(k) + '_' + str(w) + '_' + discretization_type + '_mod') is False:
                graph.add_node(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', type = 'attribute')
-               print("true")
+            
             for (k2 , y) in list(new_loan.items())[j+1:]:
                 if graph.has_node(str(k2) + '_' + str(y) + '_' + discretization_type + '_mod') is False:
                     graph.add_node(str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', type = 'attribute')
-                    print("true")
+                    
                 if graph.has_edge(str(k) + '_' + str(w) + '_' + discretization_type + '_mod', str(k2) + '_' + str(y) + '_' + discretization_type + '_mod') is False :
                     graph.add_edge(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', weight=1)
-                    print("true")
+                
                 else:
                     graph[str(k) + '_' + str(w) + '_' + discretization_type + '_mod'][str(k2) + '_' + str(y) + '_' + discretization_type + '_mod']['weight'] += 1
         return graph

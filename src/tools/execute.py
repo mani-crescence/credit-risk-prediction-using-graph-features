@@ -1,76 +1,82 @@
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-from tools.training import *
-from tools.preprocessing import *
-from tools.graph import *
-from tools.cleaning import *
+from ..tools.training import *
+from ..tools.preprocessing import *
+from ..tools.graph import *
+from ..tools.cleaning import *
 import pickle, re, math, ast, os
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 780a998 (local changes)
-def build_graph_attributes(graph, descriptors, target, bd_name, alpha, typeset, graph_type, train_data = None, test_data = None,
-                            discretization_type = None):
+def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, discretization_type ):
     
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
     graph_descriptors = pd.DataFrame()
-    graph_copy = graph.copy()
+    # graph_copy = graph.copy()
     
-    if typeset == "train":
-        for row in train_data.itertuples():
+    if label == "train":
+        for row in data.itertuples():
+            
+            graph_copy = graph.copy()
+            
             nodes_for_personalization = []
             dict_row = row._asdict()
             del dict_row['Index']
-            if (graph_type == 'BIP'):
-                graph_copy.remove_edge('l' + str(row.Index), target + '_' + str(dict_row[target]) + '_' + discretization_type + '_' +graph_type.lower())
+            
+            if graph_type == 'bip':
                 
-                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], None, descriptors)
-            elif graph_type == 'MOD':
+                graph_copy.remove_edge('tr_u' + str(row.Index), target + '_' + str(dict_row[target]) + '_' + discretization_type + '_' +graph_type)
+                
+                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u' + str(row.Index)], None, descriptors)
+                
+            elif graph_type == 'mod':
+                
                 for k, w in dict_row.items():
-                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
+                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type)
                 
                 pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
-            else:
-                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], 'weight', descriptors)
+                
+            # else:
+            #     pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], 'weight', descriptors)
             
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
             
-       
+        
         graph_descriptors = graph_descriptors.astype(float)
-        directory='outputs/'+bd_name+'/new_descriptors/'+ graph_type +'/train'
+        
+        directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
-        if discretization_type is None:
-            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + graph_type +'_'+str(alpha)+'.csv')
-        else:
-            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + discretization_type + '_' + graph_type +'_'+str(alpha)+'.csv') 
+        graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+        
+        # if discretization_type is None:
+            
+        # else:
+        #     graph_descriptors.to_csv(directory + '/new_features_' + discretization_type + '_' + graph_type +'_'+str(alpha)+'.csv') 
     else:
-        for row in test_data.itertuples():
+        
+        
+        for row in data.itertuples():
+            
             nodes_for_personalization = []
             dict_row = row._asdict()
-            dict_row_copy = row._asdict()
-            del dict_row['Index']
-            # graph_copy = graph.copy()
+            
+            graph_copy = graph.copy()
     
-            if graph_type == "BIP":
-                augmented_graph = graph_bipartite_modality(graph_copy, None, dict_row, discretization_type)
-                pagerank_attributes  = pagerank_personalized(augmented_graph, alpha, ['nl'], None, descriptors )
-                # print(augmented_graph.number_of_edges()) 
+            if graph_type == "bip":
                 
-            elif graph_type == "MOD":
+                augmented_graph = graph_bipartite_modality(graph_copy, None, dict_row, discretization_type)
+                pagerank_attributes  = pagerank_personalized(augmented_graph, alpha, ['ts_'+str(row.Index)], None, descriptors)
+                
+            elif graph_type == "mod":
+                
+                del dict_row[target]
+                del dict_row['Index']
+                
                 for k, w in dict_row.items():
                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
+                   
                 augmented_graph = graph_modality(graph_copy, None, dict_row, discretization_type)
                 pagerank_attributes = pagerank_personalized(augmented_graph, alpha, nodes_for_personalization, "weight", descriptors)
-                # print(augmented_graph.number_of_edges())  
                 
-            else:
-                data_row = pd.DataFrame([dict_row], index=[row.Index])
-                data = pd.concat([train_data, data_row], axis=0)
-                augmented_graph = graph_loans(graph_copy, data, target, dict_row_copy)
-                pagerank_attributes = pagerank_personalized(augmented_graph, alpha, ['l'+ str(row.Index)], "weight", descriptors)
-                
-            
                       
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
             
@@ -80,12 +86,10 @@ def build_graph_attributes(graph, descriptors, target, bd_name, alpha, typeset, 
         graph_descriptors = graph_descriptors.astype(float)
         directory='outputs/'+bd_name+'/new_descriptors/'+ graph_type.lower() +'/test'
         
+        directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
-        if discretization_type is None:
-            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + graph_type.lower() +'_'+str(alpha)+'.csv')
-        else:
-            graph_descriptors.to_csv(directory + '/new_descriptors_data_' + discretization_type + '_' + graph_type.lower() +'_'+str(alpha)+'.csv')
-
+        graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+        
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
     # print(augmented_graph.edges) 
     
@@ -444,12 +448,13 @@ def save_result_latex(models, metrics, results, dir):
 
 def result(directory, discretization_type, graph_type):
     print(discretization_type, graph_type, "\n")
+    # exit()
     max_result = {}
     paths = []
     best_alpha_values = {}
 
     if discretization_type != "None" and graph_type != "None":
-        files_dir = directory + "real/predictions/" + graph_type.lower() + "/" + discretization_type.lower()
+        files_dir = directory + "real/" + graph_type.lower() + "/" + discretization_type.lower()
 
         for item in os.listdir(files_dir):
             paths.append(os.path.join(files_dir, item))
@@ -477,56 +482,56 @@ def result(directory, discretization_type, graph_type):
                              max_result[config_name][model][metric] = float(value)
                              best_alpha_values[model] = alpha[0]
 
-        with open(directory + "real/predictions/" + graph_type.lower()  + '/main_results_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
+        with open(directory + "real/" + graph_type.lower()  + '/main_results_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
             file.write(str(max_result))
 
-        with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
+        with open(directory + "real/" + graph_type.lower()  + '/best_alpha_values_' + graph_type.lower() + '_'+ discretization_type.lower() +'_r.txt', 'w') as file:
             file.write(str(best_alpha_values))
 
 
-    elif  discretization_type == "None" and graph_type != "None":
-        files_dir = directory + "real/predictions/" + graph_type.lower() + "/na/"
-        for item in os.listdir(files_dir):
-            paths.append(os.path.join(files_dir, item))
+    # elif  discretization_type == "None" and graph_type != "None":
+    #     files_dir = directory + "real/predictions/" + graph_type.lower() + "/na/"
+    #     for item in os.listdir(files_dir):
+    #         paths.append(os.path.join(files_dir, item))
 
-        for path in paths:
-            with open(path, "r") as f:
-                file = ast.literal_eval(f.read())
+    #     for path in paths:
+    #         with open(path, "r") as f:
+    #             file = ast.literal_eval(f.read())
 
-            for config_name, models in file.items():
-                max_result[config_name] = {}
-                for model, metrics in models.items():
-                    max_result[config_name][model] = {}
-                    for metric, _ in metrics.items():
-                        max_result[config_name][model][metric] = -math.inf
-            break
+    #         for config_name, models in file.items():
+    #             max_result[config_name] = {}
+    #             for model, metrics in models.items():
+    #                 max_result[config_name][model] = {}
+    #                 for metric, _ in metrics.items():
+    #                     max_result[config_name][model][metric] = -math.inf
+    #         break
 
-        for path in paths:
-            with open(path, "r") as f:
-                file = ast.literal_eval(f.read())
-            alpha = re.findall(r'\d+\.\d+', path)
-            for config_name, models in file.items():
-                for model, metrics in models.items():
-                    for metric, value in metrics.items():
-                        if float(max_result[config_name][model][metric]) < float(value):
-                            max_result[config_name][model][metric] = float(value)
-                            best_alpha_values[model] = alpha[0]
+    #     for path in paths:
+    #         with open(path, "r") as f:
+    #             file = ast.literal_eval(f.read())
+    #         alpha = re.findall(r'\d+\.\d+', path)
+    #         for config_name, models in file.items():
+    #             for model, metrics in models.items():
+    #                 for metric, value in metrics.items():
+    #                     if float(max_result[config_name][model][metric]) < float(value):
+    #                         max_result[config_name][model][metric] = float(value)
+    #                         best_alpha_values[model] = alpha[0]
 
-        os.makedirs(files_dir, exist_ok=True)
-        with open(directory + "real/predictions/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
-            file.write(str(max_result))
+    #     os.makedirs(files_dir, exist_ok=True)
+    #     with open(directory + "real/predictions/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
+    #         file.write(str(max_result))
 
-        with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_r.txt', 'w') as file:
-            file.write(str(best_alpha_values))
+    #     with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_r.txt', 'w') as file:
+    #         file.write(str(best_alpha_values))
 
-    elif discretization_type != "None" and graph_type == "None":
-        files_dir = directory + "real/predictions/na/"
-        max_result = load_result(files_dir)
-        os.makedirs(files_dir, exist_ok=True)
-        with open(files_dir + '/main_results_r.txt', 'w') as file:
-            file.write(str(max_result))
+    # elif discretization_type != "None" and graph_type == "None":
+    #     files_dir = directory + "real/predictions/na/"
+    #     max_result = load_result(files_dir)
+    #     os.makedirs(files_dir, exist_ok=True)
+    #     with open(files_dir + '/main_results_r.txt', 'w') as file:
+    #         file.write(str(max_result))
     else:
-        files_dir = directory + "predictions/classic/"
+        files_dir = directory + "/classic/"
         max_result = load_result(files_dir)
         os.makedirs(files_dir, exist_ok=True)
         with open(files_dir + '/main_results_r.txt', 'w') as file:
@@ -609,6 +614,7 @@ def save_global_result(data, db_names, metrics, model):
 
 
 def save_global_result_(data, models, metrics, db):
+    exit(data)
     code = r"\begin{table}[H]" + "\n"
     code += r"\centering" + "\n"
     code += r"\scalebox{0.7}{" + "\n"
@@ -654,7 +660,7 @@ def save_global_result_(data, models, metrics, db):
     code += r"\label{global-results}" +"\n"
     code += r"\end{table}" + "\n"
 
-    directory = "outputs/general_results"
+    directory = "reports/summary"
     os.makedirs(directory, exist_ok=True)
     with open(directory + "/general_results_"+ db + "_r.tex", "w", encoding="utf-8") as file:
         file.write(code)

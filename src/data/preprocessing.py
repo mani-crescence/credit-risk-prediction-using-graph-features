@@ -65,8 +65,8 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
     
     directory='data/preprocessed/'+ db_name +'/'
     os.makedirs(directory, exist_ok=True)
-    preprocessed_data.to_csv(directory+'/preprocessed_data_'+ label+'_.csv')
-    partial_preprocessed_data.to_csv(directory+'/partial_preprocessed_data_'+ label+'_.csv')
+    preprocessed_data.to_csv(directory+'/preprocessed_data_'+ label+'.csv')
+    partial_preprocessed_data.to_csv(directory+'/partial_preprocessed_data_'+ label+'.csv')
 
 if __name__== "__main__":
     args = sys.argv[1:]
