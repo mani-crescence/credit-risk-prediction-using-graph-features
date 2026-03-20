@@ -11,7 +11,6 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
     graph_descriptors = pd.DataFrame()
-    # graph_copy = graph.copy()
     
     if label == "train":
         for row in data.itertuples():
@@ -79,20 +78,18 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
                 
                       
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-            
+           
        
 
         graph_descriptors = graph_descriptors[descriptors]
         graph_descriptors = graph_descriptors.astype(float)
-        directory='outputs/'+bd_name+'/new_descriptors/'+ graph_type.lower() +'/test'
         
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
         graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
         
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
-    # print(augmented_graph.edges) 
-    
+
     
 def build_predictions(models, trainset, testset, configurations, target, classic_result = None):
     results_real = {}
@@ -383,72 +380,9 @@ def save_result_latex(models, metrics, results, dir):
     with open(directory + "/results.tex", "w", encoding="utf-8") as file:
         file.write(latex_code)
 
-# def  merge_result(dir, ptype, db_name):
-#     inter = {}
-#     directory = dir + "predictions/"+ ptype.lower() +"/"
-#     paths = []
-#
-#     for item in os.listdir(directory):
-#         dir = directory
-#         paths.append(os.path.join(dir, item))
-#
-#     if ptype == "UNS" or ptype == "SUP" or ptype == "CAT":
-#         max_result = {}
-#         best_alphas = {}
-#
-#         for path in paths:
-#             with open(path,"r" ) as f:
-#                 conf = f.read()
-#                 conf = ast.literal_eval(conf)
-#
-#             for config_name, models in conf.items():
-#                 max_result[config_name] = {}
-#                 for model , metrics in models.items():
-#                     max_result[config_name][model] = {}
-#                     for metric , _ in metrics.items():
-#                         max_result[config_name][model][metric] = -math.inf
-#             break
-#
-#         for path in paths:
-#             with open(path,"r" ) as f:
-#                 conf = f.read()
-#                 conf = ast.literal_eval(conf)
-#
-#                 for config_name, models in conf.items():
-#                         for model , metrics in models.items():
-#                             for metric, value in metrics.items():
-#                                 if float(max_result[config_name][model][metric]) < float(value):
-#                                         max_result[config_name][model][metric] = float(value)
-#
-#         directory = 'outputs/'+ db_name +'/results/'
-#         os.makedirs(directory, exist_ok=True)
-#         with open(directory +'best_alpha_values_'+ptype.lower() , 'wb') as file:
-#             pickle.dump(best_alphas, file)
-#
-#         for config_name, models in max_result.items():
-#             inter[config_name] = []
-#             for _, metrics in models.items():
-#                 for _, value in metrics.items():
-#                     inter[config_name].append(value)
-#
-#     else:
-#         for path in paths:
-#             print(path)
-#             with open(path,"r" ) as f:
-#                 conf = f.read()
-#                 conf = ast.literal_eval(conf)
-#                 # exit()
-#             for config_name, models in conf.items():
-#                 inter[config_name] = []
-#                 for _, metrics in models.items():
-#                     for _, value in metrics.items():
-#                         inter[config_name].append(value)
-#
-#     return inter
-
 def result(directory, discretization_type, graph_type):
     print(discretization_type, graph_type, "\n")
-    # exit()
+    
     max_result = {}
     paths = []
     best_alpha_values = {}
@@ -489,37 +423,37 @@ def result(directory, discretization_type, graph_type):
             file.write(str(best_alpha_values))
 
 
-    # elif  discretization_type == "None" and graph_type != "None":
-    #     files_dir = directory + "real/predictions/" + graph_type.lower() + "/na/"
-    #     for item in os.listdir(files_dir):
-    #         paths.append(os.path.join(files_dir, item))
+    elif  discretization_type == "None" and graph_type != "None":
+        path = directory + "real/" + graph_type.lower() + "/metrics_results.txt"
+        # for item in os.listdir(files_dir):
+        #     paths.append(os.path.join(files_dir, item))
 
-    #     for path in paths:
-    #         with open(path, "r") as f:
-    #             file = ast.literal_eval(f.read())
+        # for path in paths:
+        #     with open(path, "r") as f:
+        #         file = ast.literal_eval(f.read())
 
-    #         for config_name, models in file.items():
-    #             max_result[config_name] = {}
-    #             for model, metrics in models.items():
-    #                 max_result[config_name][model] = {}
-    #                 for metric, _ in metrics.items():
-    #                     max_result[config_name][model][metric] = -math.inf
-    #         break
+        #     for config_name, models in file.items():
+        #         max_result[config_name] = {}
+        #         for model, metrics in models.items():
+        #             max_result[config_name][model] = {}
+        #             for metric, _ in metrics.items():
+        #                 max_result[config_name][model][metric] = -math.inf
+        #     break
 
-    #     for path in paths:
-    #         with open(path, "r") as f:
-    #             file = ast.literal_eval(f.read())
-    #         alpha = re.findall(r'\d+\.\d+', path)
-    #         for config_name, models in file.items():
-    #             for model, metrics in models.items():
-    #                 for metric, value in metrics.items():
-    #                     if float(max_result[config_name][model][metric]) < float(value):
-    #                         max_result[config_name][model][metric] = float(value)
-    #                         best_alpha_values[model] = alpha[0]
+        # for path in paths:
+        with open(path, "r") as f:
+            file = ast.literal_eval(f.read())
+            
+        for config_name, models in file.items():
+            max_result[config_name] = {}
+            for model, metrics in models.items():
+                max_result[config_name][model] = {}
+                for metric, value in metrics.items():
+                    max_result[config_name][model][metric] = float(value)
 
-    #     os.makedirs(files_dir, exist_ok=True)
-    #     with open(directory + "real/predictions/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
-    #         file.write(str(max_result))
+        os.makedirs(directory + "real/" + graph_type.lower() , exist_ok=True)
+        with open(directory + "real/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
+            file.write(str(max_result))
 
     #     with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_r.txt', 'w') as file:
     #         file.write(str(best_alpha_values))
@@ -599,22 +533,8 @@ def save_global_result(data, db_names, metrics, model):
     with open(directory + "/general_results_"+ model + "_.tex", "w", encoding="utf-8") as file:
         file.write(code)
 
-# def plot_shap_latex(data):
-#     latex_code = r"\begin{tikzpicture}" + "\n"
-#     latex_code += r"\begin{axis}["  + "\n"
-#     latex_code += r"xbar,"
-#     latex_code += r"symbolic y coords={" + r"{}".format(data.columns) + r"}"
-#     latex_code += r"]"
-#
-#     for key, value in
-#     latex_code += r"\addplot coordinates{(" + r"{}".format() + "\n"
-
-    # latex_code += r"\scalebox{0.65}{" + "\n"
-    # latex_code += r"\begin{tabular}{"
-
-
 def save_global_result_(data, models, metrics, db):
-    exit(data)
+    # exit(data)
     code = r"\begin{table}[H]" + "\n"
     code += r"\centering" + "\n"
     code += r"\scalebox{0.7}{" + "\n"
@@ -665,7 +585,126 @@ def save_global_result_(data, models, metrics, db):
     with open(directory + "/general_results_"+ db + "_r.tex", "w", encoding="utf-8") as file:
         file.write(code)
 
-
+def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target):
+    
+    directory='data/graph_features/' + db_name +'/' + graph_type +'/'
+        
+    os.makedirs(directory, exist_ok=True)
+    
+    training_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
+    test_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
+    
+    
+    ### COMPUTATION OF DEGREE CENTRALITIES IN TRAINING SET    
+    
+    for i, _ in  trainset.iterrows():
+        
+        print('tr_u' + str(i), '\n')
+        
+        neighbors = list(nx.all_neighbors(graph, 'tr_u' + str(i)) ) 
+        
+        all_nodes = graph.nodes(data=True)
+        
+        training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
+        
+        training_neighbors = [node for node in training_nodes if node in neighbors]
+       
+        indexes = []
+        
+        for node in training_neighbors:
+            number = (re.findall(r'\d+',  node))[0]
+            indexes.append(int(number)) 
+         
+        subset = pd.DataFrame(trainset, index=indexes) 
+        
+        subset[target] = subset[target].astype(int)
+        
+        targets = {1: 0, 0: 0}
+         
+        target_counts = subset[target].value_counts().to_dict() 
+        
+        try:
+            if target_counts[1] is not None:
+                targets[1]= target_counts[1]
+                
+            if target_counts[0] is not None:
+                targets[0]= target_counts[0]
+        except:  
+            print("something went wrong")     
+          
+        training_centralities_df.loc[i] = [targets[0] , targets[1]]
+      
+        
+    training_centralities_df = training_centralities_df.astype(float)
+    
+    training_centralities_df.to_csv(directory + '/new_features_train.csv')
+        
+        
+        
+    ### COMPUTATION OF DEGREE CENTRALITIES IN TESTING SET    
+    
+    for i, _ in  testset.iterrows():
+        neighbors = list(nx.all_neighbors(graph, 'ts_u' + str(i)) ) 
+        
+        all_nodes = graph.nodes(data=True)
+        
+        training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
+        
+        training_neighbors = [node for node in training_nodes if node in neighbors]
+       
+        indexes = []
+        
+        for node in training_neighbors:
+            number = (re.findall(r'\d+',  node))[0]
+            indexes.append(int(number)) 
+         
+        subset = pd.DataFrame(trainset, index=indexes) 
+        subset[target] = subset[target].astype(int)
+        
+        targets = {1: 0, 0: 0}
+         
+        target_counts = subset[target].value_counts().to_dict() 
+        
+        try:
+            if target_counts[1] is not None:
+                targets[1]= target_counts[1]
+                
+            if target_counts[0] is not None:
+                targets[0]= target_counts[0]
+        except:  
+            print("something went wrong")     
+            
+        test_centralities_df.loc[i] = [targets[0] , targets[1]]
+        
+    test_centralities_df = test_centralities_df.astype(float)
+        
+    test_centralities_df.to_csv(directory + '/new_features_test.csv')
+    
+    # print(training_centralities_df.shape, test_centralities_df.shape)
+            
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+         
+            
+            
+        
+            
+            
+                     
+        
+        
+    
+    
+    
 
 
                     

@@ -233,3 +233,40 @@ def euclidian_distance(u, v, attributes):
 
     return  math.sqrt(sum)
 
+def complete_graph(trainset, testset, target): 
+    graph = nx.Graph()
+    
+    col_max = trainset.max()
+    col_min = trainset.min()
+    cols = trainset.columns
+    
+    train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()}
+    test_dicts  = {j: row.to_dict() for j, row in testset.iterrows()}
+    
+    for i in  trainset.index:
+        graph.add_node('tr_u' + str(i), type='train')
+        
+    for i, loan1 in train_dicts.items():
+        for j, loan2 in train_dicts.items():
+            graph.add_edge(
+                'tr_u' + str(i), 
+                'tr_u' + str(j), 
+                weight=gower_distance(loan1, loan2, cols, col_max, col_min))
+                    
+    
+    cols = cols.drop(target)
+                
+    for i in  testset.index:
+        graph.add_node('ts_u' + str(i), type='test')
+        
+    
+    for i, loan1 in train_dicts.items():
+        for j, loan2 in test_dicts.items():
+            graph.add_edge(
+                'tr_u' + str(i), 
+                'ts_u' + str(j), 
+                weight=gower_distance(loan1, loan2, cols, col_max, col_min))
+                
+    mst = nx.minimum_spanning_tree(graph, algorithm="prim")            
+                            
+    return mst           

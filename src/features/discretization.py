@@ -1,11 +1,12 @@
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import sys, os, pickle
 
-def main(data, target, label, discretization_type, db_name):
+def main(data, label, discretization_type, db_name):
     
     directory = "engine/discretization/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)
     numeric_data = data.select_dtypes('float')
+    
     
     if discretization_type == "UNS":
         discretized_data = pd.DataFrame()
@@ -48,10 +49,9 @@ if __name__ == "__main__":
 
     partial_preprocessed_data  = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_" + label + ".csv", keep_default_na=False)
     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace=True)
-   
-
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
-    main(partial_preprocessed_data, target, label,  discretization_type, db_name)
+    
+    main(partial_preprocessed_data,  label,  discretization_type, db_name)
     
 
 

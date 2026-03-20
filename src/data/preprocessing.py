@@ -23,7 +23,7 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
         except:
             print("Empty file for " + col)
         else: 
-            numerical_data = standardization(parameters['cmax'], parameters['sup'], parameters['inf'], parameters['iqr'], numerical_data, col)     
+            numerical_data[col] = standardization(parameters['cmax'], parameters['sup'], parameters['inf'], parameters['iqr'], numerical_data, col)     
          
         
     partial_preprocessed_data = numerical_data.copy()
@@ -51,7 +51,7 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
         with open("engine/preprocessing/" + db_name+ "/one_hot_encoder_engine", "rb") as file:
             encoder = pickle.load(file) 
     except:
-        print("Not engine for categorical data")
+        print("Not process for categorical data")
     else:
         one_hot_encoded_features = encoder.transform(preprocessed_data[columns_for_one_hot_encoding])  
         one_hot_encoded_data = pd.DataFrame(one_hot_encoded_features, columns=encoder.get_feature_names_out(columns_for_one_hot_encoding))
@@ -79,9 +79,12 @@ if __name__== "__main__":
     # target_values = ast.literal_eval(target_values)
     data = pd.read_csv(path, low_memory=False)
     
+    # print(data.head())
+    # exit()
+     
 
 
-    if len(args) > 6:
+    if len(args) > 5:
         attributes_for_manual_encoding = args[5]
         values_for_manual_encoding = args[6]
 

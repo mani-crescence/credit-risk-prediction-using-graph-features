@@ -43,14 +43,14 @@ def processing(configurations, original_directory, path, alpha = None, discretiz
                   'w') as file:
             file.write(str(results_with_percent))
 
-    else:
+    else: 
         os.makedirs(original_directory + '/real/' + path, exist_ok=True)
-        with open(original_directory + '/real/' + path + '/metrics_results_'+ discretization_type.lower() +'.txt',
+        with open(original_directory + '/real/' + path + '/metrics_results.txt',
                   'w') as file:
             file.write(str(results_real))
 
         os.makedirs(original_directory + '/percent/' + path, exist_ok=True)
-        with open(original_directory + '/percent/' + path + '/metrics_results_'+ discretization_type.lower() +'.txt',
+        with open(original_directory + '/percent/' + path + '/metrics_results.txt',
                   'w') as file:
             file.write(str(results_with_percent))
 
@@ -103,11 +103,10 @@ if __name__ == "__main__":
 
         processing(configurations, directory, directory_, alpha)
 
-    # elif discretization_type == 'None' and graph_type != 'None':
-    #     alpha = args[7]
-    #     directory_ = '/predictions/' + graph_type.lower() + '/na/'
+    elif discretization_type == 'None' and graph_type != 'None':
+        directory_ = '/' + graph_type.lower()
 
-    #     processing(configurations, directory, directory_, alpha)
+        processing(configurations, directory, directory_, None)
 
     # else:
     #     directory_ = '/predictions/na/'

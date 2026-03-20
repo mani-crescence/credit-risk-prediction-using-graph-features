@@ -63,7 +63,7 @@ def standardization(cmax, sup, inf, iqr, df, col):
                 j = j + 1
             else: df.loc[i,col] = df.loc[i,col] / cmax
             
-    return df                
+    return df[col]                
     
 def plot_float_attribute(df,attributes,first,third,length):
     for col in attributes:

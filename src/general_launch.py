@@ -7,10 +7,10 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["hmeq"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
+db_names = ["australian"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod"]
-discretizations = [None, "uns", "sup", "uns", "sup"]
+graphs = [None, "bip", "bip", "mod", "mod", "com"]
+discretizations = [None, "uns", "sup", "uns", "sup", None]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
 models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
 metrics = ["acc", "f1"]
@@ -26,7 +26,7 @@ def launch_attributes_importance():
     for cmd in commands:
         process = subprocess.Popen(cmd, shell=True)
         processes.append(process)
-
+ 
     for p in processes:
         p.wait()
 
@@ -36,13 +36,13 @@ def generate_result():
     for db in db_names:
         global_results[db] = {}
         for graph, discretization in zip(graphs, discretizations):
-            # if discretization is None and graph is not None:
-            #     with open('reports/' + db + '/real/metrics/' + graph + '/main_results_r.txt') as file:
-            #         result = ast.literal_eval(file.read())
+            if discretization is None and graph is not None:
+                with open('reports/' + db + '/metrics/real/' + graph + '/main_results_r.txt') as file:
+                    result = ast.literal_eval(file.read())
             # elif discretization is not None and graph is None:
             #     with open('outputs/general_results/results/'+ db +'/real/predictions/na/main_results_r.txt') as file:
             #         result = ast.literal_eval(file.read())
-            if discretization is None and graph is None:
+            elif discretization is None and graph is None:
                 with open('reports/'+ db +'/metrics/classic/main_results_r.txt') as file:
                     result = ast.literal_eval(file.read())
             else:
@@ -257,6 +257,7 @@ def generate_best_combination():
             file.write(code)
 
 if __name__ == "__main__":
+    # a=0
     generate_result()
     # launch_attributes_importance()
     # attributes_classification()

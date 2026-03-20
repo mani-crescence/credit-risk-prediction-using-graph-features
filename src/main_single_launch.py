@@ -4,7 +4,7 @@ import subprocess
 # all_db_names = [["JAPANESE", "JAPANESE"], ["GERMAN", "THOMAS"], ["AER", "LGD"], ["HMEQ", "MORTGAGE"], ["KAGGLE_CREDIT_RISK", "LC"]]
 # all_db_names = [["JAPANESE"]]#, "KAGGLE_CREDIT_RISK"], ["AER", "AUSTRALIAN"], ["HMEQ", "JAPANESE"]]
 # all_db_names = [["GERMAN", "KAGGLE_CREDIT_RISK"], ["AER", "AUSTRALIAN"], ["JAPANESE", "HMEQ"]]
-all_db_names = ["HMEQ"]#, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
+all_db_names = ["KAGGLE_CREDIT_RISK"]#, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 # all_db_names = ["GERMAN"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 
 

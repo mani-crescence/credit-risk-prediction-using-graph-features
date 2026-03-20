@@ -2,10 +2,10 @@ from ...tools.graph import *
 import sys, os, pickle, ast
 import pandas as pd
 
-def main(data, graph_type, db_name, target, discretization_type):
+def main(data, graph_type, db_name, target, discretization_type=None, testset = None):
     directory='graph/'+ db_name + '/'  
     os.makedirs(directory, exist_ok=True)
-    # if discretization_type is not None:
+    
     if graph_type == 'BIP':
         original_graph = graph_bipartite_modality(None, data, None, discretization_type)
         descriptors_attributes = [node for node, data_ in original_graph.nodes(data=True) if data_['type'] == 'attribute']
@@ -21,34 +21,43 @@ def main(data, graph_type, db_name, target, discretization_type):
         
         with open(directory + 'graph_' + graph_type.lower() + '_' + discretization_type, 'wb') as file:
             pickle.dump(graph_data, file)
-    # else:
-    #   descriptors_attributes = []
-    #   original_graph = graph_loans(None, data, target, None)
-    #   target_values = data[target].unique()
-    #   for i in target_values:
-    #     descriptors_attributes.append(target+"_loan_"+str(i))
-        
-    #   graph_data = {"graph": original_graph, "descriptors": descriptors_attributes}  
-    #   directory='outputs/'+db_name+'/graph/'  
-    #   os.makedirs(directory, exist_ok=True)
-    #   with open(directory + 'graph_' + graph_type.lower() , 'wb') as file:
-    #      pickle.dump(graph_data, file)
-     
+            
+    elif graph_type == "COM":
+         
+         original_graph = complete_graph(trainset, testset, target)
+         descriptors_attributes = ["deg0", "deg1"]     
+         graph_data = {"graph": original_graph, "descriptors": descriptors_attributes}    
+         
+         with open(directory + 'complete_graph', 'wb') as file:
+             pickle.dump(graph_data, file)
+ 
     
 if __name__ == "__main__":
     args =  sys.argv[1:]   
     db_name = args[0]
     target = args[1]
-    discretization_type = args[2].lower()
-    graph_type = args[3] 
+    graph_type = args[2] 
     
-    print(f"Discretization type: {discretization_type}")
-   
-    data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
-    discretized_train_data  = pd.read_csv(data_file, dtype='object')
-    discretized_train_data.drop(columns=['Unnamed: 0'], inplace=True)
     
-    main(discretized_train_data,  graph_type, db_name, target, discretization_type)
+    
+    if len(args) > 3:
+        discretization_type = args[3].lower()
+        
+        if discretization_type is not None:
+            data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
+            trainset  = pd.read_csv(data_file, dtype='object')
+            trainset.drop(columns=['Unnamed: 0'], inplace=True)
+            main(trainset,  graph_type, db_name, target, discretization_type, None)
+    else:
+                 
+        trainset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv")
+        testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv")
+        
+        trainset.drop(columns=['Unnamed: 0'], inplace=True)
+        testset.drop(columns=['Unnamed: 0'], inplace=True)
+         
+        
+        main(trainset,  graph_type, db_name, target, None, testset)
    
     
     

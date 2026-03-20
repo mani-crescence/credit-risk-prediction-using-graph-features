@@ -23,6 +23,14 @@ def  build_configurations(ordinary_descriptors, target, db_name, new_descriptors
         
         with open(directory + '/configuration_'+graph_type.lower() + '_'+ disc_type.lower() + '.txt', 'w') as f:
             f.write(str(configurations))
+    
+    elif  graph_type is not None and disc_type is None:
+        
+        configurations[graph_type] = new_descriptors + ordinary_descriptors + [target]  
+            
+        with open(directory + '/configuration_' + graph_type.lower() + '.txt', 'w') as f:
+            f.write(str(configurations))        
+            
       
     else:
         configurations['CLASSIC'] = ordinary_descriptors + [target]
@@ -73,6 +81,11 @@ if __name__ == '__main__':
         train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/"+ disc_type.lower() +"/"+ graph_type.lower() + '/train/' +"new_features_0.1.csv", index_col=0)
         new_descriptors = list(train_new_descriptors.columns)
         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, disc_type, target_values)
+        
+    elif graph_type is not None and disc_type is None:
+         train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train.csv", index_col=0)
+         new_descriptors = ["deg0", "deg1"]
+         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)    
         
     else:
         build_configurations(ordinary_descriptors, target, db_name)
