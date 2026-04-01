@@ -47,7 +47,8 @@ if __name__ == "__main__":
     label = args[2]
     
 
-    partial_preprocessed_data  = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_" + label + ".csv", keep_default_na=False)
+    partial_preprocessed_data  = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_" + label + ".csv", 
+                                             keep_default_na=False, na_values=[""])
     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace=True)
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
     

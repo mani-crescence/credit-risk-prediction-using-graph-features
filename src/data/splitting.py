@@ -28,14 +28,21 @@ if __name__== "__main__":
         del_un_data = del_un_data[del_un_data[target].isin(['0','1'])]
         
     ############# MISSING VALUES ANALYSIS ###############
+    
     unnan_data = del_un_data[del_un_data.columns[(del_un_data.isnull().sum() / del_un_data.shape[0])*100 < 80]]
     print(f'The number of duplicated rows is : {unnan_data.duplicated().sum()} \n')
     unnan_data = unnan_data.drop_duplicates()
     unnan_data = fill_nan_attribute(unnan_data)
+    
+    
+    
     unnan_data[target]  = unnan_data[target].astype('object')
     
     
     trainset, testset = train_test_split(unnan_data, test_size=0.2, random_state=42, shuffle=True) 
+    
+    # print(trainset.isnull().sum())
+    # exit()
        
     directory = 'data/raw/train/'
     os.makedirs(directory, exist_ok=True)

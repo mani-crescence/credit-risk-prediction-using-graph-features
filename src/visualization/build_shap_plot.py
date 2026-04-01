@@ -7,10 +7,10 @@ import sys
 def main_plot(db_name, train_descriptors_paths, test_descriptors_paths, target, model_name, discretization_type = None):
     ordinary_path_train = "outputs/"+db_name+"/data/classic/trainset.csv"
     ordinary_path_test = "outputs/" + db_name + "/data/classic/testset.csv"
-    ordinary_train = pd.read_csv(ordinary_path_train)
+    ordinary_train = pd.read_csv(ordinary_path_train, keep_default_na=False, na_values=[""])
     ordinary_train.set_index('Unnamed: 0', inplace=True)
     ordinary_train.index.name = None
-    ordinary_test= pd.read_csv(ordinary_path_test)
+    ordinary_test= pd.read_csv(ordinary_path_test, keep_default_na=False, na_values=[""])
     ordinary_test.set_index('Unnamed: 0', inplace=True)
     ordinary_test.index.name = None
 
@@ -20,7 +20,7 @@ def main_plot(db_name, train_descriptors_paths, test_descriptors_paths, target, 
 
     descriptors = [ordinary_train]
     for path in train_descriptors_paths:
-        train_new_descriptors = pd.read_csv(path)
+        train_new_descriptors = pd.read_csv(path, keep_default_na=False, na_values=[""])
         train_new_descriptors.set_index('Unnamed: 0', inplace=True)
         train_new_descriptors.index.name = None
         descriptors.append(train_new_descriptors)
@@ -28,7 +28,7 @@ def main_plot(db_name, train_descriptors_paths, test_descriptors_paths, target, 
 
     descriptors = [ordinary_test]
     for path in test_descriptors_paths:
-        test_new_descriptors = pd.read_csv(path)
+        test_new_descriptors = pd.read_csv(path, keep_default_na=False, na_values=[""])
         test_new_descriptors.set_index('Unnamed: 0', inplace=True)
         test_new_descriptors.index.name = None
         descriptors.append(test_new_descriptors)

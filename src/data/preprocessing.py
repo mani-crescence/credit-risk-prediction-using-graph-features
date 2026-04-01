@@ -16,6 +16,8 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
     numerical_data = convert_int_to_float(data, int_attributes)
     numerical_attributes = numerical_data.select_dtypes('float').columns.tolist()
     
+    # exit(numerical_attributes)
+    
     for col in numerical_attributes:
         try:    
             with open("engine/preprocessing/" + db_name + "/" + col + "_params_stan.txt") as file:
@@ -23,7 +25,8 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
         except:
             print("Empty file for " + col)
         else: 
-            numerical_data[col] = standardization(parameters['cmax'], parameters['sup'], parameters['inf'], parameters['iqr'], numerical_data, col)     
+            # exit(numerical_data.head())
+            numerical_data = standardization(parameters['cmax'], parameters['sup'], parameters['inf'], parameters['iqr'], numerical_data, col)     
          
         
     partial_preprocessed_data = numerical_data.copy()
@@ -76,14 +79,9 @@ if __name__== "__main__":
     unuseful_attributes = args[3]
     label = args[4]
     unuseful_attributes = ast.literal_eval(unuseful_attributes)
-    # target_values = ast.literal_eval(target_values)
-    data = pd.read_csv(path, low_memory=False)
     
-    # print(data.head())
-    # exit()
-     
-
-
+    data = pd.read_csv(path, low_memory=False, keep_default_na = False, na_values=[""])
+    
     if len(args) > 5:
         attributes_for_manual_encoding = args[5]
         values_for_manual_encoding = args[6]

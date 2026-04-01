@@ -63,7 +63,7 @@ def standardization(cmax, sup, inf, iqr, df, col):
                 j = j + 1
             else: df.loc[i,col] = df.loc[i,col] / cmax
             
-    return df[col]                
+    return df                
     
 def plot_float_attribute(df,attributes,first,third,length):
     for col in attributes:
@@ -263,7 +263,10 @@ def fill_nan_attribute(df):
     
     attributes_float = df_object.columns
     
+    
     df = pd.concat([df_float, df_int, df_object, df_bool], axis=1)
+    
+    # print(df.isnull().sum())
     for col in attributes_float:
         df[col] = df[col].astype(object)
     

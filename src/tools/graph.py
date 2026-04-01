@@ -7,7 +7,9 @@ from bokeh.plotting import figure, from_networkx
 from bokeh.models import (BoxZoomTool, Circle, HoverTool,
                           MultiLine, Plot, Range1d, ResetTool)
 from bokeh.palettes import Spectral4
-
+from joblib import Parallel, delayed
+import os
+from itertools import combinations
 
 
 def graph_bipartite_modality(graph, data, new_loan = None, discretization_type = None):
@@ -44,6 +46,9 @@ def graph_bipartite_modality(graph, data, new_loan = None, discretization_type =
         nodes.append(new_node)
         
         del new_loan['Index']
+        # del new_loan['st']
+        
+        # print(new_loan)
         
         for j, w in new_loan.items():
             if graph.has_node(str(j)+ '_' + str(w) + '_' + discretization_type + '_bip') is False:
@@ -57,60 +62,40 @@ def graph_bipartite_modality(graph, data, new_loan = None, discretization_type =
 def graph_modality(graph, data, new_loan = None, discretization_type = None):
     if graph is None:
         graph = nx.Graph()
-        for i, row in data.iterrows():
-            for j , (k,w)  in enumerate(row.items()):
-                if not graph.has_node(str(k) + '_' + str(w) + '_' + discretization_type + '_mod'):
-                    graph.add_node(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', type = 'attribute')
-                for (k2 , y) in list(row.items())[j+1:]:
-                    if not graph.has_node(str(k2) + '_' + str(y) + '_' + discretization_type + '_mod'):
-                        graph.add_node(str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', type = 'attribute')
-                    if not graph.has_edge(str(k) + '_' + str(w) + '_' + discretization_type + '_mod',
-                                          str(k2) + '_' + str(y) + '_' + discretization_type + '_mod'):
-                        graph.add_edge(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', weight=1)
-                    else:
-                        graph[str(k) + '_' + str(w) + '_' + discretization_type + '_mod'][str(k2) + '_' + str(y) + '_' + discretization_type + '_mod']['weight'] += 1
-                        # print("already existed")
+        
+        for row in data.itertuples(index=False):
+            nodes = [f"{col}_{val}_{discretization_type}_mod"
+                    for col, val in zip(data.columns, row)]
 
-        # # Draw the graph with node and edge attributes
-        # print_graph(graph)
-        # Print the graph
-        # pos = nx.spring_layout(graph)
-        # edge_labels = nx.get_edge_attributes(graph, 'weight')
-        # nx.draw(graph, pos, with_labels=True, node_size=200,font_size=8, font_weight='bold', width=0.5)
-        # nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
-        # plt.savefig("mod.png")
-        # plt.close()
+            for node in nodes:
+                graph.add_node(node, type="attribute")
+
+            for i, n1 in enumerate(nodes[:-1]):
+                for n2 in nodes[i+1:]:
+                    if graph.has_edge(n1, n2):
+                        graph[n1][n2]["weight"] += 1
+                    else:
+                        graph.add_edge(n1, n2, weight=1)
         
-        # plot = figure(title="Graph of Modalities",  sizing_mode='stretch_both', x_range=(-2, 2), y_range=(-2, 2), tools="", toolbar_location=None)
-        # G = from_networkx(graph, nx.spring_layout, scale=2, center=(0, 0))
-        # G.node_renderer.glyph = Circle(radius=7.5, fill_color=Spectral4[0])
-        # plot.renderers.append(G)
-        # show(plot)
-        
-        # output_file("modality_graph.html")
-        
-        # exit(graph.edges)  
-        # weights = nx.get_edge_attributes(graph, "weight")
-        # for edge, w in weights.items():
-        #     print(f"Arête: {edge}  | Poids: {w}")
       
         return graph
     
     else:
+        items = list(new_loan.items())
         
-        for j , (k,w)  in enumerate(new_loan.items()):
-            if graph.has_node(str(k) + '_' + str(w) + '_' + discretization_type + '_mod') is False:
-               graph.add_node(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', type = 'attribute')
-            
-            for (k2 , y) in list(new_loan.items())[j+1:]:
-                if graph.has_node(str(k2) + '_' + str(y) + '_' + discretization_type + '_mod') is False:
-                    graph.add_node(str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', type = 'attribute')
-                    
-                if graph.has_edge(str(k) + '_' + str(w) + '_' + discretization_type + '_mod', str(k2) + '_' + str(y) + '_' + discretization_type + '_mod') is False :
-                    graph.add_edge(str(k)+ '_'+ str(w)+'_'+discretization_type+'_mod', str(k2)+ '_'+ str(y)+'_'+discretization_type+'_mod', weight=1)
-                
-                else:
-                    graph[str(k) + '_' + str(w) + '_' + discretization_type + '_mod'][str(k2) + '_' + str(y) + '_' + discretization_type + '_mod']['weight'] += 1
+        nodes = [f"{k}_{w}_{discretization_type}_mod" for k, w in items]
+         
+        for node in nodes:
+            if not graph.has_node(node):
+                graph.add_node(node, type="attribute")
+       
+        for n1, n2 in combinations(nodes, 2):
+            if graph.has_edge(n1, n2):
+                graph[n1][n2]["weight"] += 1
+            else:
+                graph.add_edge(n1, n2, weight=1)        
+        
+
         return graph
 
 def graph_loans(graph, data, target, new_loan = None):
@@ -187,8 +172,7 @@ def pagerank_personalized(graph, alpha, personalized_nodes, weight = None, nodes
     for i in personalized_nodes:
         personalization[i] =  1 / personalized_nodes_length
 
-
-    attribute_pagerank = nx.pagerank(graph, alpha = alpha , personalization = personalization, weight = None)
+    attribute_pagerank = nx.pagerank(graph, alpha = alpha , personalization = personalization, weight = weight)
     
     new_descriptors = {key : value for key, value in attribute_pagerank.items() if key in nodes}
 
@@ -259,6 +243,13 @@ def complete_graph(trainset, testset, target):
     for i in  testset.index:
         graph.add_node('ts_u' + str(i), type='test')
         
+    for i, loan1 in test_dicts.items():
+        for j, loan2 in test_dicts.items():
+            graph.add_edge(
+                'ts_u' + str(i), 
+                'ts_u' + str(j), 
+                weight=gower_distance(loan1, loan2, cols, col_max, col_min))    
+        
     
     for i, loan1 in train_dicts.items():
         for j, loan2 in test_dicts.items():
@@ -267,6 +258,147 @@ def complete_graph(trainset, testset, target):
                 'ts_u' + str(j), 
                 weight=gower_distance(loan1, loan2, cols, col_max, col_min))
                 
+    # mst = nx.minimum_spanning_tree(graph, algorithm="prim")            
+                            
+    # return mst           
+
+def complete_graph_parallel(trainset, testset, target):
+    graph = nx.Graph()
+    
+    col_max = trainset.max()
+    col_min = trainset.min()
+    cols = trainset.columns
+    
+    train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()}
+    test_dicts  = {j: row.to_dict() for j, row in testset.iterrows()}
+    
+    for i in train_dicts.keys():
+        graph.add_node('tr_u' + str(i), type='train')
+
+    for j in test_dicts.keys():
+        graph.add_node('ts_u' + str(j), type='test'),
+        
+    print("nodes creation process terminated")    
+    
+    
+    def compute_edges(loan1, sample_dicts, cols, col_max, col_min, src, dst_label):
+        edges = []
+        for j, loan2 in sample_dicts.items():
+            w = gower_distance(loan1, loan2, cols, col_max, col_min)
+            edges.append((src,  dst_label + str(j), w))
+        return edges   
+    
+    
+    results_train = Parallel(n_jobs=-1)(
+        delayed(compute_edges)(loan1, train_dicts, cols, col_max, col_min, 'tr_u' + str(i), 'tr_u' )
+        for i, loan1 in train_dicts.items()
+        )
+    
+    print("scheduling of training nodes terminated ")    
+    
+    trainset.drop(columns = [target], inplace=True)
+    testset.drop(columns = [target], inplace=True)
+    
+    train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()}
+    test_dicts  = {j: row.to_dict() for j, row in testset.iterrows()}
+    cols = trainset.columns
+    
+    results_test = Parallel(n_jobs=-1)(
+    delayed(compute_edges)(loan1, test_dicts, cols, col_max, col_min, 'tr_u' + str(i), 'ts_u')
+    for i, loan1 in train_dicts.items()
+    )
+    
+    
+    print("scheduling of test nodes terminated ")    
+    
+    results = results_train + results_test
+    
+    for edge_list in results:
+        for src, dst, w in edge_list:
+            graph.add_edge(src, dst, weight = w) 
+    
+    print("edges computation terminated ")            
+    
+    mst = nx.minimum_spanning_tree(graph, algorithm="prim")
+    
+    print("minimun spanning tree computation terminated ")    
+    
+    return mst
+
+
+# def compute_graph1(db_name):
+    
+#     graph = nx.Graph()
+    
+#     sub_dir = 'graph/' + db_name + '/subsets'
+    
+#     rel_dir = 'graph/' + db_name + '/subsets'
+    
+#     for item in os.listdir(directory):
+#         path = os.path.join(directory, item)
+#         with open(path, 'r') as file:
+#             data = ast.literal_eval(file.read())
+        
+#         for edge in data['edges']:
+#             for src, dst, w in edge:
+#                 graph.add_edge(src, dst, weight=w)
+        
+#     relate_data = {}
+#     for item in os.listdir(directory):
+#         path = os.path.join(directory, item)
+#         with open(path, 'r') as file:
+#             data = ast.literal_eval(file.read())
+            
+#         for edge in data['edges']:
+#             for src, dst, w in edge:
+#                 graph.add_edge(src, dst, weight=w)    
+        
+#     mst = nx.minimum_spanning_tree(graph, algorithm="prim")      
+    
+#     return mst 
+        
+def complete_graph_gui(trainset, testset, target): 
+    graph = nx.Graph()
+    
+    cols = trainset.columns
+    
+    train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()}
+    test_dicts  = {j: row.to_dict() for j, row in testset.iterrows()}
+    
+    for i in  trainset.index:
+        graph.add_node('tr_u' + str(i), type='train')
+        
+    for i, loan1 in train_dicts.items():
+        for j, loan2 in train_dicts.items():
+            graph.add_edge(
+                    'tr_u' + str(i), 
+                    'tr_u' + str(j), 
+                    weight=euclidian_distance(loan1, loan2, cols)
+                )
+                    
+    
+    cols = cols.drop(target)
+                
+    for i in  testset.index:
+        graph.add_node('ts_u' + str(i), type='test')
+        
+    for i, loan1 in test_dicts.items():
+        for j, loan2 in test_dicts.items():
+            graph.add_edge(
+                'ts_u' + str(i), 
+                'ts_u' + str(j), 
+                weight=euclidian_distance(loan1, loan2, cols))    
+        
+    
+    for i, loan1 in train_dicts.items():
+        for j, loan2 in test_dicts.items():
+            graph.add_edge(
+                'tr_u' + str(i), 
+                'ts_u' + str(j), 
+                weight = euclidian_distance(loan1, loan2, cols))
+                
     mst = nx.minimum_spanning_tree(graph, algorithm="prim")            
                             
     return mst           
+      
+    

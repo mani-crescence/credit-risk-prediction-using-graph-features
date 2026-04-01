@@ -13,8 +13,8 @@ import ast
 
 def processing(configurations, original_directory, path, alpha = None, discretization_type = None):
     classic_result_path = "reports/" + db_name + "/metrics/classic/metrics_results.txt"
-    trainset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_train.csv")
-    testset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_test.csv")
+    trainset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
+    testset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
     trainset.drop(columns=['Unnamed: 0'], inplace=True)
     testset.drop(columns=['Unnamed: 0'], inplace=True)
 
@@ -22,9 +22,9 @@ def processing(configurations, original_directory, path, alpha = None, discretiz
         classic_result = file.read()
     classic_result = ast.literal_eval(classic_result)
 
-    train_new_descriptors = pd.read_csv(train_data_path)
+    train_new_descriptors = pd.read_csv(train_data_path, keep_default_na=False, na_values=[""])
     train_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True)
-    test_new_descriptors = pd.read_csv(test_data_path)
+    test_new_descriptors = pd.read_csv(test_data_path, keep_default_na=False, na_values=[""])
     test_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True)
     
     final_trainset = pd.concat([trainset, train_new_descriptors], axis=1)
@@ -71,10 +71,17 @@ if __name__ == "__main__":
     os.makedirs(directory, exist_ok=True )
     
     ############ MODELS #############
-    models = {'log': LogisticRegression(random_state=16, max_iter=1000), 'svm': svm.SVC(kernel='linear'),
-              'dtree': DecisionTreeClassifier(), 'rf': RandomForestClassifier(), 'xgb': XGBClassifier(),
-              'lda': LinearDiscriminantAnalysis(n_components=1, solver='lsqr'),
-              'mlp': MLPClassifier(random_state=1, max_iter=300)}
+    models = {
+                'log': LogisticRegression(random_state=16, max_iter=1000), 
+                'svm': svm.SVC(kernel='linear'),
+                'dtree': DecisionTreeClassifier(), 
+                'rf': RandomForestClassifier(), 
+                'xgb': XGBClassifier(objective='binary:logistic', max_depth=4, learning_rate=0.1, n_estimators=100, alpha=10),
+                'lda': LinearDiscriminantAnalysis(n_components=1),
+             # 'mlp': MLPClassifier(random_state=1, max_iter=300)
+              }
+    
+    # exit(models['xgb'])
 
     with open(config_path, "r") as file:
         configurations = file.read()
@@ -85,9 +92,9 @@ if __name__ == "__main__":
             pickle.dump(models, file)
 
         classic_result = None
-        final_trainset = pd.read_csv(train_data_path)
+        final_trainset = pd.read_csv(train_data_path, keep_default_na=False, na_values=[""])
         final_trainset.drop(columns=['Unnamed: 0'], inplace=True)
-        final_testset = pd.read_csv(test_data_path)
+        final_testset = pd.read_csv(test_data_path, keep_default_na=False, na_values=[""])
         final_testset.drop(columns=['Unnamed: 0'], inplace=True)
 
         real_results, _ = build_predictions(models, final_trainset, final_testset, configurations, target,

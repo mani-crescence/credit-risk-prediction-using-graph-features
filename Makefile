@@ -39,64 +39,93 @@ run_lc:
 
 
 #GERMAN
-run_preprocess_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_GERMAN) $(TARGET_NAME_GERMAN) $(USELESS_ATTRIBUTES_GERMAN)  $(TARGET_VALUES_GERMAN) $(ATTIBUTES_FOR_MANUAL_ENCODING_GERMAN)  $(VALUES_FOR_MANUAL_ENCODING_GERMAN)
+run_preprocess_train_german:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_GERMAN) $(TARGET_NAME_GERMAN) $(USELESS_ATTRIBUTES_GERMAN)  $(TRAIN_LABEL)
+
+run_preprocess_test_german:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_GERMAN) $(TARGET_NAME_GERMAN) $(USELESS_ATTRIBUTES_GERMAN)  $(TEST_LABEL)
 
 run_discretization_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_GERMAN) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_GERMAN)
 
 run_graph_modeling_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_GERMAN) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_GERMAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_GERMAN)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_GERMAN)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_GERMAN) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_GERMAN) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_GERMAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_GERMAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
 
 run_plot_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_GERMAN)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_GERMAN)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
 
 run_summarize_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py  $(DB_NAME)  $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
+
+run_splitting_german:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_GERMAN)  $(TARGET_NAME_GERMAN) $(USELESS_ATTRIBUTES_GERMAN)  $(TARGET_VALUES_GERMAN)
+
+run_engine_building_pre_german: 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_GERMAN) $(TARGET_NAME_GERMAN)
+
+run_engine_building_disc_german:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_GERMAN)
 
 run_german:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
 
 
 #LGD
-run_preprocess_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_LGD) $(TARGET_NAME_LGD) $(USELESS_ATTRIBUTES_LGD)  $(TARGET_VALUES_LGD) $(ATTIBUTES_FOR_MANUAL_ENCODING_LGD)  $(VALUES_FOR_MANUAL_ENCODING_LGD)
+run_preprocess_train_lgd:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_LGD) $(TARGET_NAME_LGD) $(USELESS_ATTRIBUTES_LGD)  $(TRAIN_LABEL)
+
+run_preprocess_test_lgd:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_LGD) $(TARGET_NAME_LGD) $(USELESS_ATTRIBUTES_LGD)  $(TEST_LABEL)
 
 run_discretization_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_LGD) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_LGD)
 
 run_graph_modeling_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_LGD) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_LGD)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_LGD)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_LGD)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_LGD) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_LGD) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_LGD) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_LGD) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
 
 run_plot_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_LGD)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_LGD)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+
+run_summarize_lgd:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
+
+run_splitting_lgd:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_LGD)  $(TARGET_NAME_LGD) $(USELESS_ATTRIBUTES_LGD)  $(TARGET_VALUES_LGD)
+
+run_engine_building_pre_lgd: 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_LGD) $(TARGET_NAME_LGD)
+
+run_engine_building_disc_lgd:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_LGD)
 
 run_lgd:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
   
 #JAPANESE  
 run_preprocess_train_japanese:
@@ -112,7 +141,7 @@ run_graph_modeling_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_JAPANESE) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
@@ -152,10 +181,10 @@ run_discretization_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_HMEQ)
 
 run_graph_modeling_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_HMEQ) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_HMEQ) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) 
 
 run_compute_descriptors_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_HMEQ) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
@@ -229,67 +258,93 @@ run_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
 
 #AER
-run_sampling_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)sampling_main.py $(DB_NAME) $(DB_PATH_AER) $(TARGET_NAME_AER) $(USELESS_ATTRIBUTES_AER) $(TARGET_NAME_AER)
+run_preprocess_train_aer:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_AER) $(TARGET_NAME_AER) $(USELESS_ATTRIBUTES_AER)  $(TRAIN_LABEL)
 
-run_preprocess_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_AER) $(TARGET_NAME_AER) $(USELESS_ATTRIBUTES_AER)  $(TARGET_VALUES_AER)
+run_preprocess_test_aer:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_AER) $(TARGET_NAME_AER) $(USELESS_ATTRIBUTES_AER)  $(TEST_LABEL)
 
 run_discretization_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_AER) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_AER)
 
 run_graph_modeling_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_AER) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_AER)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_AER)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_AER)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_AER) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_AER) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_AER) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_AER) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
 
 run_plot_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_AER)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_AER)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
 
 run_summarize_aer:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
+run_splitting_aer:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_AER)  $(TARGET_NAME_AER) $(USELESS_ATTRIBUTES_AER)  $(TARGET_VALUES_AER)
+
+run_engine_building_pre_aer: 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AER) $(TARGET_NAME_AER)
+
+run_engine_building_disc_aer:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_AER)
+
 run_aer:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
 
 
 #THOMAS
-run_preprocess_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_THOMAS) $(TARGET_NAME_THOMAS) $(USELESS_ATTRIBUTES_THOMAS)  $(TARGET_VALUES_THOMAS)
+run_preprocess_train_thomas:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_THOMAS) $(TARGET_NAME_THOMAS) $(USELESS_ATTRIBUTES_THOMAS)  $(TRAIN_LABEL)
+
+run_preprocess_test_thomas:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_THOMAS) $(TARGET_NAME_THOMAS) $(USELESS_ATTRIBUTES_THOMAS)  $(TEST_LABEL)
 
 run_discretization_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_THOMAS) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_THOMAS)
 
 run_graph_modeling_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_THOMAS) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_THOMAS)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_THOMAS)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_THOMAS)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_THOMAS) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_THOMAS) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_THOMAS) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_THOMAS) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
 
 run_plot_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_THOMAS)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_THOMAS)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+
+run_summarize_thomas:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
+
+run_splitting_thomas:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_THOMAS)  $(TARGET_NAME_THOMAS) $(USELESS_ATTRIBUTES_THOMAS)  $(TARGET_VALUES_THOMAS)
+
+run_engine_building_pre_thomas: 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_THOMAS) $(TARGET_NAME_THOMAS)
+
+run_engine_building_disc_thomas:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_THOMAS)
 
 run_thomas:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
 
 
 #KAGGLE-CREDIT-RISK
@@ -335,6 +390,12 @@ run_engine_building_disc_kaggle_credit_risk:
 run_kaggle_credit_risk:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
 
+run_build_edges_kaggle_credit_risk: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+
+run_relate_edges_kaggle_credit_risk: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+
 #MORTGAGE
 run_sampling_mortgage:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)sampling_main.py $(DB_NAME) $(DB_PATH_MORTGAGE) $(TARGET_NAME_MORTGAGE) $(USELESS_ATTRIBUTES_MORTGAGE)   $(TARGET_VALUES_MORTGAGE)
@@ -342,29 +403,50 @@ run_sampling_mortgage:
 run_preprocess_mortgage:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_MORTGAGE) $(TARGET_NAME_MORTGAGE) $(USELESS_ATTRIBUTES_MORTGAGE)  $(TARGET_VALUES_MORTGAGE)
 
+
+
+run_preprocess_train_mortgage:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_MORTGAGE) $(TARGET_NAME_MORTGAGE) $(USELESS_ATTRIBUTES_MORTGAGE)  $(TRAIN_LABEL)
+
+run_preprocess_test_mortgage:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_MORTGAGE) $(TARGET_NAME_MORTGAGE) $(USELESS_ATTRIBUTES_MORTGAGE)  $(TEST_LABEL)
+
 run_discretization_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)discretization.py $(TARGET_NAME_MORTGAGE) $(DB_NAME) $(T)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_MORTGAGE)
 
 run_graph_modeling_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(TARGET_NAME_MORTGAGE) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_MORTGAGE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
 run_compute_descriptors_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_MORTGAGE)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_MORTGAGE)  $(BD_NAME) $(ALPHA) $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) $(LABEL)
 
 run_make_configurations_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_MORTGAGE) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_MORTGAGE) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_make_predictions_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_MORTGAGE) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_MORTGAGE) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
 
 run_print_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
 
 run_plot_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_MORTGAGE)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_MORTGAGE)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+
+run_summarize_mortgage:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
+
+run_splitting_mortgage:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_MORTGAGE)  $(TARGET_NAME_MORTGAGE) $(USELESS_ATTRIBUTES_MORTGAGE)  $(TARGET_VALUES_MORTGAGE)
+
+run_engine_building_pre_mortgage: 
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_MORTGAGE) $(TARGET_NAME_MORTGAGE)
+
+run_engine_building_disc_mortgage:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_MORTGAGE)
 
 run_mortgage:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch.py  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
 
 run_main_single_launch:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)main_single_launch $(DB_NAME)
@@ -373,7 +455,7 @@ run_main_print:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)
 
 run_general_launch:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)general_launch $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)general_launch $(DB_NAME) 
 
 run_all:	run_main_single_launch	run_general_launch
 

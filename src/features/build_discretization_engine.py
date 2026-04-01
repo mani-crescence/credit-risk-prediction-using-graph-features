@@ -16,7 +16,8 @@ if __name__ == "__main__":
     directory = "engine/discretization/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)
     
-    partial_preprocessed_data  = pd.read_csv("data/preprocessed/" + db_name + "/partial_preprocessed_data_train.csv", keep_default_na=False)
+    partial_preprocessed_data  = pd.read_csv("data/preprocessed/" + db_name + "/partial_preprocessed_data_train.csv", 
+                                             keep_default_na=False, na_values=[""])
     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace = True)
     numeric_data = partial_preprocessed_data.select_dtypes('float')
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")

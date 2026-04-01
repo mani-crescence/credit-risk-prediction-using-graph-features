@@ -2,17 +2,20 @@ import subprocess
 import sys, ast, os
 from dotenv import load_dotenv
 import numpy as np
-import pandas as pd
+import pandas as pd 
 import logging
+from itertools import combinations, product
+
  
 
-discretization_types =  ["UNS", "SUP"]#, ]#, "SUP"]
+discretization_types =  ["UNS", "SUP"]#, "SUP"]#, ]#, "SUP"]
 discretization_for_attributes_types = ["UNS_", "SUP_"]
-alphas = [0.8, 0.85, 0.9]#, 0.2,  0.3]# 0.1, 0.2, 0.3, 0.4, 0.5]#,
+alphas = [0.1] #[0.2, 0.3, 0.4]  #[0.2, 0.3, 0.4] #[0.2, 0.3, 0.4]    # [0.2, 0.3, 0.4] # #  [0.5, 0.6, 0.7] ## [0.5, 0.6, 0.7]  [0.1] # [0.8, 0.85, 0.9]  # #[0.5, 0.6, 0.7] #[0.8, 0.85, 0.9] # [0.1]## # [0.1]## [0.2, 0.3, 0.4 ]  #, 0.8, 0.85, 0.9]#, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9]#, [0.1, 0.2] # 0.2,  0.3]# 0.1, 0.2, 0.3, 0.4, 0.5]#, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7
 process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
 plot_type = ["UNS","SUP"] 
 pagerank_type = ["PER", "GLO"]
-graph_types = ["COM"] #["BIP", "MOD"] #"LOAN", "MOD", "BIP", "COM" 
+graph_types = ["MOD"] #"LOAN", "MOD", "BIP", "COM" 
+graph_types1 = ["BIP", "MOD", "GUI"]
 graph_type_for_prediction = ["MOD", "BIP"]
 graphs = ["bip", "bip", "mod", "mod", None, None]
 discretizations = ["uns", "sup", "uns", "sup", "na", None]
@@ -20,6 +23,7 @@ models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]#, "mlp"] #["log", "svm", ]
 metrics = ["acc", "f1"]
 
 load_dotenv()
+
 
 def launch_split(db_name):
     commands = []
@@ -133,7 +137,6 @@ def launch_graph_modeling(db_name):
     for p in processes:
         p.wait()
 
-
 def launch_silm(db_name):
     commands = []
     
@@ -144,7 +147,7 @@ def launch_silm(db_name):
             for label in ["train", "test"]:#, "test"]: ,
                 for discretization_type in discretization_types:
                     for alpha in alphas:
-                        commands.append(""" make run_compute_descriptors_{0}  BD_NAME={1} ALPHA={4} GRAPH_TYPE={3} DISCRETIZATION_TYPE={2} LABEL={5} """.format(*[db_name.lower(), db_name.lower(), discretization_type, alpha, graph_type, label]))
+                        commands.append(""" make run_compute_descriptors_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  DISCRETIZATION_TYPE={4} LABEL={5} """.format(*[db_name.lower(), db_name.lower(), graph_type, alpha, discretization_type, label]))
     processes = []
     
     for cmd in commands:
@@ -234,11 +237,11 @@ def launch_print(db_name):
         if graph == "COM":
             commands.append("""make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
                 *[db_name.lower(), db_name.lower(), None, graph]))
-        # else:
-        #     for discretization in discretization_types:
-        #         commands.append(
-        #             """make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
-        #                 *[db_name.lower(), db_name.lower(), discretization, graph]))
+        else:
+            for discretization in discretization_types:
+                commands.append(
+                    """make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
+                        *[db_name.lower(), db_name.lower(), discretization, graph]))
 
 
     processes = []
@@ -296,27 +299,136 @@ def launch_plot(db_name):
     #     p.wait()
     # # log_error(processes, db_name, "Plot Making")
 
-# def log_error(processes, db_name = None, step_name = None):
-#     errors = []
-#     for proc in processes:
-#         code = proc.returncode
-#
-#         if code != 0:
-#             stdout, stderr = proc.communicate()
-#             error_info = {
-#                 "code": code,
-#                 "stdout": stdout.decode('utf-8'),
-#                 "stderr": stderr.decode('utf-8')
-#             }
-#             errors.append(error_info)
-#
-#     if errors:
-#         print("\n--- Errors occurred in the following "+ step_name+" processes "+ db_name+" : ---")
-#         for err in errors:
-#             logging.error(f" Captured stderr:\n{err['stderr']}")
-#     else:
-#         print("\nAll "+ step_name+" subprocesses in "+ db_name+" completed successfully.")
-#     print("------------> Done submitting jobs !!!")
+def build_complete_graph(db_name):
+    trainset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
+    trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    
+    cpu_count = os.cpu_count()
+    size = trainset.shape[0]
+    step = int(size / cpu_count)
+    end = step
+    
+    commands = []    
+    
+    for i in range(0, size, step):
+        if step + i > size :
+            end = size - 1
+            commands.append(""" make run_build_edges_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
+                            format(*[db_name.lower(), db_name.lower(), i, end, 'train']))
+        else:   
+            commands.append(""" make run_build_edges_{0} DB_NAME={1} START={2} END={3} TYPE={4} """.
+                                format(*[db_name.lower(), db_name.lower(), i, end, 'train']))
+       
+        end = end + step
+   
+    processes = []
+    
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()    
+        
+    testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])    
+    testset.drop(columns=['Unnamed: 0'], inplace=True)
+    
+    size = testset.shape[0]
+    step = int(size / cpu_count)
+    end = step
+    
+    commands = []    
+    
+    for i in range(0, size, step):
+        if step + i > size :
+            end = size - 1
+            commands.append(""" make run_build_edges_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
+                            format(*[db_name.lower(), db_name.lower(), i, end, 'test']))
+        else:   
+            commands.append(""" make run_build_edges_{0} DB_NAME={1} START={2} END={3} TYPE={4} """.
+                                format(*[db_name.lower(), db_name.lower(), i, end, 'test']))
+       
+        end = end + step
+   
+    processes = []
+    
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()    
+ 
+def launch_relate_edges(db_name):
+    paths = []
+    directory = 'graph/'+ db_name + '/subsets/train/' 
+      
+    commands = []  
+    subset_train_data = {}
+    for item in os.listdir(directory):
+        path = os.path.join(directory, item)
+        with open(path, 'r') as file:
+            data = ast.literal_eval(file.read())
+        subset_train_data[path] = (data['start'], data['end'])
+        
+    for (path1, (start1, end1)), (path2, (start2, end2)) in combinations(subset_train_data.items(), 2):
+            commands.append(""" make run_relate_edges_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+        format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'train', path1, path2))     
+   
+    processes = []    
+                
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()     
+        print(f"Discretization command '{p}' completed.")          
+        
+        
+    commands = []  
+    subset_test_data = {}
+    
+    directory = 'graph/'+ db_name + '/subsets/test/'
+    
+    for item in os.listdir(directory):
+        path = os.path.join(directory, item)
+        with open(path, 'r') as file:
+            data = ast.literal_eval(file.read())
+        subset_test_data[path] = (data['start'], data['end'])
+        
+    for (path1, (start1, end1)), (path2, (start2, end2)) in combinations(subset_test_data.items(), 2):
+            commands.append(""" make run_relate_edges_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+        format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'test', path1, path2))     
+   
+    processes = []    
+                
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()     
+        print(f"Discretization command '{p}' completed.")         
+    
+   
+    commands = []
+    for (path1,(start1, end1)), (path2,(start2, end2)) in product(subset_train_data.items(), subset_test_data.items()):
+         commands.append(""" make run_relate_edges_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+        format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'mix', '\"' + str(path1) + '\"', '\"'+ str(path2)+ '\"' ))
+   
+    processes = [] 
+       
+                
+    for cmd in commands:
+        process = subprocess.Popen(cmd, shell=True)
+        processes.append(process)
+        
+    for p in processes:
+        p.wait()     
+        print(f"Discretization command '{p}' completed.")         
+              
+              
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -327,11 +439,14 @@ if __name__ == "__main__":
     # launch_preprocess_test(db_name)
     # launch_build_engine_for_discretization(db_name)
     # launch_disc(db_name)
-    launch_graph_modeling(db_name)
+    # launch_graph_modeling(db_name)
     # launch_silm(db_name)
     # launch_conf(db_name)
     # launch_predict_classic(db_name)
     # launch_predict(db_name)
-    # launch_print(db_name)
+    launch_print(db_name)
     # launch_plot(db_name)
+    
+    # build_complete_graph(db_name)
+    # launch_relate_edges(db_name)
 

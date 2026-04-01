@@ -4,7 +4,7 @@ from itertools import islice
 
 
 def summarize_attributes_importance(path, db_name, discretization_type, model):
-    data = pd.read_csv(path)
+    data = pd.read_csv(path, keep_default_na=False, na_values=[""])
     data.set_index('Unnamed: 0', inplace=True)
     data.index.name = None
     importance = {}

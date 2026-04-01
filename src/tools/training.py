@@ -77,14 +77,15 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
         }, model
 
 def train(models,train, test, target, classic_result = None):
-    # print(classic_result)
-    # exit()
+    
     X_train = train.drop(target,axis=1)
     y_train = train[target]
     X_test = test.drop(target, axis=1)
     y_test = test[target]
     metrics_real = {}
     metrics_with_percent = {}
+    
+    # print(X_train.isnull().sum())
 
     for key, value in models.items():
         if not classic_result:

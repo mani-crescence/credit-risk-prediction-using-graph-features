@@ -63,8 +63,8 @@ if __name__ == '__main__':
     disc_type = args[2]
     graph_type = args[3]
 
-    preprocessed_data = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", index_col=0)
-    train_ = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_train.csv", index_col=0)
+    preprocessed_data = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", index_col=0, keep_default_na=False, na_values=[""])
+    train_ = pd.read_csv("data/preprocessed/"+ db_name +"/partial_preprocessed_data_train.csv", index_col=0, keep_default_na=False, na_values=[""])
     target_values = train_[target].unique()
     
     
@@ -78,12 +78,14 @@ if __name__ == '__main__':
         graph_type = ast.literal_eval(graph_type)
         
     if graph_type is not None and disc_type is not None:
-        train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/"+ disc_type.lower() +"/"+ graph_type.lower() + '/train/' +"new_features_0.1.csv", index_col=0)
+        train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/"+ disc_type.lower() +"/"+ graph_type.lower() + '/train/' +"new_features_0.1.csv", 
+                                            index_col=0, keep_default_na=False, na_values=[""])
         new_descriptors = list(train_new_descriptors.columns)
         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, disc_type, target_values)
         
     elif graph_type is not None and disc_type is None:
-         train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train.csv", index_col=0)
+         train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train.csv", 
+                                             index_col=0, keep_default_na=False, na_values=[""])
          new_descriptors = ["deg0", "deg1"]
          build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)    
         

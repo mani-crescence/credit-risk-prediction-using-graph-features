@@ -25,6 +25,7 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
                 
                 graph_copy.remove_edge('tr_u' + str(row.Index), target + '_' + str(dict_row[target]) + '_' + discretization_type + '_' +graph_type)
                 
+                
                 pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u' + str(row.Index)], None, descriptors)
                 
             elif graph_type == 'mod':
@@ -34,8 +35,6 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
                 
                 pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
                 
-            # else:
-            #     pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+str(row.Index)], 'weight', descriptors)
             
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
             
@@ -46,12 +45,7 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
         os.makedirs(directory, exist_ok=True)
         graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
         
-        # if discretization_type is None:
-            
-        # else:
-        #     graph_descriptors.to_csv(directory + '/new_features_' + discretization_type + '_' + graph_type +'_'+str(alpha)+'.csv') 
-    else:
-        
+    elif label == "test":
         
         for row in data.itertuples():
             
@@ -61,6 +55,7 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
             graph_copy = graph.copy()
     
             if graph_type == "bip":
+                del dict_row[target]
                 
                 augmented_graph = graph_bipartite_modality(graph_copy, None, dict_row, discretization_type)
                 pagerank_attributes  = pagerank_personalized(augmented_graph, alpha, ['ts_'+str(row.Index)], None, descriptors)
@@ -72,6 +67,7 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
                 
                 for k, w in dict_row.items():
                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
+                   
                    
                 augmented_graph = graph_modality(graph_copy, None, dict_row, discretization_type)
                 pagerank_attributes = pagerank_personalized(augmented_graph, alpha, nodes_for_personalization, "weight", descriptors)
@@ -87,7 +83,14 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
         graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    else:
+        graph_copy = graph.copy()
         
+        pagerank_attributes = pagerank_global(graph_copy)
+        exit(pagerank_attributes)
+        
+        
+            
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
 
     
@@ -97,6 +100,8 @@ def build_predictions(models, trainset, testset, configurations, target, classic
 
     tr = trainset.copy()
     ts = testset.copy()
+    
+    # exit(configurations)
 
     for config_name, config_att in configurations.items():
         print(config_name)
@@ -104,6 +109,7 @@ def build_predictions(models, trainset, testset, configurations, target, classic
             tr_set = tr[config_att]
             ts_set = ts[config_att]
             results_real[config_name], results_with_real[config_name]  = train(models, tr_set, ts_set, target, classic_result)
+    # exit()          
     return results_real, results_with_real
 
 def  arrange_result(dir, ptype, nb_metrics):
