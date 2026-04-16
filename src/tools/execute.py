@@ -3,7 +3,7 @@ from ..tools.training import *
 from ..tools.preprocessing import *
 from ..tools.graph import *
 from ..tools.cleaning import *
-import pickle, re, math, ast, os
+import pickle, re, math, ast, os 
 
 
 def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, discretization_type ):
@@ -83,16 +83,49 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
         graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
-    else:
-        graph_copy = graph.copy()
-        
-        pagerank_attributes = pagerank_global(graph_copy)
-        exit(pagerank_attributes)
-        
-        
-            
+      
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
 
+
+def build_global_pagerank(graph, trainset, testset, db_name, graph_type):
+    
+    
+        directory='data/graph_features/' + db_name +'/' + graph_type +'/'
+        os.makedirs(directory, exist_ok=True)
+        graph_copy = graph.copy()
+        
+        training_centralities_df = pd.DataFrame(columns=['pg'])
+        test_centralities_df = pd.DataFrame(columns=['pg'])
+        
+        pagerank_attributes = pagerank_global(graph_copy)
+       
+        
+        for key, value in pagerank_attributes.items():
+            if key.startswith('tr'):
+                number = (re.findall(r'\d+',  key))[0]
+                training_centralities_df.loc[int(number)] = value
+                
+            elif key.startswith('ts'):
+                number = (re.findall(r'\d+',  key))[0]
+                test_centralities_df.loc[int(number)] = value
+        
+                
+        # trainset['pg'] = trainset.index.map(train)       
+        # testset['pg'] = testset.index.map(test)
+        
+        
+        training_centralities_df.to_csv(directory + '/new_features_train.csv')
+        test_centralities_df.to_csv(directory + '/new_features_test.csv')
+        
+        
+        # indexes_train = trainset.index.tolist()
+        # indexes_test = testset.index.tolist()
+        
+        # for node in graph_copy.nodes():
+        #     number = (re.findall(r'\d+',  node))[0]
+        #     indexes.append(int(number)) 
+        
+        # exit(pagerank_attributes)
     
 def build_predictions(models, trainset, testset, configurations, target, classic_result = None):
     results_real = {}

@@ -137,11 +137,49 @@ run_preprocess_test_japanese:
 run_discretization_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_JAPANESE)
 
-run_graph_modeling_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.modeling $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+# commands of graph management
+# BIP GRAPH	
+run_graph_modeling_bip_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
-run_compute_descriptors_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+run_graph_bip_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.launch  $(DB_NAME)
+
+run_compute_descriptors_bip_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+
+
+# MOD GRAPH	
+run_graph_modeling_mod_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+
+run_compute_descriptors_mod_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+
+run_graph_mod_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.launch  $(DB_NAME)
+
+
+# COM GRAPH	
+run_graph_modeling_com_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+
+run_compute_descriptors_com_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+
+run_graph_com_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.launch  $(DB_NAME)
+
+
+# GUI GRAPH	
+run_graph_modeling_gui_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+
+run_compute_descriptors_gui_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+
+run_graph_gui_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.launch  $(DB_NAME)
 
 run_make_configurations_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_JAPANESE) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
@@ -167,8 +205,24 @@ run_engine_building_pre_japanese:
 run_engine_building_disc_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_JAPANESE)
 
+run_build_edges_com_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+
+run_relate_edges_com_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+
+run_build_edges_gui_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+
+run_relate_edges_gui_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+
+
 run_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
+
+
 
 #HMEQ
 run_preprocess_train_hmeq:
@@ -213,6 +267,13 @@ run_engine_building_disc_hmeq:
 run_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME) 
 
+run_build_edges_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+
+run_relate_edges_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+
+
 
 #AUSTRALIAN
 run_preprocess_train_australian:
@@ -256,6 +317,14 @@ run_engine_building_disc_australian:
 
 run_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
+run_build_edges_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+
+run_relate_edges_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+
+
 
 #AER
 run_preprocess_train_aer:
@@ -459,6 +528,8 @@ run_general_launch:
 
 run_all:	run_main_single_launch	run_general_launch
 
+run_graph: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
 
 
 

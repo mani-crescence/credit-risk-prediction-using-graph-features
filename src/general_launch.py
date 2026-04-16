@@ -7,10 +7,10 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["hmeq"]# "australian"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
+db_names = ["australian"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod"]#, "com"]
-discretizations = [None, "uns", "sup", "uns", "sup"]#, None]
+graphs = [None, "bip", "bip", "mod", "mod", "com", "gui"]
+discretizations = [None, "uns", "sup", "uns", "sup", None, None]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
 models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
 metrics = ["acc", "f1"]

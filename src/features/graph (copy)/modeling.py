@@ -23,7 +23,7 @@ def main(data, graph_type, db_name, target, discretization_type=None, testset = 
             pickle.dump(graph_data, file)
             
     elif graph_type == "COM":
-         original_graph = complete_graph_parallel(trainset, testset, target)
+         original_graph = complete_graph_parallel1(db_name)
          descriptors_attributes = ["deg0", "deg1"]     
          graph_data = {"graph": original_graph, "descriptors": descriptors_attributes}    
          

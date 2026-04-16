@@ -8,7 +8,7 @@ from bokeh.models import (BoxZoomTool, Circle, HoverTool,
                           MultiLine, Plot, Range1d, ResetTool)
 from bokeh.palettes import Spectral4
 from joblib import Parallel, delayed
-import os
+import os, ast
 from itertools import combinations
 
 
@@ -58,6 +58,7 @@ def graph_bipartite_modality(graph, data, new_loan = None, discretization_type =
             edges.append((new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
         
         return graph     
+  
         
 def graph_modality(graph, data, new_loan = None, discretization_type = None):
     if graph is None:
@@ -324,6 +325,85 @@ def complete_graph_parallel(trainset, testset, target):
     print("minimun spanning tree computation terminated ")    
     
     return mst
+
+
+def complete_graph_parallel1(db_name):
+    graph = nx.Graph()
+    
+    # directories = [
+    #     'graph/'+ db_name + '/related/train/',
+    #     'graph/'+ db_name + '/related/test/',
+    #     'graph/'+ db_name + '/related/mix/',
+    #     'graph/'+ db_name + '/subsets/train/',
+    #     'graph/'+ db_name + '/subsets/test/'
+    # ]
+    
+    # paths = []  
+    
+    # for directory in directories:
+    #     for item in os.listdir(directory):
+    #         paths.append(os.path.join(directory, item))
+               
+    # for path in paths:
+    #     with open(path, "r") as file:
+    #         edges = ast.literal_eval(file.read())
+        
+    #     for edge in edges['edges']:
+    #         if 'tr' in edge[0]:
+    #             graph.add_node(edge[0], type='train')
+    #         elif 'ts'  in edge[0]:
+    #             graph.add_node(edge[0], type='test')
+    #         elif 'tr' in edge[1]:
+    #             graph.add_node(edge[1], type='train')
+    #         elif 'ts'  in edge[1]:
+    #             graph.add_node(edge[1], type='test')
+                      
+    #         graph.add_edge(edge[0], edge[1], weight = edge[2])    
+            
+            
+    directories = [
+    f'graph/{db_name}/related/train/',
+    f'graph/{db_name}/related/test/',
+    f'graph/{db_name}/related/mix/',
+    f'graph/{db_name}/subsets/train/',
+    f'graph/{db_name}/subsets/test/'
+]
+
+    def get_node_type(node):
+        if 'tr' in node:
+            return 'train'
+        if 'ts' in node:
+            return 'test'
+        return None
+
+    for directory in directories:
+        for item in os.listdir(directory):
+            path = os.path.join(directory, item)
+
+            with open(path, "r") as file:
+                edges = ast.literal_eval(file.read())
+
+            for n1, n2, weight in edges['edges']:
+                # Add nodes with type
+                for node in (n1, n2):
+                    node_type = get_node_type(node)
+                    if node_type:
+                        graph.add_node(node, type=node_type)
+
+                # Add edge
+                graph.add_edge(n1, n2, weight=weight)        
+            
+    print( "length nodes =>", len(graph.nodes), "edges length =>", len(graph.edges))  
+   
+    mst = nx.minimum_spanning_tree(graph, algorithm="prim")
+    
+    print("minimun spanning tree computation terminated ")    
+    
+    return mst    
+    # print(graph.edges(data=True))
+    # print( "length nodes =>", len(graph.nodes), "edges length =>", len(graph.edges))
+    # exit()
+    # return graph    
 
 
 # def compute_graph1(db_name):

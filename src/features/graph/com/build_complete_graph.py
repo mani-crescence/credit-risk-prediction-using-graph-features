@@ -1,10 +1,9 @@
 import pandas as pd 
 import sys , os
 import networkx as nx
+from itertools import islice 
 
 
-edges_for_same_subset = []
-edges_for_different_subset = []
 
 def gower_distance(u, v, attributes, max = None, min = None):
     sum = 0
@@ -28,40 +27,28 @@ def build_sub_graph(data_dicts, col_max, col_min, cols, src, dst,
                     directory, start, end):
     edges = []
     data = {}
+    N = len(data_dicts) 
         
-    for i, loan1 in data_dicts.items():
-        for j, loan2 in data_dicts.items():
+    for k , (i, loan1) in islice(enumerate(data_dicts.items()), 0, N-1):
+        for _,  (j, loan2) in islice(enumerate(data_dicts.items()), k + 1, N):
             if i!=j:
                 w = gower_distance(loan1, loan2, cols, col_max, col_min)
                 edges.append((src + str(i), dst + str(j), w))
-            
-    edges_for_same_subset.append(edges)
-    
-    data["edges"] = edges_for_same_subset
+   
+    data["edges"] = edges
     data["start"] = start
     data["end"] = end
     
-    
     with open(directory + "edges" + str(start) + "_" + str(end), "w") as file:
         file.write(str(data))
-    
-def relate_graphs(data_dicts1, data_dicts2, src, dst):
-    edges = []
-    for i, loan1, j, loan2  in zip(data_dicts1.items(), data_dicts2.items()):
-        w = gower_distance(loan1, loan2, cols, col_max, col_min)
-        edges.append(( src + str(i), dst + str(j), w))
-        
-    edges_for_different_subset.append(edges)
-   
 
 if __name__  == "__main__":
-    
     args =  sys.argv[1:]   
     db_name = args[0]
     start = int(args[1])
     end = int(args[2])
     type_of_set = args[3] 
-    
+  
     directory = 'graph/'+ db_name + '/subsets/' + type_of_set + '/' 
     os.makedirs(directory, exist_ok=True)
                 
@@ -72,9 +59,11 @@ if __name__  == "__main__":
         col_max = trainset.max()
         col_min = trainset.min()
         cols = trainset.columns
-        trainset = trainset.iloc[start:end-1] 
-        train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()} 
+        trainset = trainset.iloc[start:end] 
+        # print(trainset)
         
+        train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()} 
+         
         build_sub_graph(train_dicts, col_max, col_min, cols, 'tr_u', 'tr_u', 
                     directory, start, end)
     else:
@@ -83,7 +72,7 @@ if __name__  == "__main__":
         col_max = testset.max()
         col_min = testset.min()
         cols = testset.columns
-        testset = testset.iloc[start:end-1] 
+        testset = testset.iloc[start:end] 
         test_dicts = {i: row.to_dict() for i, row in testset.iterrows()} 
         
         build_sub_graph(test_dicts, col_max, col_min, cols, 'ts_u', 'ts_u', 

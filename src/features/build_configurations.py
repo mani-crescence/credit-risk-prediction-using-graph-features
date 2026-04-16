@@ -86,7 +86,8 @@ if __name__ == '__main__':
     elif graph_type is not None and disc_type is None:
          train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train.csv", 
                                              index_col=0, keep_default_na=False, na_values=[""])
-         new_descriptors = ["deg0", "deg1"]
+        #  new_descriptors = ["deg0", "deg1"]
+         new_descriptors = ["pg"]
          build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)    
         
     else:

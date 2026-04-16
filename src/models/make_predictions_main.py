@@ -12,6 +12,7 @@ import pickle
 import ast
 
 def processing(configurations, original_directory, path, alpha = None, discretization_type = None):
+    # exit(configurations)
     classic_result_path = "reports/" + db_name + "/metrics/classic/metrics_results.txt"
     trainset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
     testset = pd.read_csv("data/preprocessed/" + db_name + "/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])

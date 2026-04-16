@@ -4,13 +4,13 @@ import subprocess
 # all_db_names = [["JAPANESE", "JAPANESE"], ["GERMAN", "THOMAS"], ["AER", "LGD"], ["HMEQ", "MORTGAGE"], ["KAGGLE_CREDIT_RISK", "LC"]]
 # all_db_names = [["JAPANESE"]]#, "KAGGLE_CREDIT_RISK"], ["AER", "AUSTRALIAN"], ["HMEQ", "JAPANESE"]]
 # all_db_names = [["GERMAN", "KAGGLE_CREDIT_RISK"], ["AER", "AUSTRALIAN"], ["JAPANESE", "HMEQ"]]
-all_db_names = ["HMEQ"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
+all_db_names = ["AUSTRALIAN"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 # all_db_names = ["GERMAN"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 
 
 
 def execution(db_names):
-    commands = []
+    commands = [] 
     for i in db_names:
         commands.append(""" make run_{0} DB_NAME={1}""".format(*[i.lower(), i.lower()]))
 
