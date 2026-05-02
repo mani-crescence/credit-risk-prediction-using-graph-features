@@ -74,7 +74,7 @@ if __name__  == "__main__":
         directory = 'graph/'+ db_name + '/related/test/'  
         os.makedirs(directory, exist_ok=True)
         testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
-        testset.drop(columns=['Unnamed: 0'], inplace=True)
+        testset.drop(columns=['Unnamed: 0', 'st'], inplace=True)
         col_max = testset.max()
         col_min = testset.min()
         cols = testset.columns
@@ -90,9 +90,9 @@ if __name__  == "__main__":
         directory = 'graph/'+ db_name + '/related/mix/'  
         os.makedirs(directory, exist_ok=True)
         trainset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
-        trainset.drop(columns=['Unnamed: 0'], inplace=True)
+        trainset.drop(columns=['Unnamed: 0', 'st'], inplace=True)
         testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
-        testset.drop(columns=['Unnamed: 0'], inplace=True)
+        testset.drop(columns=['Unnamed: 0', 'st'], inplace=True)
         col_max = testset.max()
         col_min = testset.min()
         cols = testset.columns

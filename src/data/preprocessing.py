@@ -46,7 +46,6 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
         
     columns_for_one_hot_encoding = numerical_data.select_dtypes(include=['object']).columns.tolist()
     
-    # exit(columns_for_one_hot_encoding)
     
     preprocessed_data = numerical_data.copy()
     

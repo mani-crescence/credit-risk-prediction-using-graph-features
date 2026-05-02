@@ -1,7 +1,9 @@
 import subprocess
 import sys, ast, os
 from dotenv import load_dotenv
+import numpy as np
 import pandas as pd 
+import logging
 from itertools import combinations, product
 from concurrent.futures import ProcessPoolExecutor
 
@@ -22,7 +24,7 @@ def build_complete_graph(db_name):
         if step + start >= size - 1 :
             end = size
          
-        commands.append(""" make run_build_edges_com_{0} DB_NAME={1} START={2} END={3} TYPE={4} """.
+        commands.append(""" make run_build_edges_gui_{0} DB_NAME={1} START={2} END={3} TYPE={4} """.
                             format(*[db_name.lower(), db_name.lower(), start, end, 'train']))
        
         end += step
@@ -52,7 +54,7 @@ def build_complete_graph(db_name):
     
     if(cpu_count > step):
         print("start =>", 0, ", end =>", size)
-        commands.append(""" make run_build_edges_com_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
+        commands.append(""" make run_build_edges_gui_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
                             format(*[db_name.lower(), db_name.lower(), 0, size, 'test']))
     else:
         
@@ -62,7 +64,7 @@ def build_complete_graph(db_name):
                 end = size
                 
             print("start =>", start, ", end =>", end)    
-            commands.append(""" make run_build_edges_com_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
+            commands.append(""" make run_build_edges_gui_{0} DB_NAME={1}  START={2} END={3} TYPE={4} """.
                             format(*[db_name.lower(), db_name.lower(), start, end, 'test']))
             
         
@@ -94,7 +96,7 @@ def launch_relate_edges(db_name):
     count = 0
         
     for (path1, (start1, end1)), (path2, (start2, end2)) in combinations(subset_train_data.items(), 2):
-        commands.append(""" make run_relate_edges_com_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+        commands.append(""" make run_relate_edges_gui_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
         format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'train', path1, path2)) 
         # print(path1, path2)
         count += 1
@@ -140,14 +142,14 @@ def launch_relate_edges(db_name):
 
     if (len(subset_test_data) == 1):
         path, (start, end) = list(subset_test_data.items())[0]
-        commands.append(""" make run_relate_edges_com_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+        commands.append(""" make run_relate_edges_gui_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
          format(db_name.lower(), db_name.lower(), start, end, start, end, 'test', path, path))
         
     else:     
         count = 0
         
         for (path1, (start1, end1)), (path2, (start2, end2)) in combinations(subset_test_data.items(), 2):
-             commands.append(""" make run_relate_edges_com_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+             commands.append(""" make run_relate_edges_gui_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
              format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'test', path1, path2))   
              
              count += 1  
@@ -181,7 +183,7 @@ def launch_relate_edges(db_name):
     commands = []
     for ((path1,(start1, end1)), (path2,(start2, end2))) in product(subset_train_data.items(), subset_test_data.items()):
         
-         commands.append(""" make run_relate_edges_com_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
+         commands.append(""" make run_relate_edges_gui_{0} DB_NAME={1} START1={2} END1={3} START2={4} END2={5} TYPE={6} PATH1={7} PATH2={8}""".
          format(db_name.lower(), db_name.lower(), start1, end1, start2, end2, 'mix', '\"' + str(path1) + '\"', '\"'+ str(path2)+ '\"' ))
          
          count += 1  
@@ -210,17 +212,16 @@ def launch_relate_edges(db_name):
         print(f"modeling train-test command '{p}' completed.")         
 
 def launch_silm(db_name):
-    command = """ make run_compute_descriptors_com_{0}  BD_NAME={1} GRAPH_TYPE={2}  """.format(*[db_name.lower(), db_name.lower(), "com"])
+    command = """ make run_compute_descriptors_gui_{0}  BD_NAME={1} GRAPH_TYPE={2}  """.format(*[db_name.lower(), db_name.lower(), "gui"])
     
     process = subprocess.Popen(command, shell=True)
 
     process.wait()
 
-
 if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
     
-    build_complete_graph(db_name)
-    launch_relate_edges(db_name)
+    # build_complete_graph(db_name)
+    # launch_relate_edges(db_name)
     launch_silm(db_name)

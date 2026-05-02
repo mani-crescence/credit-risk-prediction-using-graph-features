@@ -18,7 +18,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, new_descriptors
             targets.append(str(target)+'_'+str(t)+'_'+str(disc_type).lower()+'_'+graph_type.lower())
 
         configurations[graph_type + '_GX_'+disc_type+'_ORD'] = list(set(new_descriptors) - set(targets)) + ordinary_descriptors +  [target]
-        configurations[graph_type + '_GY_'+disc_type+'_ORD'] =  targets + ordinary_descriptors + [target]
+        configurations[graph_type + '_GY_'+disc_type+'_ORD'] =  ["target_graph"] + ordinary_descriptors + [target]
         configurations[graph_type + '_GXY_' + disc_type + '_ORD'] = new_descriptors + ordinary_descriptors + [target]
         
         with open(directory + '/configuration_'+graph_type.lower() + '_'+ disc_type.lower() + '.txt', 'w') as f:
@@ -84,10 +84,11 @@ if __name__ == '__main__':
         build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, disc_type, target_values)
         
     elif graph_type is not None and disc_type is None:
-         train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train.csv", 
-                                             index_col=0, keep_default_na=False, na_values=[""])
+        #  train_new_descriptors = pd.read_csv("data/graph_features/" + db_name + "/" + graph_type.lower() +"/new_features_train_0.3.csv", 
+        #                                      index_col=0, keep_default_na=False, na_values=[""])
         #  new_descriptors = ["deg0", "deg1"]
-         new_descriptors = ["pg"]
+        #  new_descriptors = ["pg"]
+         new_descriptors = ["class0", "class1"]
          build_configurations(ordinary_descriptors, target, db_name, new_descriptors, graph_type, None, target_values)    
         
     else:

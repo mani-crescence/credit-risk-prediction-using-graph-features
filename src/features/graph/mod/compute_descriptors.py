@@ -1,6 +1,7 @@
 import sys, os, pickle, ast
 import pandas as pd
 import networkx as nx
+from xgboost import data
 from ....tools.execute import pagerank_personalized
 from .build_graph import main as build_graph
 
@@ -19,19 +20,18 @@ def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, d
             nodes_for_personalization = []
             dict_row = row._asdict()
             del dict_row['Index']
+                
+            for k, w in dict_row.items():
+                nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type)
             
-            if graph_type == 'mod':
-                
-                for k, w in dict_row.items():
-                    nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type)
-                
-                pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
+            pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
                 
             
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-            
+         
+        graph_descriptors = graph_descriptors.astype(float)    
+        graph_descriptors["target_graph"] = (graph_descriptors['st_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
         
-        graph_descriptors = graph_descriptors.astype(float)
         
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
@@ -45,26 +45,25 @@ def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, d
             dict_row = row._asdict()
             
             graph_copy = graph.copy()
-    
-            if graph_type == "mod":
                 
-                del dict_row[target]
-                del dict_row['Index']
+            del dict_row[target]
+            del dict_row['Index']
+            
+            for k, w in dict_row.items():
+                nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
                 
-                for k, w in dict_row.items():
-                   nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
-                   
-                   
-                augmented_graph = build_graph(graph_copy, None, dict_row, discretization_type)
-                pagerank_attributes = pagerank_personalized(augmented_graph, alpha, nodes_for_personalization, "weight", descriptors)
+                
+            augmented_graph = build_graph(graph_copy, None, dict_row, discretization_type)
+            pagerank_attributes = pagerank_personalized(augmented_graph, alpha, nodes_for_personalization, "weight", descriptors)
                 
                       
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
            
-       
+        # data["target_graph"] = (data['st_1'+ '_' + discretization_type + '_' +graph_type] > data['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
 
         graph_descriptors = graph_descriptors[descriptors]
         graph_descriptors = graph_descriptors.astype(float)
+        graph_descriptors["target_graph"] = (graph_descriptors['st_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
         
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)

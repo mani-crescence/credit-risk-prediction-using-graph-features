@@ -9,8 +9,8 @@ import math
 
 db_names = ["australian"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"] #"kaggle_credit_risk",
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod", "com", "gui"]
-discretizations = [None, "uns", "sup", "uns", "sup", None, None]
+graphs = [None, "bip", "bip", "mod", "mod", "com", "glo"]#, "gui"]
+discretizations = [None, "uns", "sup", "uns", "sup", None, None]#, None]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
 models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
 metrics = ["acc", "f1"]

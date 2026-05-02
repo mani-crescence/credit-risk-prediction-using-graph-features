@@ -1,8 +1,10 @@
 import sys, os, pickle, ast
 import pandas as pd
 import networkx as nx
+from xgboost import data
 from ....tools.execute import pagerank_personalized
 from .build_graph import main as build_graph
+
 
 def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, discretization_type ):
     
@@ -13,24 +15,18 @@ def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, d
     if label == "train":
         for row in data.itertuples():
             
-            graph_copy = graph.copy()     
+            graph_copy = graph.copy() 
             
             dict_row = row._asdict()
-            del dict_row['Index']
             
-            if graph_type == 'bip':
-                
-                graph_copy.remove_edge('tr_u' + str(row.Index), target + '_' + str(dict_row[target]) + '_' + discretization_type + '_' + graph_type)
-                
-                
-                pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u' + str(row.Index)], None, descriptors)
-           
+            
+            pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+ dict_row['Index']], 'weight', descriptors)
+            
+            
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-         
-        
+            
+        # data["target_graph"] = (data['st_1'+ '_' + discretization_type + '_' +graph_type] > data['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
         graph_descriptors = graph_descriptors.astype(float)
-        graph_descriptors["target_graph"] = (graph_descriptors['st_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
-
         
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
@@ -44,19 +40,18 @@ def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, d
             
             graph_copy = graph.copy()
     
-            if graph_type == "bip":
-                del dict_row[target]
+            del dict_row[target]
+            
+            augmented_graph = build_graph(graph_copy, None, dict_row, discretization_type)
+            pagerank_attributes = pagerank_personalized(augmented_graph, alpha, ['l'+ dict_row['Index']], "weight", descriptors)
                 
-                augmented_graph = build_graph(graph_copy, None, dict_row, discretization_type)
-                pagerank_attributes  = pagerank_personalized(augmented_graph, alpha, ['ts_'+str(row.Index)], None, descriptors)
-                
+                      
             graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
            
-
+        data["target_graph"] = (data['st_1'+ '_' + discretization_type + '_' +graph_type] > data['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
+# 
         graph_descriptors = graph_descriptors[descriptors]
         graph_descriptors = graph_descriptors.astype(float)
-        graph_descriptors["target_graph"] = (graph_descriptors['st_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
-
         
         directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
         os.makedirs(directory, exist_ok=True)
@@ -78,9 +73,10 @@ if __name__ == "__main__":
                                         dtype='object', keep_default_na=False, na_values=[""])
     discretized_data.drop(columns='Unnamed: 0', inplace=True)
     
-    
     with open("graph/"+db_name+"/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
         graph_data = pickle.load(f)
 
     main(discretized_data, graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  graph_type, label, discretization_type)
+    
+    
     

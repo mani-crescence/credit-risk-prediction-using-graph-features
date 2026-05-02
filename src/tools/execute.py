@@ -86,7 +86,6 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
       
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
 
-
 def build_global_pagerank(graph, trainset, testset, db_name, graph_type):
     
     
@@ -134,7 +133,6 @@ def build_predictions(models, trainset, testset, configurations, target, classic
     tr = trainset.copy()
     ts = testset.copy()
     
-    # exit(configurations)
 
     for config_name, config_att in configurations.items():
         print(config_name)
@@ -656,25 +654,32 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
          
         subset = pd.DataFrame(trainset, index=indexes) 
         
+        
+        print(subset.shape, "\n" )
+        
+        
         subset[target] = subset[target].astype(int)
         
         targets = {1: 0, 0: 0}
          
         target_counts = subset[target].value_counts().to_dict() 
         
-        try:
-            if target_counts[1] is not None:
-                targets[1]= target_counts[1]
-                
-            if target_counts[0] is not None:
-                targets[0]= target_counts[0]
-        except:  
-            print("something went wrong")     
+        print(target_counts)
+        
+        if 1 in target_counts:
+            targets[1]= target_counts[1]
+        elif 0 in target_counts:
+            targets[0]= target_counts[0]
+        else:     
+            print("something went wrong")   
+            # pass  
           
         training_centralities_df.loc[i] = [targets[0] , targets[1]]
       
-        
-    training_centralities_df = training_centralities_df.astype(float)
+    max = training_centralities_df.max()  
+    training_centralities_df['deg0'] = training_centralities_df['deg0'] / max['deg0'] 
+    training_centralities_df['deg1'] = training_centralities_df['deg1'] / max['deg1']
+     
     
     training_centralities_df.to_csv(directory + '/new_features_train.csv')
         
@@ -689,39 +694,38 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
         
         training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
         
-        training_neighbors = [node for node in training_nodes if node in neighbors]
+        test_neighbors = [node for node in training_nodes if node in neighbors]
        
         indexes = []
         
-        for node in training_neighbors:
+        for node in test_neighbors:
             number = (re.findall(r'\d+',  node))[0]
             indexes.append(int(number)) 
          
-        subset = pd.DataFrame(trainset, index=indexes) 
+        subset = pd.DataFrame(trainset , index=indexes) 
         subset[target] = subset[target].astype(int)
         
         targets = {1: 0, 0: 0}
          
         target_counts = subset[target].value_counts().to_dict() 
         
-        try:
-            if target_counts[1] is not None:
-                targets[1]= target_counts[1]
-                
-            if target_counts[0] is not None:
-                targets[0]= target_counts[0]
-        except:  
-            print("something went wrong")     
+        if 1 in target_counts:
+            targets[1]= target_counts[1]
+        elif 0 in target_counts:
+            targets[0]= target_counts[0]
+        else:     
+            print("something went wrong")       
             
         test_centralities_df.loc[i] = [targets[0] , targets[1]]
-        
-    test_centralities_df = test_centralities_df.astype(float)
+    
+    
+    max = test_centralities_df.max()  
+    test_centralities_df['deg0'] = test_centralities_df['deg0'] / max['deg0'] 
+    test_centralities_df['deg1'] = test_centralities_df['deg1'] / max['deg1']
         
     test_centralities_df.to_csv(directory + '/new_features_test.csv')
     
-    # print(training_centralities_df.shape, test_centralities_df.shape)
-            
-        
+      
         
         
         

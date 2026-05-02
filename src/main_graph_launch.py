@@ -1,8 +1,8 @@
 import subprocess
 
 
-all_db_names = ["JAPANESE"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
-graphs = ["com"]#, "mod", "com", "gui"]
+all_db_names = ["AUSTRALIAN"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
+graphs = ["glo"]#, "mod", "com", "gui", "bip"]
 
 
 def execution(db_names):
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     # for db_names in all_db_names:
     #     execution(db_names)
    
-      
+     

@@ -175,6 +175,7 @@ def pagerank_personalized(graph, alpha, personalized_nodes, weight = None, nodes
 
     attribute_pagerank = nx.pagerank(graph, alpha = alpha , personalization = personalization, weight = weight)
     
+    
     new_descriptors = {key : value for key, value in attribute_pagerank.items() if key in nodes}
 
     pg_max = max(new_descriptors.values())
@@ -405,37 +406,6 @@ def complete_graph_parallel1(db_name):
     # exit()
     # return graph    
 
-
-# def compute_graph1(db_name):
-    
-#     graph = nx.Graph()
-    
-#     sub_dir = 'graph/' + db_name + '/subsets'
-    
-#     rel_dir = 'graph/' + db_name + '/subsets'
-    
-#     for item in os.listdir(directory):
-#         path = os.path.join(directory, item)
-#         with open(path, 'r') as file:
-#             data = ast.literal_eval(file.read())
-        
-#         for edge in data['edges']:
-#             for src, dst, w in edge:
-#                 graph.add_edge(src, dst, weight=w)
-        
-#     relate_data = {}
-#     for item in os.listdir(directory):
-#         path = os.path.join(directory, item)
-#         with open(path, 'r') as file:
-#             data = ast.literal_eval(file.read())
-            
-#         for edge in data['edges']:
-#             for src, dst, w in edge:
-#                 graph.add_edge(src, dst, weight=w)    
-        
-#     mst = nx.minimum_spanning_tree(graph, algorithm="prim")      
-    
-#     return mst 
         
 def complete_graph_gui(trainset, testset, target): 
     graph = nx.Graph()

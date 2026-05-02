@@ -1,8 +1,8 @@
 import subprocess
 import sys 
 
-discretization_types =  ["UNS", "SUP"]
-alphas = [0.1] 
+discretization_types =  ["SUP"]#, "SUP"]
+alphas = [0.1, 0.3, 0.5, 0.7, 0.85, 0.9] 
 
 def launch_graph_modeling(db_name):
     

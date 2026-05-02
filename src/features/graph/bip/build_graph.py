@@ -4,8 +4,8 @@ import networkx as nx
 
 
 
-def main(graph, data, new_loan = None, discretization_type = None):
-    if graph is None:
+def build(graph, data, set_type, new_loan = None, discretization_type = None):
+    if set_type == "train":
         graph = nx.Graph()
 
         for i , row in data.iterrows():
@@ -20,20 +20,14 @@ def main(graph, data, new_loan = None, discretization_type = None):
         return graph
         
     else:
-        edges = []
-        nodes = [] 
-        new_node = 'ts_'+str(new_loan['Index'])
-        
-        graph.add_node(new_node, type = 'loan')
-        nodes.append(new_node)
-        
-        del new_loan['Index']
-        
-        for j, w in new_loan.items():
-            if graph.has_node(str(j)+ '_' + str(w) + '_' + discretization_type + '_bip') is False:
-                graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type = 'attribute')
-            graph.add_edge(new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
-            edges.append((new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
+        for i , row in data.iterrows():
+            graph.add_node('ts_u'+ str(i), type='loan', bipartite=0)
+            
+            for j, w in row.items():
+                if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
+                    graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
+                    
+                graph.add_edge('ts_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
         
         return graph     
 
@@ -48,8 +42,45 @@ if __name__ == "__main__":
         
     data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
     trainset  = pd.read_csv(data_file, dtype='object', keep_default_na=False, na_values=[""])
+    testset  = pd.read_csv(data_file, dtype='object', keep_default_na=False, na_values=[""])
     
     trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    testset.drop(columns=['Unnamed: 0'], inplace=True)
     
-    main(None, trainset, None, discretization_type)
+    graph = build(None, trainset, None, discretization_type)
+    build(graph, testset, "test", discretization_type) 
+    
+    
+# def main(graph, data, new_loan = None, discretization_type = None):
+#     if graph is None:
+#         graph = nx.Graph()
+
+#         for i , row in data.iterrows():
+#             graph.add_node('tr_u'+ str(i), type='loan', bipartite=0)
+            
+#             for j, w in row.items():
+#                 if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
+#                     graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
+                    
+#                 graph.add_edge('tr_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+
+#         return graph
+        
+#     else:
+#         edges = []
+#         nodes = [] 
+#         new_node = 'ts_'+str(new_loan['Index'])
+        
+#         graph.add_node(new_node, type = 'loan')
+#         nodes.append(new_node)
+        
+#         del new_loan['Index']
+        
+#         for j, w in new_loan.items():
+#             if graph.has_node(str(j)+ '_' + str(w) + '_' + discretization_type + '_bip') is False:
+#                 graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type = 'attribute')
+#             graph.add_edge(new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+#             edges.append((new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
+        
+#         return graph     
     
