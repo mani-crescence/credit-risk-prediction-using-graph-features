@@ -85,7 +85,7 @@ def train(models,train, test, target, classic_result = None):
     metrics_real = {}
     metrics_with_percent = {}
     
-    # print(train.head())
+    # print(X_test.isnull().sum())
     # exit()
 
     for key, value in models.items():

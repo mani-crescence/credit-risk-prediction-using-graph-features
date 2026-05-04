@@ -1,9 +1,6 @@
 import pandas as pd 
 import sys , os
-import networkx as nx
 from itertools import islice 
-
-
 
 
 def gower_distance(u, v, attributes, max = None, min = None):
@@ -52,7 +49,6 @@ if __name__  == "__main__":
     path1 = args[6]
     path2 = args[7]
  
-    
     if (type_of_set  == 'train'):
         directory = 'graph/'+ db_name + '/related/train/'  
         os.makedirs(directory, exist_ok=True)

@@ -625,7 +625,7 @@ def save_global_result_(data, models, metrics, db):
 def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target):
     
     directory='data/graph_features/' + db_name +'/' + graph_type +'/'
-        
+   
     os.makedirs(directory, exist_ok=True)
     
     training_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
@@ -635,8 +635,6 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
     ### COMPUTATION OF DEGREE CENTRALITIES IN TRAINING SET    
     
     for i, _ in  trainset.iterrows():
-        
-        print('tr_u' + str(i), '\n')
         
         neighbors = list(nx.all_neighbors(graph, 'tr_u' + str(i)) ) 
         
@@ -654,31 +652,23 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
          
         subset = pd.DataFrame(trainset, index=indexes) 
         
-        
-        print(subset.shape, "\n" )
-        
-        
         subset[target] = subset[target].astype(int)
         
         targets = {1: 0, 0: 0}
          
         target_counts = subset[target].value_counts().to_dict() 
         
-        print(target_counts)
-        
         if 1 in target_counts:
             targets[1]= target_counts[1]
-        elif 0 in target_counts:
+            
+        if 0 in target_counts:
             targets[0]= target_counts[0]
-        else:     
-            print("something went wrong")   
-            # pass  
-          
+        
         training_centralities_df.loc[i] = [targets[0] , targets[1]]
       
     max = training_centralities_df.max()  
-    training_centralities_df['deg0'] = training_centralities_df['deg0'] / max['deg0'] 
-    training_centralities_df['deg1'] = training_centralities_df['deg1'] / max['deg1']
+    training_centralities_df['deg0'] = training_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else training_centralities_df['deg0']
+    training_centralities_df['deg1'] = training_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else training_centralities_df['deg1']
      
     
     training_centralities_df.to_csv(directory + '/new_features_train.csv')
@@ -711,19 +701,52 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
         
         if 1 in target_counts:
             targets[1]= target_counts[1]
-        elif 0 in target_counts:
-            targets[0]= target_counts[0]
-        else:     
-            print("something went wrong")       
             
+        if 0 in target_counts:
+            targets[0]= target_counts[0]
+       
         test_centralities_df.loc[i] = [targets[0] , targets[1]]
     
     
     max = test_centralities_df.max()  
-    test_centralities_df['deg0'] = test_centralities_df['deg0'] / max['deg0'] 
-    test_centralities_df['deg1'] = test_centralities_df['deg1'] / max['deg1']
+    
+    test_centralities_df['deg0'] = test_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else test_centralities_df['deg0']
+    test_centralities_df['deg1'] = test_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else test_centralities_df['deg1']
         
     test_centralities_df.to_csv(directory + '/new_features_test.csv')
+    
+def compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns, 
+                     unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target):
+    couples = {}
+    pagerank_attributes_copy = pagerank_attributes.copy()
+    
+    for key, value in pagerank_attributes.items():
+        if target in key:
+            del pagerank_attributes_copy[key]
+    
+    for key, value in pagerank_attributes_copy.items():
+        sub = "_" + discretization_type + "_" + graph_type
+        couple = key.replace(sub, "" )
+        couple = couple.split("_")
+    
+        if couple[0] not in couples:
+            couples[couple[0]] = {} 
+        couples[couple[0]][couple[1]]  = value   
+    
+    
+    gx_paid = 0     
+    for k1, v1 in paid_proportion_of_columns.items(): 
+        for ka, va in v1.items():
+            gx_paid += float(va)* float(couples[k1][ka])
+            
+            
+    gx_unpaid = 0     
+    for k1, v1 in unpaid_proportion_of_columns.items() : 
+        for ka, va in v1.items():
+            gx_unpaid += float(va)*float(couples[k1][ka])     
+            
+    return (gx_paid / number_of_paid_items), (gx_unpaid / number_of_unpaid_items )         
+             
     
       
         

@@ -6,58 +6,49 @@ from ....tools.execute import pagerank_personalized
 from .build_graph import main as build_graph
 
 
-def main(data, graph, descriptors, target, bd_name, alpha,  graph_type, label, discretization_type ):
+def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type):
     
-    print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
+    print(f'############## processing  with  alpha ==>{alpha} ######################')
     
     graph_descriptors = pd.DataFrame()
     
-    if label == "train":
-        for row in data.itertuples():
-            
-            graph_copy = graph.copy() 
-            
-            dict_row = row._asdict()
-            
-            
-            pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['l'+ dict_row['Index']], 'weight', descriptors)
-            
-            
-            graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-            
-        # data["target_graph"] = (data['st_1'+ '_' + discretization_type + '_' +graph_type] > data['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
-        graph_descriptors = graph_descriptors.astype(float)
+    for row in train_data.itertuples():
         
-        directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
-        os.makedirs(directory, exist_ok=True)
-        graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+        graph_copy = graph.copy() 
         
-    elif label == "test":
+        dict_row = row._asdict()
+        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u'+ str(dict_row['Index'])], 'weight', descriptors)
         
-        for row in data.itertuples():
-            
-            dict_row = row._asdict()
-            
-            graph_copy = graph.copy()
+        graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+        
+        print('tr_u'+ str(dict_row['Index']), ' done!')
+        
+    graph_descriptors = graph_descriptors.astype(float)
     
-            del dict_row[target]
-            
-            augmented_graph = build_graph(graph_copy, None, dict_row, discretization_type)
-            pagerank_attributes = pagerank_personalized(augmented_graph, alpha, ['l'+ dict_row['Index']], "weight", descriptors)
-                
-                      
-            graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-           
-        data["target_graph"] = (data['st_1'+ '_' + discretization_type + '_' +graph_type] > data['st_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
-# 
-        graph_descriptors = graph_descriptors[descriptors]
-        graph_descriptors = graph_descriptors.astype(float)
+    directory='data/graph_features/'+ db_name + '/' + graph_type +'/train'
+    os.makedirs(directory, exist_ok=True)
+    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    
+    graph_descriptors = pd.DataFrame()   
+    for row in test_data.itertuples():
+        dict_row = row._asdict()
+        graph_copy = graph.copy()
         
-        directory='data/graph_features/'+bd_name+'/'+ discretization_type + '/' + graph_type +'/'+ label
-        os.makedirs(directory, exist_ok=True)
-        graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
-      
-    print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
+        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['ts_u'+ str(dict_row['Index'])], "weight", descriptors)
+        
+        
+        print('ts_u'+ str(dict_row['Index']), ' done!')
+                   
+        graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+        
+    graph_descriptors = graph_descriptors[descriptors]
+    graph_descriptors = graph_descriptors.astype(float)
+    
+    directory='data/graph_features/' + db_name+'/' + graph_type +'/test'
+    os.makedirs(directory, exist_ok=True)
+    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    
+    print(f"finish processed ===>  with alpha {alpha} ")
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -66,17 +57,18 @@ if __name__ == "__main__":
     graph_type = args[2].lower()
     alpha = args[3]
     alpha = float(alpha) 
-    discretization_type = args[4].lower()
-    label = args[5]
     
-    discretized_data  = pd.read_csv("data/discretized/"+ db_name +"/discretized_" + label + "_data_"+ discretization_type +".csv", 
-                                        dtype='object', keep_default_na=False, na_values=[""])
-    discretized_data.drop(columns='Unnamed: 0', inplace=True)
+    trainset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
+    trainset.drop(columns=['Unnamed: 0'], inplace=True)
     
-    with open("graph/"+db_name+"/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
+    testset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
+    testset.drop(columns=['Unnamed: 0', target], inplace=True)
+    
+    with open("graph/" + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
         graph_data = pickle.load(f)
-
-    main(discretized_data, graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  graph_type, label, discretization_type)
+    
+    
+    main(trainset, testset, graph_data["graph"], graph_data["descriptors"],  db_name, alpha,  graph_type)
     
     
     

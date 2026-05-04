@@ -22,7 +22,7 @@ def main(target, db_name, alpha,  graph_type):
     # PROCESSING OF TEST DATA  
     testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
     testset.drop(columns=['Unnamed: 0'], inplace=True)
-    _compute(trainset, graph_data, target, "ts_u", "test", alpha, graph_type, db_name, graph_descriptors)
+    _compute(testset, graph_data, target, "ts_u", "test", alpha, graph_type, db_name, graph_descriptors)
     
     
     

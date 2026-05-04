@@ -4,7 +4,7 @@ import networkx as nx
 
 
 
-def build(graph, data, set_type, new_loan = None, discretization_type = None):
+def build(graph, data, set_type, discretization_type = None):
     if set_type == "train":
         graph = nx.Graph()
 
@@ -38,16 +38,15 @@ if __name__ == "__main__":
     graph_type = args[2] 
     discretization_type = args[3].lower()
     
-    # STEP1: build the graph
-        
-    data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
-    trainset  = pd.read_csv(data_file, dtype='object', keep_default_na=False, na_values=[""])
-    testset  = pd.read_csv(data_file, dtype='object', keep_default_na=False, na_values=[""])
+    # data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
+    trainset  = pd.read_csv('data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv', dtype='object', keep_default_na=False, na_values=[""])
+    testset  = pd.read_csv('data/discretized/'+ db_name +'/discretized_test_data_'+ discretization_type + '.csv', dtype='object', keep_default_na=False, na_values=[""])
     
     trainset.drop(columns=['Unnamed: 0'], inplace=True)
-    testset.drop(columns=['Unnamed: 0'], inplace=True)
+    testset.drop(columns=['Unnamed: 0', target], inplace=True)
     
     inter_graph = build(None, trainset, "train", discretization_type)
+    
     graph = build(inter_graph, testset, "test", discretization_type) 
     
     descriptors_attributes = [node for node, data_ in inter_graph.nodes(data=True) if data_['type'] == 'attribute']

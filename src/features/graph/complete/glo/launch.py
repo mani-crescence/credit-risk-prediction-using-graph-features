@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-alphas = [0.3]#, 0.3, 0.5, 0.7, 0.85, 0.9] 
+alphas = [0.1, 0.3, 0.5, 0.7, 0.85, 0.9] 
 
 def launch_silm(db_name):
     commands = []

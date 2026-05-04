@@ -11,12 +11,12 @@ from concurrent.futures import ProcessPoolExecutor
 
 discretization_types =  ["UNS", "SUP"]#, "SUP"]#, ]#, "SUP"]
 discretization_for_attributes_types = ["UNS_", "SUP_"]
-alphas = [0.3]#, 0.3, 0.5, 0.7, 0.85, 0.9] #[0.2, 0.3, 0.4]  #[0.2, 0.3, 0.4] #[0.2, 0.3, 0.4]    # [0.2, 0.3, 0.4] # #  [0.5, 0.6, 0.7] ## [0.5, 0.6, 0.7]  [0.1] # [0.8, 0.85, 0.9]  # #[0.5, 0.6, 0.7] #[0.8, 0.85, 0.9] # [0.1]## # [0.1]## [0.2, 0.3, 0.4 ]  #, 0.8, 0.85, 0.9]#, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9]#, [0.1, 0.2] # 0.2,  0.3]# 0.1, 0.2, 0.3, 0.4, 0.5]#, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7
+alphas = [0.1, 0.3, 0.5, 0.7, 0.85, 0.9]#, 0.3, 0.5, 0.7, 0.85, 0.9] #[0.2, 0.3, 0.4]  #[0.2, 0.3, 0.4] #[0.2, 0.3, 0.4]    # [0.2, 0.3, 0.4] # #  [0.5, 0.6, 0.7] ## [0.5, 0.6, 0.7]  [0.1] # [0.8, 0.85, 0.9]  # #[0.5, 0.6, 0.7] #[0.8, 0.85, 0.9] # [0.1]## # [0.1]## [0.2, 0.3, 0.4 ]  #, 0.8, 0.85, 0.9]#, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9]#, [0.1, 0.2] # 0.2,  0.3]# 0.1, 0.2, 0.3, 0.4, 0.5]#, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7
 process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
 plot_type = ["UNS","SUP"] 
 pagerank_type = ["PER", "GLO"]
-graph_types = ["GLO"]#, "MOD", "BIP"] #"LOAN", "MOD", "BIP", "COM" 
-graph_types1 = ["BIP", "MOD", "GUI"]
+graph_types = ["LIU"]#"MOD", "BIP", "LOAN"]#, "MOD", "LOAN"]#, "MOD", "BIP"] #"LOAN", "MOD", "BIP", "COM" 
+graph_types1 = ["MOD"]#, "MOD", "GUI"]
 graph_type_for_prediction = ["MOD", "BIP"]
 graphs = ["bip", "bip", "mod", "mod", None, None]
 discretizations = ["uns", "sup", "uns", "sup", "na", None]
@@ -125,11 +125,11 @@ def launch_conf(db_name):
 
     for graph_type in graph_types:
         # for graph_type in graph_types:
-         if graph_type == "COM" or graph_type == "GUI" or graph_type == "GLO":  
+         if graph_type == "LIU" or graph_type == "GUI" or graph_type == "GLO" or graph_type == "LOAN":  
             commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), None, graph_type]))
-
-        #  for discretization_type in discretization_types:
-        #     commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), discretization_type, graph_type]))
+         else:   
+            for discretization_type in discretization_types:
+                commands.append("""make run_make_configurations_{0}  DISCRETIZATION_TYPE={1} GRAPH_TYPE={2}""".format(*[db_name.lower(), discretization_type, graph_type]))
 
     processes = []
     for cmd in commands:
@@ -142,13 +142,14 @@ def launch_conf(db_name):
 def launch_predict(db_name):
     commands = []
     for graph_type in graph_types:
-        if graph_type == "COM" or graph_type == "GUI":
+        if graph_type == "LIU" or graph_type == "GUI":
             train_path = 'data/graph_features/'+db_name.lower()+'/'+graph_type.lower()+'/new_features_train.csv'
             test_path = 'data/graph_features/'+db_name.lower()+'/'+graph_type.lower()+'/new_features_test.csv'
             config_path = "data/configurations/" + db_name.lower()+"/configuration_" +graph_type.lower() + ".txt"
 
             commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} ALPHA={7}""".format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, None]))
-        if graph_type == "GLO":
+        
+        elif graph_type == "GLO" or graph_type == "LOAN":
             train_directory = 'data/graph_features/'+ db_name.lower() + "/" + graph_type .lower() + '/train'
             test_directory = 'data/graph_features/'+ db_name.lower() +"/" + graph_type .lower() + '/test'
             
@@ -162,8 +163,8 @@ def launch_predict(db_name):
                 
         else:
             for disc_type in discretization_types:
-                train_directory = 'data/graph_features/'+ db_name.lower() +'/'+ disc_type.lower()+ "/" + graph_type .lower() + '/train'
-                test_directory = 'data/graph_features/'+ db_name.lower() +'/'+ disc_type.lower()+ "/" + graph_type .lower() + '/test'
+                train_directory = 'data/graph_features/'+ db_name.lower() +'/'+ graph_type .lower()+ "/" +  disc_type.lower() + '/train'
+                test_directory = 'data/graph_features/'+ db_name.lower() +'/'+ graph_type .lower()+ "/" + disc_type.lower() + '/test'
                 
                 config_path = "data/configurations/" + db_name.lower()+"/configuration_" +graph_type.lower()+"_"+disc_type.lower()+ ".txt"
 
@@ -205,10 +206,10 @@ def launch_print(db_name):
         ]
 
     for graph in graph_types:
-        if graph == "COM"  or graph == "GUI":
+        if graph == "LIU"  or graph == "GUI":
             commands.append("""make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
                 *[db_name.lower(), db_name.lower(), None, graph]))
-        if graph == "GLO":
+        elif graph == "GLO" or graph == "LOAN":
             commands.append("""make run_print_{0} DB_NAME={1}  DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} """.format(
                 *[db_name.lower(), db_name.lower(), None, graph]))    
         else:
@@ -498,7 +499,7 @@ if __name__ == "__main__":
     
     # launch_conf(db_name)
     # launch_predict_classic(db_name)
-    # launch_predict(db_name)
-    # launch_print(db_name)
+    launch_predict(db_name)
+    launch_print(db_name)
     # launch_plot(db_name)
  

@@ -3,7 +3,7 @@ export QT_QPA_PLATFORM=offscreen
 # Variables
 PYTHON_INTERPRETER= python3
 SRC_DIR = -m src.
-PRE_DIR = -m src.data.
+PRE_DIR = -m src.data_preprocessing.
 
 all: run
 
@@ -42,14 +42,14 @@ run_graph_mod_japanese:
 
 
 # COM GRAPH	
-run_graph_modeling_com_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+run_graph_modeling_liu_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
-run_compute_descriptors_com_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+run_compute_descriptors_liu_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
 
-run_graph_com_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.launch  $(DB_NAME)
+run_graph_liu_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.launch  $(DB_NAME)
 
 
 # GUI GRAPH	
@@ -96,11 +96,11 @@ run_engine_building_pre_japanese:
 run_engine_building_disc_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_JAPANESE)
 
-run_build_edges_com_japanese: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+run_build_edges_liu_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
 
-run_relate_edges_com_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+run_relate_edges_liu_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
 
 run_build_edges_gui_japanese: 	
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
@@ -147,21 +147,24 @@ run_graph_mod_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.launch  $(DB_NAME)
 
 
-# COM GRAPH	
-run_graph_modeling_com_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_graph $(DB_NAME)  $(GRAPH_TYPE) 
+# LIU GRAPH	
+run_graph_modeling_complete_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  $(GRAPH_TYPE) 
 
-run_compute_descriptors_com_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+run_build_edges_complete_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_subset_edges $(DB_NAME) $(START) $(END) $(TYPE)
 
-run_graph_com_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.launch  $(DB_NAME)
+run_relate_edges_complete_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_relate_edges $(DB_NAME) $(START1) $(END1) $(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
 
-run_build_edges_com_australian: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
+run_graph_complete_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.launch  $(DB_NAME)
 
-run_relate_edges_com_australian: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+run_compute_descriptors_liu_australian: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+
+run_graph_liu_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.launch  $(DB_NAME)
 
 
 
@@ -178,10 +181,20 @@ run_graph_gui_australian:
 
 # GLO GRAPH
 run_compute_descriptors_glo_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.glo.compute_descriptors  $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.compute_descriptors  $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
 
 run_graph_glo_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.glo.launch  $(DB_NAME)	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.launch  $(DB_NAME)	
+
+# LOAN GRAPH	
+run_graph_modeling_loan_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) 
+
+run_compute_descriptors_loan_australian: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  
+
+run_graph_loan_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.launch  $(DB_NAME)	
 
 ###############################################################################################################################################################
 
@@ -293,14 +306,14 @@ run_graph_mod_hmeq:
 
 
 # COM GRAPH	
-run_graph_modeling_com_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+run_graph_modeling_liu_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
 
-run_compute_descriptors_com_hmeq: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+run_compute_descriptors_liu_hmeq: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
 
-run_graph_com_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.com.launch  $(DB_NAME)
+run_graph_liu_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.launch  $(DB_NAME)
 
 
 # GUI GRAPH	

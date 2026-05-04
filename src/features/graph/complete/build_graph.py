@@ -43,18 +43,13 @@ def main(db_name, graph_type):
     print("minimun spanning tree computation terminated ")    
     
     descriptors_attributes = ["deg0", "deg1"]     
-    graph_data = {"graph": mst, "descriptors": descriptors_attributes}  
+    graph_data = {"graph": graph, "mst": mst, "descriptors": descriptors_attributes}  
     
     directory='graph/'+ db_name + '/'  
     os.makedirs(directory, exist_ok=True)
-    with open(directory + 'complete_graph_'+ graph_type, 'wb') as file:
+    with open(directory + 'complete_graph', 'wb') as file:
             pickle.dump(graph_data, file)
     
-    # return mst    
-    # print(graph.edges(data=True))
-    # print( "length nodes =>", len(graph.nodes), "edges length =>", len(graph.edges))
-    # exit()
-    # return graph    
 
 if __name__ == "__main__":
     args = sys.argv[1:]

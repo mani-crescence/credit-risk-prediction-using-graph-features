@@ -172,9 +172,8 @@ def pagerank_personalized(graph, alpha, personalized_nodes, weight = None, nodes
     
     for i in personalized_nodes:
         personalization[i] =  1 / personalized_nodes_length
-
+   
     attribute_pagerank = nx.pagerank(graph, alpha = alpha , personalization = personalization, weight = weight)
-    
     
     new_descriptors = {key : value for key, value in attribute_pagerank.items() if key in nodes}
 

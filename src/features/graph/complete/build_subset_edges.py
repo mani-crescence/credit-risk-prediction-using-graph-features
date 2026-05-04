@@ -60,7 +60,6 @@ if __name__  == "__main__":
         col_min = trainset.min()
         cols = trainset.columns
         trainset = trainset.iloc[start:end] 
-        # print(trainset)
         
         train_dicts = {i: row.to_dict() for i, row in trainset.iterrows()} 
          
@@ -68,7 +67,7 @@ if __name__  == "__main__":
                     directory, start, end)
     else:
         testset = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
-        testset.drop(columns=['Unnamed: 0'], inplace=True)
+        testset.drop(columns=['Unnamed: 0', 'st'], inplace=True)
         col_max = testset.max()
         col_min = testset.min()
         cols = testset.columns
