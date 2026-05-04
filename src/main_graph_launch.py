@@ -2,7 +2,7 @@ import subprocess
 
 
 all_db_names = ["AUSTRALIAN"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
-graphs = ["glo"]#, "mod", "com", "gui", "bip"]
+graphs = ["bip"]#, "mod", "com", "gui", "bip"]
 
 
 def execution(db_names):

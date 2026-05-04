@@ -35,6 +35,7 @@ def main(graph, data, target, new_loan = None):
                 graph.add_edge(loan, loan_neighbor, weight=weight)
         
     else :
+        
         new_loan_copy = new_loan.copy()
         index = new_loan['Index']
         del new_loan['Index']

@@ -47,40 +47,15 @@ if __name__ == "__main__":
     trainset.drop(columns=['Unnamed: 0'], inplace=True)
     testset.drop(columns=['Unnamed: 0'], inplace=True)
     
-    graph = build(None, trainset, None, discretization_type)
-    build(graph, testset, "test", discretization_type) 
+    inter_graph = build(None, trainset, "train", discretization_type)
+    graph = build(inter_graph, testset, "test", discretization_type) 
     
+    descriptors_attributes = [node for node, data_ in inter_graph.nodes(data=True) if data_['type'] == 'attribute']
+    graph_data = {"graph": graph, "descriptors": descriptors_attributes}  
     
-# def main(graph, data, new_loan = None, discretization_type = None):
-#     if graph is None:
-#         graph = nx.Graph()
-
-#         for i , row in data.iterrows():
-#             graph.add_node('tr_u'+ str(i), type='loan', bipartite=0)
-            
-#             for j, w in row.items():
-#                 if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
-#                     graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
-                    
-#                 graph.add_edge('tr_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
-
-#         return graph
-        
-#     else:
-#         edges = []
-#         nodes = [] 
-#         new_node = 'ts_'+str(new_loan['Index'])
-        
-#         graph.add_node(new_node, type = 'loan')
-#         nodes.append(new_node)
-        
-#         del new_loan['Index']
-        
-#         for j, w in new_loan.items():
-#             if graph.has_node(str(j)+ '_' + str(w) + '_' + discretization_type + '_bip') is False:
-#                 graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type = 'attribute')
-#             graph.add_edge(new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
-#             edges.append((new_node, str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip'))
-        
-#         return graph     
+    directory='graph/'+ db_name + '/'  
+    os.makedirs(directory, exist_ok=True)
+    with open(directory + 'graph_' + graph_type.lower() + '_' + discretization_type, 'wb') as file:
+        pickle.dump(graph_data, file)
     
+  

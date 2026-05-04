@@ -2,7 +2,7 @@ import subprocess
 import sys 
 
 discretization_types =  ["SUP"]#, "SUP"]
-alphas = [0.1, 0.3, 0.5, 0.7, 0.85, 0.9] 
+alphas = [0.1]#, 0.3, 0.5, 0.7, 0.85, 0.9] 
 
 def launch_graph_modeling(db_name):
     
@@ -24,7 +24,7 @@ def launch_graph_modeling(db_name):
 def launch_silm(db_name):
     commands = []
     
-    for label in ["train", "test"]:
+    for label in ["train"]:#, "test"]:
         for discretization_type in discretization_types:
             for alpha in alphas:
                 commands.append(""" make run_compute_descriptors_bip_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  DISCRETIZATION_TYPE={4} LABEL={5} """.format(*[db_name.lower(), db_name.lower(), "bip", alpha, discretization_type, label]))
@@ -42,6 +42,6 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
     
-    launch_graph_modeling(db_name)
+    # launch_graph_modeling(db_name)
     launch_silm(db_name)
    
