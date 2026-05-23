@@ -1,15 +1,15 @@
 import os, ast, pickle, sys
 import networkx as nx
 
-def main(db_name, graph_type):
+def main(db_name, _dir):
     graph = nx.Graph()
           
     directories = [
-    f'graph/{db_name}/related/train/',
-    f'graph/{db_name}/related/test/',
-    f'graph/{db_name}/related/mix/',
-    f'graph/{db_name}/subsets/train/',
-    f'graph/{db_name}/subsets/test/'
+    f'{_dir}{db_name}/related/train/',
+    f'{_dir}{db_name}/related/test/',
+    f'{_dir}{db_name}/related/both/',
+    f'{_dir}{db_name}/subsets/train/',
+    f'{_dir}{db_name}/subsets/test/'
 ]
 
     def get_node_type(node):
@@ -45,7 +45,7 @@ def main(db_name, graph_type):
     descriptors_attributes = ["deg0", "deg1"]     
     graph_data = {"graph": graph, "mst": mst, "descriptors": descriptors_attributes}  
     
-    directory='graph/'+ db_name + '/'  
+    directory= _dir +  db_name + '/'  
     os.makedirs(directory, exist_ok=True)
     with open(directory + 'complete_graph', 'wb') as file:
             pickle.dump(graph_data, file)
@@ -54,6 +54,9 @@ def main(db_name, graph_type):
 if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
-    graph_type = args[1]
+    directory_ = args[1]
+    
+    # print(directory_)
+    # exit()
 
-    main(db_name, graph_type)    
+    main(db_name, directory_)    

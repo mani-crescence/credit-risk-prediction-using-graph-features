@@ -86,10 +86,10 @@ def build_graph_attributes(data, graph, descriptors, target, bd_name, alpha,  gr
       
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
 
-def build_global_pagerank(graph, trainset, testset, db_name, graph_type):
+def build_global_pagerank(graph, trainset, testset, db_name, graph_type, _dir):
     
     
-        directory='data/graph_features/' + db_name +'/' + graph_type +'/'
+        directory = _dir + db_name +'/' + graph_type +'/'
         os.makedirs(directory, exist_ok=True)
         graph_copy = graph.copy()
         
@@ -132,7 +132,6 @@ def build_predictions(models, trainset, testset, configurations, target, classic
 
     tr = trainset.copy()
     ts = testset.copy()
-    
 
     for config_name, config_att in configurations.items():
         print(config_name)
@@ -418,7 +417,7 @@ def save_result_latex(models, metrics, results, dir):
         file.write(latex_code)
 
 def result(directory, discretization_type, graph_type):
-    print(discretization_type, graph_type, "\n")
+  
     
     max_result = {}
     paths = []
@@ -570,8 +569,7 @@ def save_global_result(data, db_names, metrics, model):
     with open(directory + "/general_results_"+ model + "_.tex", "w", encoding="utf-8") as file:
         file.write(code)
 
-def save_global_result_(data, models, metrics, db):
-    # exit(data)
+def save_global_result_(data, models, metrics, db, directory):
     code = r"\begin{table}[H]" + "\n"
     code += r"\centering" + "\n"
     code += r"\scalebox{0.7}{" + "\n"
@@ -617,14 +615,13 @@ def save_global_result_(data, models, metrics, db):
     code += r"\label{global-results}" +"\n"
     code += r"\end{table}" + "\n"
 
-    directory = "reports/summary"
     os.makedirs(directory, exist_ok=True)
     with open(directory + "/general_results_"+ db + "_r.tex", "w", encoding="utf-8") as file:
         file.write(code)
 
-def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target):
+def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target, _dir):
     
-    directory='data/graph_features/' + db_name +'/' + graph_type +'/'
+    directory = _dir + db_name +'/' + graph_type +'/'
    
     os.makedirs(directory, exist_ok=True)
     

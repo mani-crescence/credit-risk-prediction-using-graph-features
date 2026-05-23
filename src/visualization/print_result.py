@@ -8,9 +8,10 @@ def main_print(directory, discretization_type = None, graph_type = None):
 if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
-    discretization_type = args[1]
-    graph_type = args[2]
+    directory = args[1]
+    discretization_type = args[2]
+    graph_type = args[3]
 
-    directory = "reports/"+db_name+"/metrics/"
+    # directory = "reports/"+db_name+"/metrics/"
     main_print(directory, discretization_type, graph_type)
 

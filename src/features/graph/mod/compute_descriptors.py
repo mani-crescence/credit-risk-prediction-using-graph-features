@@ -6,7 +6,7 @@ from ....tools.execute import pagerank_personalized, compute_gx_class
           
 
 def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  graph_type,  discretization_type , 
-         paid_proportion_of_columns, unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items):
+         paid_proportion_of_columns, unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, _dir):
     
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
@@ -29,14 +29,14 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
             
         
         graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-        graph_descriptors.loc[row.Index, ['gx_0', 'gx_1']] = [gx_paid, gx_unpaid]
+        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
         
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)    
     graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > 
                                graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
     
     
-    directory='data/graph_features/'+bd_name+'/'+ graph_type + '/' +  discretization_type +'/train'
+    directory = _dir + bd_name +'/'+ graph_type + '/' +  discretization_type +'/train'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
    
@@ -57,13 +57,13 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
                                               unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target)
         
         graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-        graph_descriptors.loc[row.Index, ['gx_0', 'gx_1']] = [gx_paid, gx_unpaid]
+        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
     
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
     graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
     
-    directory='data/graph_features/'+bd_name+'/'+ graph_type + '/' + discretization_type +'/test'
+    directory = _dir + bd_name +'/'+ graph_type + '/' +  discretization_type +'/test'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
       
@@ -77,13 +77,17 @@ if __name__ == "__main__":
     alpha = args[3]
     alpha = float(alpha) 
     discretization_type = args[4].lower()
+    train_path = args[5]
+    test_path = args[6]
+    _dir = args[7]
+    _graph_dir = args[8]
     
-    train_discretized_data  = pd.read_csv("data/discretized/"+ db_name +"/discretized_train_data_"+ discretization_type +".csv", 
-                                        dtype='object', keep_default_na=False, na_values=[""])
+    # "data/discretized/"+ db_name +"/discretized_train_data_"+ discretization_type +".csv"
+    
+    train_discretized_data  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
     train_discretized_data.drop(columns='Unnamed: 0', inplace=True)
     
-    test_discretized_data  = pd.read_csv("data/discretized/"+ db_name +"/discretized_test_data_"+ discretization_type +".csv", 
-                                        dtype='object', keep_default_na=False, na_values=[""])
+    test_discretized_data  = pd.read_csv(test_path, dtype='object', keep_default_na=False, na_values=[""])
     test_discretized_data.drop(columns='Unnamed: 0', inplace=True)
     
     paid_columns_repartition = {}
@@ -105,11 +109,11 @@ if __name__ == "__main__":
             unpaid_columns_repartition[col][key] = value 
             number_of_unpaid_items += 1
     
-    with open("graph/"+db_name+"/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
+    with open(_graph_dir + db_name + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
         graph_data = pickle.load(f)
 
-    main(train_discretized_data, test_discretized_data,  graph_data["graph"], graph_data["descriptors"], 
-         target, db_name, alpha,  graph_type,  discretization_type, paid_columns_repartition, unpaid_columns_repartition, number_of_paid_items, number_of_unpaid_items)
+    main(train_discretized_data, test_discretized_data,  graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  
+         graph_type,  discretization_type, paid_columns_repartition, unpaid_columns_repartition, number_of_paid_items, number_of_unpaid_items, _dir)
     
     
     

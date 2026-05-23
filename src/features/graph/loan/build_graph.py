@@ -4,7 +4,7 @@ from ....tools.graph import gower_distance
 import pandas as pd
 
 
-def main(train_data, test_data, target):
+def main(train_data, test_data, target, _dir):
     
     max_col = {}
     min_col = {}
@@ -73,23 +73,25 @@ def main(train_data, test_data, target):
       
            
     graph_data = {"graph": graph, "descriptors" : [target + '_loan_0', target + '_loan_1']}        
-    directory='graph/'+ db_name + '/'  
+    directory = _dir + db_name + '/'  
     os.makedirs(directory, exist_ok=True)
     with open(directory + 'graph_' + graph_type.lower(), 'wb') as file:
         pickle.dump(graph_data, file)    
 
-    # return graph
 
 if __name__ == "__main__":
     args =  sys.argv[1:]   
     db_name = args[0]
     target = args[1]
     graph_type = args[2] 
+    train_path = args[3]
+    test_path = args[4]
+    _dir = args[5]
     
-    trainset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    trainset  = pd.read_csv(train_path, keep_default_na=False, na_values=[""])
+    testset  = pd.read_csv(test_path, keep_default_na=False, na_values=[""])
+    trainset.drop(columns=['Unnamed: 0'], inplace = True, errors='ignore')
+    testset.drop(columns=['Unnamed: 0'], inplace = True, errors='ignore') 
+        
     
-    testset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
-    testset.drop(columns=['Unnamed: 0', target], inplace=True)
-    
-    main(trainset, testset, target)
+    main(trainset, testset, target, _dir)

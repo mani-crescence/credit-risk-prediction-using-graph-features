@@ -6,7 +6,7 @@ from ....tools.execute import pagerank_personalized
 from .build_graph import main as build_graph
 
 
-def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type):
+def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type, _dir):
     
     print(f'############## processing  with  alpha ==>{alpha} ######################')
     
@@ -25,7 +25,7 @@ def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type)
         
     graph_descriptors = graph_descriptors.astype(float)
     
-    directory='data/graph_features/'+ db_name + '/' + graph_type +'/train'
+    directory = _dir + db_name + '/' + graph_type +'/train'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
     
@@ -44,7 +44,7 @@ def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type)
     graph_descriptors = graph_descriptors[descriptors]
     graph_descriptors = graph_descriptors.astype(float)
     
-    directory='data/graph_features/' + db_name+'/' + graph_type +'/test'
+    directory = _dir + db_name + '/' + graph_type +'/test'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
     
@@ -57,18 +57,25 @@ if __name__ == "__main__":
     graph_type = args[2].lower()
     alpha = args[3]
     alpha = float(alpha) 
+    train_path = args[4]
+    test_path = args[5]
+    _graph_dir = args[6]
+    _dir = args[7]
     
-    trainset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_train.csv", keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    # print(args)
+    # exit()
     
-    testset  = pd.read_csv("data/preprocessed/"+ db_name +"/preprocessed_data_test.csv", keep_default_na=False, na_values=[""])
-    testset.drop(columns=['Unnamed: 0', target], inplace=True)
+    trainset  = pd.read_csv(train_path, keep_default_na=False, na_values=[""])
+    trainset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
     
-    with open("graph/" + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
+    testset  = pd.read_csv(test_path, keep_default_na=False, na_values=[""])
+    testset.drop(columns=['Unnamed: 0', target], inplace=True, errors='ignore')
+    
+    with open(_graph_dir + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
         graph_data = pickle.load(f)
     
     
-    main(trainset, testset, graph_data["graph"], graph_data["descriptors"],  db_name, alpha,  graph_type)
+    main(trainset, testset, graph_data["graph"], graph_data["descriptors"],  db_name, alpha, graph_type, _dir)
     
     
     

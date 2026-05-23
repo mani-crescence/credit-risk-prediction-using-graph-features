@@ -31,16 +31,18 @@ def build(graph, data, set_type, discretization_type = None):
         
         return graph     
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     args =  sys.argv[1:]   
     db_name = args[0]
     target = args[1]
     graph_type = args[2] 
-    discretization_type = args[3].lower()
+    discretization_type = args[3]
+    train_path = args[4]
+    test_path = args[5]
+    _dir = args[6]
     
-    # data_file ='data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv'
-    trainset  = pd.read_csv('data/discretized/'+ db_name +'/discretized_train_data_'+ discretization_type + '.csv', dtype='object', keep_default_na=False, na_values=[""])
-    testset  = pd.read_csv('data/discretized/'+ db_name +'/discretized_test_data_'+ discretization_type + '.csv', dtype='object', keep_default_na=False, na_values=[""])
+    trainset  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
+    testset  = pd.read_csv(test_path, dtype='object', keep_default_na=False, na_values=[""])
     
     trainset.drop(columns=['Unnamed: 0'], inplace=True)
     testset.drop(columns=['Unnamed: 0', target], inplace=True)
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     descriptors_attributes = [node for node, data_ in inter_graph.nodes(data=True) if data_['type'] == 'attribute']
     graph_data = {"graph": graph, "descriptors": descriptors_attributes}  
     
-    directory='graph/'+ db_name + '/'  
+    directory = _dir + db_name + '/'  
     os.makedirs(directory, exist_ok=True)
     with open(directory + 'graph_' + graph_type.lower() + '_' + discretization_type, 'wb') as file:
         pickle.dump(graph_data, file)

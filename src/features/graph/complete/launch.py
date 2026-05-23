@@ -209,7 +209,6 @@ def launch_relate_edges(db_name):
         p.wait()     
         print(f"modeling train-test command '{p}' completed.")         
 
-
 def launch_graph_modeling(db_name):
     
     command = """make run_graph_modeling_complete_{0} DB_NAME={1} GRAPH_TYPE={2} """.format(*[db_name.lower(), db_name.lower(), "complete"])

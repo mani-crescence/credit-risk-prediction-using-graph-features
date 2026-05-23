@@ -1,11 +1,34 @@
 include .env
 export QT_QPA_PLATFORM=offscreen
+
 # Variables
 PYTHON_INTERPRETER= python3
 SRC_DIR = -m src.
 PRE_DIR = -m src.data_preprocessing.
 
 all: run
+
+run_all_dbs_with_normalization:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_all_databases $(DB_NAME)
+
+run_all_dbs_without_normalization:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_all_databases $(DB_NAME)	
+
+run_summarize_data_without_normalization:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_data_summarization $(DB_NAME) 
+
+run_summarize_data_with_normalization:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_data_summarization $(DB_NAME) 
+
+
+
+run_dbs_without_normalization: run_all_dbs_without_normalization	
+
+run_dbs_with_normalization: run_all_dbs_with_normalization
+
+run_graph: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
+
 
   
 #JAPANESE  
@@ -114,69 +137,77 @@ run_japanese:
 
 
 #AUSTRALIAN
+
+########################################################### DATA PREPROCESSING COMMANDS #######################################################################################
+
+run_splitting_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_AUSTRALIAN)	$(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TARGET_VALUES_AUSTRALIAN)
+
+run_engine_building_pre_australian:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN)
+
+run_engine_building_unsupervised_discretization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_unsupervised_discretization_engine $(DB_NAME) $(TARGET_NAME_AUSTRALIAN) "$(_PATH)"  "$(_DIR)" 
+
+run_engine_building_supervised_discretization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_supervised_discretization_engine $(DB_NAME) $(TARGET_NAME_AUSTRALIAN) "$(_PATH)" "$(_DIR)" 
+
 run_preprocess_train_australian:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TRAIN_LABEL)
 
 run_preprocess_test_australian:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TEST_LABEL)	
 
-run_discretization_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_AUSTRALIAN)
+run_supervised_discretization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_AUSTRALIAN)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
 
+run_unsupervised_discretization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.unsupervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_AUSTRALIAN)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
 
-########################################################################### GRAPH MANAGEMENT COMMANDS ##########################################################################################
+	
+########################################################################### GRAPH MANAGEMENT COMMANDS #########################################################################
+
 # BIP GRAPH	
 run_graph_modeling_bip_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
-
-run_graph_bip_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_bip_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
 # MOD GRAPH	 
 run_graph_modeling_mod_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_mod_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_mod_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
-# LIU GRAPH	
+
+# COMPLETE GRAPHS MANAGEMENT
 run_graph_modeling_complete_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  $(GRAPH_TYPE) 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  "$(_DIR)"
 
-run_build_edges_complete_australian: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_subset_edges $(DB_NAME) $(START) $(END) $(TYPE)
+run_create_edges_of_train_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_train $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
 
-run_relate_edges_complete_australian: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_relate_edges $(DB_NAME) $(START1) $(END1) $(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+run_create_edges_of_test_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_test $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
 
-run_graph_complete_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.launch  $(DB_NAME)
+run_relate_edges_of_train_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_train $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_test_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_test $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_both_australian: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_both $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(TRAIN_PATH)" "$(TEST_PATH)" "$(_DIR)"
 
 run_compute_descriptors_liu_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_liu_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.launch  $(DB_NAME)
-
-
-
-# GUI GRAPH	
-run_graph_modeling_gui_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 run_compute_descriptors_gui_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_gui_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.gui.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
 
 
 # GLO GRAPH
@@ -188,24 +219,27 @@ run_graph_glo_australian:
 
 # LOAN GRAPH	
 run_graph_modeling_loan_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN)  $(GRAPH_TYPE) 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_AUSTRALIAN) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_loan_australian: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  
-
-run_graph_loan_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.launch  $(DB_NAME)	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_AUSTRALIAN)  $(BD_NAME)  $(GRAPH_TYPE)  $(ALPHA)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(GRAPH_DIR)"  "$(_DIR)"
 
 ###############################################################################################################################################################
 
 run_make_configurations_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_AUSTRALIAN) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
 
+run_make_configurations_with_stepwise_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations_with_stepwise $(TARGET_NAME_AUSTRALIAN) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
+
+run_select_features_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.select_features_with_pvalue $(TARGET_NAME_AUSTRALIAN) $(DB_NAME) "$(TRAIN_PATH)" "$(SAVE_DIR)"
+	
 run_make_predictions_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_AUSTRALIAN) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) "$(CONFIG_PATH)" "$(SAVE_DIR)"  "$(CLASSIC_TRAIN_PATH)"  "$(CLASSIC_TEST_PATH)" "$(CLASSIC_CONFIG_PATH)" $(ALPHA) 
 
 run_print_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	"$(_DIR)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_plot_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_AUSTRALIAN)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
@@ -213,17 +247,36 @@ run_plot_australian:
 run_summarize_australian:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
-run_splitting_australian:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_AUSTRALIAN)	$(TARGET_NAME_AUSTRALIAN) $(USELESS_ATTRIBUTES_AUSTRALIAN)  $(TARGET_VALUES_AUSTRALIAN)
+run_without_normalization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
-run_engine_building_pre_australian:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_AUSTRALIAN) $(TARGET_NAME_AUSTRALIAN)
+run_with_normalization_australian:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME)
 
-run_engine_building_disc_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_AUSTRALIAN)
 
-run_australian:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -596,19 +649,10 @@ run_mortgage:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
 
 
-run_main_single_launch:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)main_single_launch $(DB_NAME)
 
-run_main_print:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  $(DB_NAME)
 
-run_general_launch:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)general_launch $(DB_NAME) 
 
-run_all:	run_main_single_launch	run_general_launch
 
-run_graph: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
 
 
 
@@ -643,98 +687,3 @@ run_graph:
 
 
 
-
-
-
-
-
-# #Bondora
-# run_preprocess_bondora:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_BONDORA) $(TARGET_NAME_BONDORA)  $(USELESS_ATTRIBUTES_BONDORA)  $(COST_ATTRIBUTES_BONDORA) $(ATTIBUTES_FOR_MANUAL_ENCODING_BONDARA)  $(VALUES_FOR_MANUAL_ENCODING_BONDARA)
-
-# run_sampling_bondora:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)sampling_main.py $(DB_NAME) $(DB_PATH_BONDORA) $(TARGET_NAME_BONDORA)  $(USELESS_ATTRIBUTES_BONDORA)  $(COST_ATTRIBUTES_BONDORA) $(ATTIBUTES_FOR_MANUAL_ENCODING_BONDARA)  $(VALUES_FOR_MANUAL_ENCODING_BONDARA)
-
-# run_discretization_bondora:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors_main.py $(TARGET_NAME_BONDORA) $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_graph_modeling_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
-
-# run_compute_descriptors_bondora:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_BONDORA)  $(BD_NAME)  $(DISCRETIZATION_TYPE)  $(PAGERANK_TYPE) $(ALPHA) $(GRAPH_TYPE)
-
-# run_make_configurations_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py  $(TARGET_NAME_BONDORA) $(DB_NAME) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
-
-# run_make_predictions_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_BONDORA) $(COST_ATTRIBUTES_BONDORA) $(DB_NAME) $(TRAIN_PATH) $(TEST_PATH) $(DISCRETIZATION_TYPE) $(ALPHA)
-
-# run_print_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  3 $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_plot_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py  $(TARGET_NAME_BONDORA) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(MODEL)
-
-# run_bondora:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)launch.py $(DB_NAME)
-
-
-# #Prosper
-# run_preprocess_prosper:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py $(DB_NAME) $(DB_PATH_PROSPER) $(TARGET_NAME_PROSPER) $(USELESS_ATTRIBUTES_PROSPER)  $(COST_ATTRIBUTES_PROSPER) $(ATTIBUTES_FOR_MANUAL_ENCODING_PROSPER)  $(VALUES_FOR_MANUAL_ENCODING_PROSPER)
-
-# run_sampling_prosper:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)sampling_main.py $(DB_NAME) $(DB_PATH_PROSPER) $(TARGET_NAME_PROSPER)  $(USELESS_ATTRIBUTES_PROSPER)  $(COST_ATTRIBUTES_PROSPER) $(ATTIBUTES_FOR_MANUAL_ENCODING_PROSPER)  $(VALUES_FOR_MANUAL_ENCODING_PROSPER)
-
-# run_discretization_prosper:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors_main.py $(TARGET_NAME_PROSPER) $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_graph_modeling_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
-
-# run_compute_descriptors_prosper:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_PROSPER)  $(BD_NAME)  $(DISCRETIZATION_TYPE)  $(PAGERANK_TYPE) $(ALPHA) $(GRAPH_TYPE)
-
-# run_make_configurations_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py  $(TARGET_NAME_PROSPER) $(DB_NAME) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
-
-# run_make_predictions_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_PROSPER) $(COST_ATTRIBUTES_PROSPER) $(DB_NAME) $(TRAIN_PATH) $(TEST_PATH) $(DISCRETIZATION_TYPE) $(ALPHA)
-
-# run_print_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  3  $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_plot_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py  $(TARGET_NAME_PROSPER) $(DB_NAME)  $(DISCRETIZATION_TYPE)  $(MODEL)
-
-# run_prosper:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)launch.py $(DB_NAME)
-
-# #ECAI
-# run_preprocess_ecai:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)preprocessing.py  $(DB_NAME) $(DB_PATH_ECAI) $(TARGET_NAME_ECAI)  $(USELESS_ATTRIBUTES_ECAI)  $(COST_ATTRIBUTES_ECAI) $(ATTIBUTES_FOR_MANUAL_ENCODING_ECAI)  $(VALUES_FOR_MANUAL_ENCODING_ECAI)
-
-# run_discretization_ecai:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors_main.py $(TARGET_NAME_ECAI) $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_graph_modeling_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)modeling.py $(DB_NAME) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
-
-# run_compute_descriptors_ecai:
-# 	 $(PYTHON_INTERPRETER) $(SRC_DIR)compute_descriptors.py $(TARGET_NAME_ECAI)  $(BD_NAME)  $(DISCRETIZATION_TYPE) $(PAGERANK_TYPE) $(ALPHA) $(GRAPH_TYPE)
-
-# run_make_configurations_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_configurations.py $(TARGET_NAME_ECAI) $(DB_NAME) $(PROCESS_TYPE)
-
-# run_make_predictions_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)make_predictions_main.py $(TARGET_NAME_ECAI) $(COST_ATTRIBUTES_ECAI) $(DB_NAME) $(TRAIN_PATH) $(TEST_PATH) $(DISCRETIZATION_TYPE) $(ALPHA)
-
-# run_print_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)print_result.py  2  $(DB_NAME)  $(DISCRETIZATION_TYPE)
-
-# run_plot_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py  $(TARGET_NAME_ECAI) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(MODEL)
-
-# run_ecai:
-# 	$(PYTHON_INTERPRETER) $(SRC_DIR)launch.py $(DB_NAME)
