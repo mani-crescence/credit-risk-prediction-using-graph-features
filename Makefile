@@ -22,9 +22,9 @@ run_summarize_data_with_normalization:
 
 
 
-run_dbs_without_normalization: run_all_dbs_without_normalization	
+# run_dbs_without_normalization: run_all_dbs_without_normalization	
 
-run_dbs_with_normalization: run_all_dbs_with_normalization
+# run_dbs_with_normalization: run_all_dbs_with_normalization
 
 run_graph: 
 	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
