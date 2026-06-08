@@ -4,10 +4,6 @@ from ..tools.preprocessing import *
 from ..tools.cleaning import *
 import sys
 import os
-from dotenv import load_dotenv
-from sklearn.model_selection import train_test_split
-
-load_dotenv()
 
 def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None, values_for_manual_encoding = None, label = None):
     data[target]  = data[target].astype('object')

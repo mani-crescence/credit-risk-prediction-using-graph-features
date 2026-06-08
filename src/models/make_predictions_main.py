@@ -1,6 +1,7 @@
 import pandas as pd 
 from sklearn.linear_model import LogisticRegression
 from sklearn import svm
+from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from ..tools.execute import *
@@ -90,14 +91,21 @@ if __name__ == "__main__":
     
     
     ############ MODELS #############
+    # models = {
+    #             'log': LogisticRegression(random_state=16, max_iter=1000), 
+    #             'svm': svm.SVC(),
+    #             'dtree': DecisionTreeClassifier(), 
+    #             'rf': RandomForestClassifier(), 
+    #             'xgb': XGBClassifier(objective='binary:logistic', max_depth=4, learning_rate=0.1, n_estimators=100, alpha=10),
+    #             'lda': LinearDiscriminantAnalysis(n_components=1)
+    #           }
+    
     models = {
-                'log': LogisticRegression(random_state=16, max_iter=1000), 
-                'svm': svm.SVC(),
-                'dtree': DecisionTreeClassifier(), 
-                'rf': RandomForestClassifier(), 
-                'xgb': XGBClassifier(objective='binary:logistic', max_depth=4, learning_rate=0.1, n_estimators=100, alpha=10),
-                'lda': LinearDiscriminantAnalysis(n_components=1)
-              }
+        'log': LogisticRegression(random_state=16, max_iter=1000), 
+        'svm': svm.SVC(),
+        'rf': RandomForestClassifier(), 
+        'mlp': MLPClassifier(random_state=1, max_iter=1000)
+    }
     
     with open(config_path, "r") as file:
         configurations = file.read()

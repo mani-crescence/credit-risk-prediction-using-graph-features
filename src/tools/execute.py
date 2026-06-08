@@ -717,26 +717,27 @@ def compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_
     couples = {}
     pagerank_attributes_copy = pagerank_attributes.copy()
     
-    for key, value in pagerank_attributes.items():
-        if target in key:
-            del pagerank_attributes_copy[key]
     
+    del pagerank_attributes_copy['st_0_' + discretization_type + '_' + graph_type]
+    del pagerank_attributes_copy['st_1_' + discretization_type + '_' + graph_type]
+
     for key, value in pagerank_attributes_copy.items():
+        
         sub = "_" + discretization_type + "_" + graph_type
-        couple = key.replace(sub, "" )
-        couple = couple.split("_")
-    
+        couple = key.replace(sub, "")
+        couple = couple.split("_", 1)
+        
         if couple[0] not in couples:
             couples[couple[0]] = {} 
         couples[couple[0]][couple[1]]  = value   
     
-    
+
     gx_paid = 0     
     for k1, v1 in paid_proportion_of_columns.items(): 
         for ka, va in v1.items():
             gx_paid += float(va)* float(couples[k1][ka])
-            
-            
+   
+       
     gx_unpaid = 0     
     for k1, v1 in unpaid_proportion_of_columns.items() : 
         for ka, va in v1.items():

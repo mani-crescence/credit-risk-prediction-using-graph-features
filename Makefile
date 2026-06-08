@@ -4,7 +4,7 @@ export QT_QPA_PLATFORM=offscreen
 # Variables
 PYTHON_INTERPRETER= python3
 SRC_DIR = -m src.
-PRE_DIR = -m src.data_preprocessing.
+PRE_DIR = -m src.data_processing.
 
 all: run
 
@@ -20,119 +20,133 @@ run_summarize_data_without_normalization:
 run_summarize_data_with_normalization:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_data_summarization $(DB_NAME) 
 
+run_all: run_all_dbs_without_normalization	run_all_dbs_with_normalization
 
-
-# run_dbs_without_normalization: run_all_dbs_without_normalization	
-
-# run_dbs_with_normalization: run_all_dbs_with_normalization
+run_summarization:  run_summarize_data_with_normalization # run_summarize_data_without_normalization
 
 run_graph: 
 	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
 
 
   
-#JAPANESE  
+#JAPANESE
+
+########################################################### DATA PREPROCESSING COMMANDS #######################################################################################
+
+run_splitting_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_JAPANESE)	$(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TARGET_VALUES_JAPANESE)
+
+run_engine_building_pre_japanese:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE)
+
+run_engine_building_unsupervised_discretization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_unsupervised_discretization_engine $(DB_NAME) $(TARGET_NAME_JAPANESE) "$(_PATH)"  "$(_DIR)" 
+
+run_engine_building_supervised_discretization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_supervised_discretization_engine $(DB_NAME) $(TARGET_NAME_JAPANESE) "$(_PATH)" "$(_DIR)" 
+
 run_preprocess_train_japanese:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TRAIN_LABEL)
 
 run_preprocess_test_japanese:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TEST_LABEL)
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TEST_LABEL)	
 
-run_discretization_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_JAPANESE)
+run_supervised_discretization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_JAPANESE)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
 
-############################################################## GRAPH MANAGEMENT COMMANDS ############################################################################################
+run_unsupervised_discretization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.unsupervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_JAPANESE)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
+
+	
+########################################################################### GRAPH MANAGEMENT COMMANDS #########################################################################
+
 # BIP GRAPH	
 run_graph_modeling_bip_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
-
-run_graph_bip_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_bip_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
-# MOD GRAPH	
+# MOD GRAPH	 
 run_graph_modeling_mod_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_mod_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_mod_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
-# COM GRAPH	
-run_graph_modeling_liu_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+
+# COMPLETE GRAPHS MANAGEMENT
+run_graph_modeling_complete_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  "$(_DIR)"
+
+run_create_edges_of_train_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_train $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_create_edges_of_test_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_test $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_relate_edges_of_train_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_train $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_test_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_test $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_both_japanese: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_both $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(TRAIN_PATH)" "$(TEST_PATH)" "$(_DIR)"
 
 run_compute_descriptors_liu_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_liu_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.launch  $(DB_NAME)
-
-
-# GUI GRAPH	
-run_graph_modeling_gui_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 run_compute_descriptors_gui_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_gui_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.gui.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
 
 
 # GLO GRAPH
 run_compute_descriptors_glo_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.glo.compute_descriptors  $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.compute_descriptors  $(TARGET_NAME_JAPANESE)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
 
 run_graph_glo_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.glo.launch  $(DB_NAME)	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.launch  $(DB_NAME)	
 
-#########################################################################################################################################################################################################
+# LOAN GRAPH	
+run_graph_modeling_loan_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_JAPANESE) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"
+
+run_compute_descriptors_loan_japanese: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_JAPANESE)  $(BD_NAME)  $(GRAPH_TYPE)  $(ALPHA)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(GRAPH_DIR)"  "$(_DIR)"
+
+###############################################################################################################################################################
 
 run_make_configurations_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_JAPANESE) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_JAPANESE) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
 
+run_make_configurations_with_stepwise_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations_with_stepwise $(TARGET_NAME_JAPANESE) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
+
+run_select_features_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.select_features_with_pvalue $(TARGET_NAME_JAPANESE) $(DB_NAME) "$(TRAIN_PATH)" "$(SAVE_DIR)"
+	
 run_make_predictions_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_JAPANESE) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_JAPANESE) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) "$(CONFIG_PATH)" "$(SAVE_DIR)"  "$(CLASSIC_TRAIN_PATH)"  "$(CLASSIC_TEST_PATH)" "$(CLASSIC_CONFIG_PATH)" $(ALPHA) 
 
 run_print_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE) 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	"$(_DIR)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_plot_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot $(TARGET_NAME_JAPANESE)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_JAPANESE)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
 
 run_summarize_japanese:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
-run_splitting_japanese:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_JAPANESE)  $(TARGET_NAME_JAPANESE) $(USELESS_ATTRIBUTES_JAPANESE)  $(TARGET_VALUES_JAPANESE)
+run_without_normalization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
-run_engine_building_pre_japanese: 
-	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_JAPANESE) $(TARGET_NAME_JAPANESE)
+run_with_normalization_japanese:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME)
 
-run_engine_building_disc_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_JAPANESE)
 
-run_build_edges_liu_japanese: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
-
-run_relate_edges_liu_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
-
-run_build_edges_gui_japanese: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
-
-run_relate_edges_gui_japanese: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
-
-run_japanese:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME)
 
 
 
@@ -255,27 +269,122 @@ run_with_normalization_australian:
 
 
 
+#BONDORA
+
+########################################################### DATA PREPROCESSING COMMANDS #######################################################################################
+
+run_splitting_bondora:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_BONDORA)	$(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TARGET_VALUES_BONDORA)
+
+run_engine_building_pre_bondora:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_BONDORA) $(TARGET_NAME_BONDORA)
+
+run_engine_building_unsupervised_discretization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_unsupervised_discretization_engine $(DB_NAME) $(TARGET_NAME_BONDORA) "$(_PATH)"  "$(_DIR)" 
+
+run_engine_building_supervised_discretization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_supervised_discretization_engine $(DB_NAME) $(TARGET_NAME_BONDORA) "$(_PATH)" "$(_DIR)" 
+
+run_preprocess_train_bondora:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_BONDORA) $(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TRAIN_LABEL)
+
+run_preprocess_test_bondora:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_BONDORA) $(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TEST_LABEL)	
+
+run_supervised_discretization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_BONDORA)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
+
+run_unsupervised_discretization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.unsupervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_BONDORA)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
+
+	
+########################################################################### GRAPH MANAGEMENT COMMANDS #########################################################################
+
+# BIP GRAPH	
+run_graph_modeling_bip_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_BONDORA)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
+
+run_compute_descriptors_bip_bondora: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
+
+
+# MOD GRAPH	 
+run_graph_modeling_mod_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_BONDORA)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
+
+run_compute_descriptors_mod_bondora: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
 
+# COMPLETE GRAPHS MANAGEMENT
+run_graph_modeling_complete_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  "$(_DIR)"
+
+run_create_edges_of_train_bondora: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_train $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_create_edges_of_test_bondora: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_test $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_relate_edges_of_train_bondora: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_train $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_test_bondora: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_test $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_both_bondora: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_both $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(TRAIN_PATH)" "$(TEST_PATH)" "$(_DIR)"
+
+run_compute_descriptors_liu_bondora: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
+
+run_compute_descriptors_gui_bondora: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.gui.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
 
 
+# GLO GRAPH
+run_compute_descriptors_glo_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.compute_descriptors  $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
 
+run_graph_glo_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.launch  $(DB_NAME)	
 
+# LOAN GRAPH	
+run_graph_modeling_loan_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_BONDORA) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"
 
+run_compute_descriptors_loan_bondora: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME)  $(GRAPH_TYPE)  $(ALPHA)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(GRAPH_DIR)"  "$(_DIR)"
 
+###############################################################################################################################################################
 
+run_make_configurations_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_BONDORA) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
 
+run_make_configurations_with_stepwise_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations_with_stepwise $(TARGET_NAME_BONDORA) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
 
+run_select_features_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.select_features_with_pvalue $(TARGET_NAME_BONDORA) $(DB_NAME) "$(TRAIN_PATH)" "$(SAVE_DIR)"
+	
+run_make_predictions_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_BONDORA) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) "$(CONFIG_PATH)" "$(SAVE_DIR)"  "$(CLASSIC_TRAIN_PATH)"  "$(CLASSIC_TEST_PATH)" "$(CLASSIC_CONFIG_PATH)" $(ALPHA) 
 
+run_print_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	"$(_DIR)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
+run_plot_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_BONDORA)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
 
+run_summarize_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
+run_without_normalization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
-
-
-
-
+run_with_normalization_bondora:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME)
 
 
 
@@ -325,71 +434,110 @@ run_german:
 
 
 
-#HMEQ
+# HMEQ
+
+########################################################### DATA PREPROCESSING COMMANDS #######################################################################################
+
+run_splitting_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_HMEQ)	$(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TARGET_VALUES_HMEQ)
+
+run_engine_building_pre_hmeq:
+	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_HMEQ) $(TARGET_NAME_HMEQ)
+
+run_engine_building_unsupervised_discretization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_unsupervised_discretization_engine $(DB_NAME) $(TARGET_NAME_HMEQ) "$(_PATH)"  "$(_DIR)" 
+
+run_engine_building_supervised_discretization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.engine.build_supervised_discretization_engine $(DB_NAME) $(TARGET_NAME_HMEQ) "$(_PATH)" "$(_DIR)" 
+
 run_preprocess_train_hmeq:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TRAINSET_PATH_HMEQ) $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TRAIN_LABEL)
 
 run_preprocess_test_hmeq:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_HMEQ) $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TEST_LABEL)	
 
-run_discretization_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.discretization  $(DB_NAME) $(DISCRETIZATION_TYPE) $(LABEL) $(TARGET_NAME_HMEQ)
+run_supervised_discretization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_HMEQ)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
 
-######################################################## GRAPH MANAGEMENT COMMANDS #########################################################################################################
+run_unsupervised_discretization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.unsupervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_HMEQ)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
+
+	
+########################################################################### GRAPH MANAGEMENT COMMANDS #########################################################################
+
 # BIP GRAPH	
 run_graph_modeling_bip_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
-
-run_graph_bip_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_bip_hmeq: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.bip.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
 # MOD GRAPH	 
 run_graph_modeling_mod_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"
 
 run_compute_descriptors_mod_hmeq: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_mod_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.launch  $(DB_NAME)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.mod.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 
-# COM GRAPH	
-run_graph_modeling_liu_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+
+# COMPLETE GRAPHS MANAGEMENT
+run_graph_modeling_complete_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.build_graph $(DB_NAME)  "$(_DIR)"
+
+run_create_edges_of_train_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_train $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_create_edges_of_test_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.create_edges_of_test $(DB_NAME) $(START) $(END) "$(_PATH)" "$(_DIR)"
+
+run_relate_edges_of_train_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_train $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_test_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_test $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(_PATH)"  "$(_DIR)"
+
+run_relate_edges_of_both_hmeq: 	
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_both $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(TRAIN_PATH)" "$(TEST_PATH)" "$(_DIR)"
 
 run_compute_descriptors_liu_hmeq: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
-
-run_graph_liu_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.launch  $(DB_NAME)
-
-
-# GUI GRAPH	
-run_graph_modeling_gui_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 run_compute_descriptors_gui_hmeq: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)  $(DISCRETIZATION_TYPE) $(LABEL)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.gui.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
 
-run_graph_gui_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.launch  $(DB_NAME)
 
-########################################################################################################################################################################################
+# GLO GRAPH
+run_compute_descriptors_glo_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.compute_descriptors  $(TARGET_NAME_HMEQ)  $(BD_NAME) $(GRAPH_TYPE) $(ALPHA)	
 
+run_graph_glo_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.glo.launch  $(DB_NAME)	
+
+# LOAN GRAPH	
+run_graph_modeling_loan_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.build_graph $(DB_NAME) $(TARGET_NAME_HMEQ) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"
+
+run_compute_descriptors_loan_hmeq: 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.loan.compute_descriptors $(TARGET_NAME_HMEQ)  $(BD_NAME)  $(GRAPH_TYPE)  $(ALPHA)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(GRAPH_DIR)"  "$(_DIR)"
+
+###############################################################################################################################################################
 
 run_make_configurations_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_HMEQ) $(DB_NAME)  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations $(TARGET_NAME_HMEQ) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
 
+run_make_configurations_with_stepwise_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_configurations_with_stepwise $(TARGET_NAME_HMEQ) $(DB_NAME) $(SAVE_DIR) $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CLASSIC_TRAIN_PATH) $(NEW_DESCRIPTOR_TRAIN_PATH) 
+
+run_select_features_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.select_features_with_pvalue $(TARGET_NAME_HMEQ) $(DB_NAME) "$(TRAIN_PATH)" "$(SAVE_DIR)"
+	
 run_make_predictions_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_HMEQ) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) $(CONFIG_PATH) $(ALPHA)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)models.make_predictions_main $(TARGET_NAME_HMEQ) $(DB_NAME)  "$(TRAIN_PATH)"  "$(TEST_PATH)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE) "$(CONFIG_PATH)" "$(SAVE_DIR)"  "$(CLASSIC_TRAIN_PATH)"  "$(CLASSIC_TEST_PATH)" "$(CLASSIC_CONFIG_PATH)" $(ALPHA) 
 
 run_print_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	$(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)visualization.print_result  $(DB_NAME)	"$(_DIR)"  $(DISCRETIZATION_TYPE) $(GRAPH_TYPE)
 
 run_plot_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)build_shap_plot.py $(TARGET_NAME_HMEQ)  $(DB_NAME)  "$(TRAIN_DESCRIPTORS_PATHS)" "$(TEST_DESCRIPTORS_PATHS)"  $(MODEL) $(DISCRETIZATION_TYPE)
@@ -397,23 +545,11 @@ run_plot_hmeq:
 run_summarize_hmeq:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)summarize_shap_attributes_importance.py $(DB_NAME) $(DISCRETIZATION_TYPE)
 
-run_splitting_hmeq:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_HMEQ)  $(TARGET_NAME_HMEQ) $(USELESS_ATTRIBUTES_HMEQ)  $(TARGET_VALUES_HMEQ)
+run_without_normalization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
-run_engine_building_pre_hmeq:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_HMEQ) $(TARGET_NAME_HMEQ)
-
-run_engine_building_disc_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.build_discretization_engine $(DB_NAME)   $(DISCRETIZATION_TYPE) $(TARGET_NAME_HMEQ)
-
-run_hmeq:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)single_launch  $(DB_NAME) 
-
-run_build_edges_hmeq: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.build_complete_graph $(DB_NAME) $(START) $(END) $(TYPE)
-
-run_relate_edges_hmeq: 	
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.relate_edges_complete_graph $(DB_NAME) $(START1) $(END1)	$(START2) $(END2) $(TYPE)  "$(PATH1)"  "$(PATH2)"
+run_with_normalization_hmeq:
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME)
 
 
 #KAGGLE-CREDIT-RISK

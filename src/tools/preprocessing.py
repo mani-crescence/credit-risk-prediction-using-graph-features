@@ -290,7 +290,7 @@ def fill_nan_attributes2(data, attributes):
     
 def one_hot_encoder(data):
     
-    encoder = OneHotEncoder(sparse_output=False)
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
     
     encoder.fit(data)
     

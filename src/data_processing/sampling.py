@@ -55,11 +55,7 @@ if __name__ == "__main__":
     path = args[1]
     target = args[2]
     unuseful_attributes = args[3]
-    # print(args)
-    # exit()
-    # cost_attributes = args[4]
     unuseful_attributes = ast.literal_eval(unuseful_attributes)
-    # cost_attributes = ast.literal_eval(cost_attributes)
 
     if len(args) > 5:
         attributes_for_manual_encoding = args[4]

@@ -1,8 +1,7 @@
 import subprocess
  
 
-all_db_names = ["AUSTRALIAN"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
-
+all_db_names = ["BONDORA"]#"JAPANESE"] #, "", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 
 
 def execution(db_names):

@@ -4,11 +4,8 @@ from ..tools.preprocessing import *
 from ..tools.cleaning import *
 import sys
 import os
-from dotenv import load_dotenv
 import pickle
 
-
-load_dotenv()
 
 def preprocess_main(data, db_name, target):
     data[target]  = data[target].astype('object') 

@@ -1,6 +1,6 @@
 import subprocess
 
-all_db_names = ["AUSTRALIAN"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
+all_db_names = ["JAPANESE"]#"JAPANESE"] #, "AUSTRALIAN", "HMEQ"]#, "KAGGLE_CREDIT_RISK", "AER", "AUSTRALIAN", "JAPANESE", "HMEQ"]
 graphs = ["glo"]#, "mod", "liu", "gui", "bip", "loan"]
 
 

@@ -19,8 +19,15 @@ if __name__== "__main__":
 
     data = pd.read_csv(path, low_memory=False, na_values=['?'])
     
+    data_sample = pd.concat(
+        [
+            data[data[target] == 0].sample(n=100, random_state=1),
+            data[data[target] == 1].sample(n=100, random_state=1),
+        ]
+    ).reset_index(drop=True)
+    
     ########### DELETION OF UNUSEFUL ATTRIBUTES #########
-    del_un_data = delete_attribute(data, unuseful_attributes)
+    del_un_data = delete_attribute(data_sample, unuseful_attributes)
         
     ############ TARGET ANALYSIS ################
     if target_values is not None and target_values != {}:

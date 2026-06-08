@@ -7,10 +7,10 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["australian"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
+db_names = ["bondora"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod", "liu", "gui", "loan"]#, "gui"]
-discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]#, None]
+graphs = [None, "bip", "bip", "mod", "mod"]#, "liu", "gui", "loan"]#, "gui"]
+discretizations = [None, "uns", "sup", "uns", "sup"]#, None, None, None]#, None]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
 models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
 metrics = ["acc", "f1"]
