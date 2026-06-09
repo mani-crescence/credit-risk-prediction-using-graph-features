@@ -17,7 +17,7 @@ graphs = ["bip", "bip", "mod", "mod", None, None]
 discretizations = ["uns", "sup", "uns", "sup", "na", None]
 models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]
 metrics = ["acc", "f1"]
-state_of_art_graphs = ["LIU", "GUI"]
+state_of_art_graphs = ["LIU"] #"GUI",
 standard_proposed_graphs = ["MOD", "BIP"]
 proposed_complete_graph = ["LOAN"]
 
@@ -367,14 +367,14 @@ def launch_graph_modeling(db_name):
     commands = []
     _dir = 'graph/with_normalization/' 
     
-    for graph_type in standard_proposed_graphs:
-        for discretization_type in discretization_types:
-            train_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_train_data_" + discretization_type.lower() + ".csv"
-            test_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_test_data_" + discretization_type.lower() + ".csv"
+    # for graph_type in standard_proposed_graphs:
+    #     for discretization_type in discretization_types:
+    #         train_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_train_data_" + discretization_type.lower() + ".csv"
+    #         test_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_test_data_" + discretization_type.lower() + ".csv"
            
             
-            commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} """.
-                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), discretization_type.lower(), train_path, test_path, _dir]))
+    #         commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} """.
+    #                     format(*[db_name.lower(), db_name.lower(), graph_type.lower(), discretization_type.lower(), train_path, test_path, _dir]))
     
     # for graph_type in proposed_complete_graph:
     #      train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train.csv"
@@ -386,6 +386,10 @@ def launch_graph_modeling(db_name):
     
     # commands.append("""make run_graph_modeling_complete_{0} DB_NAME={1}  _DIR={2} """.
     #                 format(*[db_name.lower(), db_name.lower(),  _dir]))
+
+    for graph_type in state_of_art_graphs :
+            commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} """.
+                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), None, None, None,  _dir]))
        
             
     processes = [] 
@@ -743,7 +747,7 @@ if __name__ == "__main__":
     db_name = args[0]
     
     # launch_split(db_name)
-    # launch_build_engine_for_preprocessing(db_name)
+    launch_build_engine_for_preprocessing(db_name)
     # launch_preprocess_train(db_name)
     # launch_preprocess_test(db_name)
     # launch_build_engine_for_unsupervized_discretization(db_name)
@@ -761,7 +765,7 @@ if __name__ == "__main__":
     # launch_predict(db_name)
     # launch_predict_classic_with_stepwise(db_name)
     # launch_predict_with_stepwise(db_name)
-    launch_print(db_name)
+    # launch_print(db_name)
     # launch_print_with_stepwise(db_name)
     # launch_plot(db_name)
  

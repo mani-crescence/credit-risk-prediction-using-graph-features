@@ -19,6 +19,7 @@ if __name__== "__main__":
 
     data = pd.read_csv(path, low_memory=False, na_values=['?'])
     
+    
     data_sample = pd.concat(
         [
             data[data[target] == 0].sample(n=100, random_state=1),
@@ -45,17 +46,21 @@ if __name__== "__main__":
     
     unnan_data[target]  = unnan_data[target].astype('object')
     
-    
     trainset, testset = train_test_split(unnan_data, test_size=0.2, random_state=42, shuffle=True) 
     
-    # print(trainset.isnull().sum())
-    # exit()
-       
+    # directory = 'data/raw/train/'
+    # os.makedirs(directory, exist_ok=True)
+    # trainset.to_csv(directory + 'trainset_'+ db_name +'.csv', index=False)
+
+    # directory = 'data/raw/test/'
+    # os.makedirs(directory, exist_ok=True)
+    # testset.to_csv(directory + 'testset_'+ db_name +'.csv', index=False)
+    
     directory = 'data/raw/train/'
     os.makedirs(directory, exist_ok=True)
-    trainset.to_csv(directory + 'trainset_'+ db_name +'.csv', index=False)
+    trainset.to_feather(directory + 'trainset_'+ db_name +'.feather')
 
     directory = 'data/raw/test/'
     os.makedirs(directory, exist_ok=True)
-    testset.to_csv(directory + 'testset_'+ db_name +'.csv', index=False)
+    testset.to_feather(directory + 'testset_'+ db_name +'.feather')
     

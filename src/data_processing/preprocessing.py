@@ -4,6 +4,7 @@ from ..tools.preprocessing import *
 from ..tools.cleaning import *
 import sys
 import os
+from sklearn.preprocessing import StandardScaler
 
 def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None, values_for_manual_encoding = None, label = None):
     data[target]  = data[target].astype('object')
@@ -65,6 +66,108 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
     os.makedirs(directory, exist_ok=True)
     preprocessed_data.to_csv(directory+'/preprocessed_data_'+ label+'.csv')
     partial_preprocessed_data.to_csv(directory+'/partial_preprocessed_data_'+ label+'.csv')
+
+def clean_data(df):
+    """
+    Clean the given DataFrame, drop unnecessary columns, handle missing data, remove biased variables, 
+    avoid multicollinearity by checking correlation, and keep only relevant columns.
+    """
+    useless_columns = ["LoanDate", "FirstPaymentDate", "MaturityDate_Original", "MaturityDate_Last",
+            "LanguageCode", "Country", "County",  "City", "year", "CreditScoreEsMicroL",
+            "Restructured", "Rating", "LastPaymentOn", "MonthlyPaymentDay", "VerificationType", 'PrincipalPaymentsMade',
+       'InterestAndPenaltyPaymentsMade', 'PrincipalBalance',  'InterestAndPenaltyBalance'
+           ]
+
+    # Drop these forward-looking biased variables
+    df = df.drop(useless_columns, axis=1)
+
+    df = df.dropna(axis=0)
+
+    df = df.reset_index(drop=True)
+
+    object_columns = df.select_dtypes("object").columns.to_list()
+
+    encoder = OneHotEncoder(sparse_output=False)
+    
+    columns_encoded = encoder.fit_transform(df[object_columns])
+    
+    data_one_hot_encoded = pd.DataFrame(columns_encoded, columns=encoder.get_feature_names_out(object_columns)).astype('float')
+    
+    data_preprocessed = pd.concat([df, data_one_hot_encoded], axis=1)
+    
+    data_preprocessed = data_preprocessed.drop(object_columns, axis=1)
+
+    # Generate a correlation matrix of the DataFrame
+    corr_matrix = data_preprocessed.corr().abs()
+
+    # print(corr_matrix)
+    # print('before', len(data_preprocessed.columns))
+    
+    # Select upper triangle of correlation matrix
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    
+    # Find columns with correlation greater than 0.95
+    to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
+    
+    # Drop these columns from the DataFrame
+    data_preprocessed = data_preprocessed.drop(data_preprocessed[to_drop], axis=1)
+
+    # print('after', len(data_preprocessed.columns))
+    
+    
+    df_clean = clean_data(df)
+
+# Initialize the scaler
+    scaler = StandardScaler()
+
+
+    X_df = df_clean.drop('Default', axis=1)
+
+    # Transform the features
+    scaled_features = scaler.fit_transform(X_df)
+
+    # # Create a new DataFrame for the scaled features
+    scaled_df = pd.DataFrame(scaled_features, columns=X_df.columns)  # Exclude the 'Default' column name
+
+    # # Add the 'Default' column back into the DataFrame
+    scaled_df['Default'] = df_clean['Default']
+    
+    def remove_highly_correlated_features(df, threshold=0.8):
+        """
+        Remove highly correlated features from a DataFrame based on a given threshold.
+
+        Parameters:
+        df (pandas.DataFrame): The input DataFrame.
+        threshold (float): The threshold for high correlation. Default is 0.8.
+
+        Returns:
+        df_filtered (pandas.DataFrame): The filtered DataFrame with highly correlated features removed.
+        """
+
+        features_to_remove = []
+
+        # Exclude the "Default" column from correlation analysis
+        df_subset = df.drop("Default", axis=1)
+
+        # Calculate the correlation matrix
+        correlation_matrix = df_subset.corr()
+
+        # Identify highly correlated features
+        for i in range(len(correlation_matrix.columns)):
+            for j in range(i+1, len(correlation_matrix.columns)):
+                if abs(correlation_matrix.iloc[i, j]) > threshold:
+                    # Append the feature to the removal list
+                    features_to_remove.append(correlation_matrix.columns[j])
+
+        # Remove the highly correlated features
+        df_filtered = df.drop(features_to_remove, axis=1)
+
+        return df_filtered, correlation_matrix, features_to_remove
+    df, correlation_matrix,features_to_remove = remove_highly_correlated_features(scaled_df, threshold=0.9)
+    # df = create_balanced_sample(df, num_default_samples, replace=False)
+    df['Default'] = df['Default'].astype('bool')
+
+    return data_preprocessed
 
 if __name__== "__main__":
     args = sys.argv[1:]

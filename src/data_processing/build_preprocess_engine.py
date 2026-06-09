@@ -39,7 +39,7 @@ if __name__== "__main__":
     path = args[1]
     target = args[2]
     
-    data = pd.read_csv(path, low_memory=False, keep_default_na=False, na_values=[""])
+    data = pd.read_feather(path)
     
     preprocess_main(data, db_name, target)
 

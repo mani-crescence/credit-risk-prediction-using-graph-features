@@ -12,7 +12,7 @@ discretization_types =  ["SUP", "UNS"]
 graphs = [None, "bip", "bip", "mod", "mod"]#, "liu", "gui", "loan"]#, "gui"]
 discretizations = [None, "uns", "sup", "uns", "sup"]#, None, None, None]#, None]
 # models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
-models = ["log", "svm", "dtree", "rf", "xgb", "lda"]
+models = ["log", "svm", "rf", "mlp"]
 metrics = ["acc", "f1"]
 
 def launch_attributes_importance():
@@ -235,7 +235,7 @@ def generate_best_combination():
 
 if __name__ == "__main__":
     a = 0
-    generate_result_with_stepwise()
+    # generate_result_with_stepwise()
     generate_result_without_stepwise()
     # launch_attributes_importance()
     # attributes_classification()

@@ -37,6 +37,7 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
         
     graph_descriptors = pd.DataFrame()
     graph_descriptors_for_gy = pd.DataFrame()
+    
     for row in test_data.itertuples():
         
         graph_copy = graph.copy()

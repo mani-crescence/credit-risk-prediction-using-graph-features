@@ -214,6 +214,8 @@ def gower_distance(u, v, attributes, max = None, min = None):
 def euclidian_distance(u, v, attributes):
     sum = 0
     for i in attributes:
+        if v[i] is None:
+            continue
         sum += (u[i] - v[i])**2
 
     return  math.sqrt(sum)
