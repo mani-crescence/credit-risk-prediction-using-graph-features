@@ -16,10 +16,8 @@ from ..features.select_features_with_pvalue import *
 def processing(classic_train_path, classic_test_path, classic_config_path, configurations, original_directory, path, alpha = None, discretization_type = None):
     
     classic_result_path = original_directory + "/classic/metrics_results.txt"
-    trainset = pd.read_csv(classic_train_path, keep_default_na=False, na_values=[""])
-    testset = pd.read_csv(classic_test_path, keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
-    testset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
+    trainset = pd.read_feather(classic_train_path)
+    testset = pd.read_feather(classic_test_path)
     
     with open(classic_config_path, "r") as file:
         classic_configurations = file.read()
@@ -35,10 +33,8 @@ def processing(classic_train_path, classic_test_path, classic_config_path, confi
         classic_result = file.read()
     classic_result = ast.literal_eval(classic_result)
 
-    train_new_descriptors = pd.read_csv(train_data_path, keep_default_na=False, na_values=[""])
-    train_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
-    test_new_descriptors = pd.read_csv(test_data_path, keep_default_na=False, na_values=[""])
-    test_new_descriptors.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
+    train_new_descriptors = pd.read_feather(train_data_path)
+    test_new_descriptors = pd.read_feather(test_data_path)
     
     final_trainset = pd.concat([trainset, train_new_descriptors], axis=1)
     final_testset = pd.concat([testset, test_new_descriptors], axis=1)
@@ -89,17 +85,6 @@ if __name__ == "__main__":
          
     os.makedirs(directory, exist_ok=True )
     
-    
-    ############ MODELS #############
-    # models = {
-    #             'log': LogisticRegression(random_state=16, max_iter=1000), 
-    #             'svm': svm.SVC(),
-    #             'dtree': DecisionTreeClassifier(), 
-    #             'rf': RandomForestClassifier(), 
-    #             'xgb': XGBClassifier(objective='binary:logistic', max_depth=4, learning_rate=0.1, n_estimators=100, alpha=10),
-    #             'lda': LinearDiscriminantAnalysis(n_components=1)
-    #           }
-    
     models = {
         'log': LogisticRegression(random_state=16, max_iter=1000), 
         'svm': svm.SVC(),
@@ -111,18 +96,13 @@ if __name__ == "__main__":
         configurations = file.read()
     configurations = ast.literal_eval(configurations)
     
-    
-
     if  discretization_type == 'None' and graph_type == 'None':
         with open(directory + '/models', 'wb') as file:
             pickle.dump(models, file)
 
         classic_result = None
-        final_trainset = pd.read_csv(train_data_path, keep_default_na=False, na_values=[""])
-        final_trainset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
-        final_testset = pd.read_csv(test_data_path, keep_default_na=False, na_values=[""])
-        final_testset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
-        
+        final_trainset = pd.read_feather(train_data_path)
+        final_testset = pd.read_feather(test_data_path)
 
         real_results, _ = build_predictions(models, final_trainset, final_testset,  configurations, target, classic_result)
         

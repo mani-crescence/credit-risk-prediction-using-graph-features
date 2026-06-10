@@ -88,10 +88,8 @@ if __name__ == "__main__":
     test_path = args[4]
     _dir = args[5]
     
-    trainset  = pd.read_csv(train_path, keep_default_na=False, na_values=[""])
-    testset  = pd.read_csv(test_path, keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace = True, errors='ignore')
-    testset.drop(columns=['Unnamed: 0'], inplace = True, errors='ignore') 
-        
+    trainset  = pd.read_csv(train_path)
+    testset  = pd.read_csv(test_path)
+    testset.drop(columns=[target], inplace=True) 
     
     main(trainset, testset, target, _dir)

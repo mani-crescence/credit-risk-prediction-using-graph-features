@@ -51,13 +51,11 @@ if __name__ == "__main__":
     train_path = args[4]
     test_path = args[5]
     _dir = args[6]
-    
      
-    trainset  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace=True)
+    trainset  = pd.read_feather(train_path)
     
-    testset  = pd.read_csv(test_path, dtype='object', keep_default_na=False, na_values=[""])
-    testset.drop(columns=['Unnamed: 0', target], inplace=True)
+    testset  = pd.read_feather(test_path)
+    testset.drop(columns=[target], inplace=True)
     
     graph  = main(trainset, testset, discretization_type)
     

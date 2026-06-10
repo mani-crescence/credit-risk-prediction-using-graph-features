@@ -9,9 +9,8 @@ import math
 
 db_names = ["bondora"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod"]#, "liu", "gui", "loan"]#, "gui"]
-discretizations = [None, "uns", "sup", "uns", "sup"]#, None, None, None]#, None]
-# models = ["LR", "SVM", "DT", "RF", "XGB", "LDA", "MLP"]
+graphs = [None, "bip", "bip", "mod", "mod", "gui", "liu_v1", "liu_v2"] #, "liu", "gui", "loan"]#, "gui"]
+discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
 models = ["log", "svm", "rf", "mlp"]
 metrics = ["acc", "f1"]
 

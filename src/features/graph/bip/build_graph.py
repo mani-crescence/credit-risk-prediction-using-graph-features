@@ -41,11 +41,10 @@ if __name__ == "__main__":
     test_path = args[5]
     _dir = args[6]
     
-    trainset  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
-    testset  = pd.read_csv(test_path, dtype='object', keep_default_na=False, na_values=[""])
+    trainset  = pd.read_feather(train_path)
+    testset  = pd.read_feather(test_path)
     
-    trainset.drop(columns=['Unnamed: 0'], inplace=True)
-    testset.drop(columns=['Unnamed: 0', target], inplace=True)
+    testset.drop(columns=[target], inplace=True)
     
     inter_graph = build(None, trainset, "train", discretization_type)
     

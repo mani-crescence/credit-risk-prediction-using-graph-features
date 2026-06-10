@@ -22,7 +22,7 @@ def main(data, type_of_set, db_name, type_of_normalization):
         
     directory = "data/" + type_of_normalization + "/discretized/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)  
-    data.to_csv(directory + 'discretized_' + type_of_set + '_data_uns.csv')  
+    data.to_feather(directory + 'discretized_' + type_of_set + '_data_uns.feather')  
          
    
 
@@ -37,12 +37,12 @@ if __name__ == "__main__":
     
     
 
-    partial_preprocessed_data  = pd.read_csv(path,keep_default_na=False, na_values=[""])
+    partial_preprocessed_data  = pd.read_feather(path)
     
-    try:
-        partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace = True)
-    except:
-        print("Column 'Unnamed: 0' not existed!") 
+    # try:
+    #     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace = True)
+    # except:
+    #     print("Column 'Unnamed: 0' not existed!") 
     
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
     

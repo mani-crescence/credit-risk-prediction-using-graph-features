@@ -98,13 +98,13 @@ run_relate_edges_of_both_bondora:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.relate_edges_of_both $(DB_NAME) $(START1) $(END1) $(START2) $(END2) "$(TRAIN_PATH)" "$(TEST_PATH)" "$(_DIR)"
 
 run_compute_descriptors_liu_v1_bondora: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors_v1 $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors_v1 $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 run_compute_descriptors_liu_v2_bondora: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.liu.compute_descriptors_v2 $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.liu.compute_descriptors_v2 $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)"
 
 run_compute_descriptors_gui_bondora: 
-	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.complete.gui.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
+	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.compute_descriptors $(TARGET_NAME_BONDORA)  $(BD_NAME) $(GRAPH_TYPE) "$(TRAIN_PATH)"  "$(TEST_PATH)"  "$(_DIR)"  "$(GRAPH_DIR)" 
 
 run_graph_modeling_gui_bondora:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.graph.gui.build_graph $(DB_NAME) $(TARGET_NAME_BONDORA)  $(GRAPH_TYPE) $(DISCRETIZATION_TYPE) "$(TRAIN_PATH)" "$(TEST_PATH)"  "$(_DIR)"

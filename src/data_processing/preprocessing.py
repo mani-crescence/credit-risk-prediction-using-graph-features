@@ -27,14 +27,13 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
          
         
     partial_preprocessed_data = numerical_data.copy()
-
+    
         ############# ENCODING #################  
     boolean_values = ast.literal_eval(os.getenv('BOOLEAN_VALUES') )    
     numerical_data = bool_encoder(numerical_data, boolean_values)
     numerical_data[target]  = numerical_data[target].astype('float')
-
-     
-
+    
+    
           ######### ORDINAL ENCODING #######   
     if attributes_for_manual_encoding is not None and values_for_manual_encoding is not None:
          numerical_data = manual_encoder(numerical_data, [attributes_for_manual_encoding, values_for_manual_encoding])
@@ -46,6 +45,7 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
     
     preprocessed_data = numerical_data.copy()
     
+    
     try:
         with open("engine/preprocessing/" + db_name+ "/one_hot_encoder_engine", "rb") as file:
             encoder = pickle.load(file) 
@@ -53,19 +53,26 @@ def preprocess_main(data, target, db_name, attributes_for_manual_encoding = None
         print("Not process for categorical data")
     else:
         one_hot_encoded_features = encoder.transform(preprocessed_data[columns_for_one_hot_encoding])  
-        one_hot_encoded_data = pd.DataFrame(one_hot_encoded_features, columns=encoder.get_feature_names_out(columns_for_one_hot_encoding))
+        one_hot_encoded_data = pd.DataFrame(one_hot_encoded_features, 
+                                            columns=encoder.get_feature_names_out(columns_for_one_hot_encoding), index=preprocessed_data.index)
         preprocessed_data = pd.concat([preprocessed_data, one_hot_encoded_data], axis=1)
         preprocessed_data = preprocessed_data.drop(columns_for_one_hot_encoding, axis=1)  
-    
+        
+       
+    # print(one_hot_encoded_data)
 
     # partial_preprocessed_data = partial_preprocessed_data.sample(50)
     # index_t = partial_preprocessed_data.index
     # data_preprocessed= data_preprocessed.loc[index_t]
     
+    # for i in preprocessed_data.columns:
+    #     print(i ,'\t', preprocessed_data[i].isna().sum())
+    # exit()
+  
     directory='data/preprocessed/'+ db_name +'/'
     os.makedirs(directory, exist_ok=True)
-    preprocessed_data.to_csv(directory+'/preprocessed_data_'+ label+'.csv')
-    partial_preprocessed_data.to_csv(directory+'/partial_preprocessed_data_'+ label+'.csv')
+    preprocessed_data.to_feather(directory+'/preprocessed_data_'+ label + '.feather')
+    partial_preprocessed_data.to_feather(directory+'/partial_preprocessed_data_'+ label + '.feather')
 
 def clean_data(df):
     """
@@ -178,7 +185,7 @@ if __name__== "__main__":
     label = args[4]
     unuseful_attributes = ast.literal_eval(unuseful_attributes)
     
-    data = pd.read_csv(path, low_memory=False, keep_default_na = False, na_values=[""])
+    data = pd.read_feather(path)
     
     if len(args) > 5:
         attributes_for_manual_encoding = args[5]

@@ -1,119 +1,47 @@
-import sys, os, pickle, ast
+import sys, os, pickle 
 import pandas as pd
 import networkx as nx
-from xgboost import data
-from ....tools.execute import pagerank_personalized, compute_gx_class
           
 
-def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  graph_type,  discretization_type , 
-         paid_proportion_of_columns, unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, _dir):
-    
-    print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
-    
-    graph_descriptors = pd.DataFrame()
-    graph_descriptors_for_gy = pd.DataFrame()
-
-    for row in train_data.itertuples():
-        dict_row = row._asdict()
-        graph_copy = graph.copy()
-        
-        nodes_for_personalization = []
-            
-        for k, w in dict_row.items():
-            nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type)
-        
-        pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, 'weight', descriptors)
-        gx_paid, gx_unpaid = compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns, 
-                                              unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target)
-
-            
-        
-        graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
-        
-    graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)    
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > 
-                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
-    
-    
-    directory = _dir + bd_name +'/'+ graph_type + '/' +  discretization_type +'/train'
-    os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+def main(G, train_index, test_index, db_name):
    
-    graph_descriptors = pd.DataFrame()
-    graph_descriptors_for_gy = pd.DataFrame()   
-    for row in test_data.itertuples():
-        
-        nodes_for_personalization = []
-        dict_row = row._asdict()
-        
-        graph_copy = graph.copy()
-        
-        for k, w in dict_row.items():
-            nodes_for_personalization.append(str(k) + '_' + str(w) + '_' + discretization_type + '_' + graph_type.lower())
-        
-        pagerank_attributes = pagerank_personalized(graph_copy, alpha, nodes_for_personalization, "weight", descriptors)
-        gx_paid, gx_unpaid = compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns, 
-                                              unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target)
-        
-        graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
-        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
+    pagerank = nx.pagerank(G, weight='weight')
     
-    graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]
-    graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
+    for node_id in G.nodes():
+        G.nodes[node_id]['pagerank'] = pagerank[node_id]
+
+    df_node_attributes = pd.json_normalize(list(dict(G.nodes(data=True)).values()))
     
-    directory = _dir + bd_name +'/'+ graph_type + '/' +  discretization_type +'/test'
+    train = df_node_attributes.loc[train_index]
+    test = df_node_attributes.loc[test_index]
+    
+    directory = _dir + db_name + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
-      
-    print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
+    train.to_feather(directory + '/new_features_train.feather')
+
+    directory = _dir + db_name + '/' + graph_type
+    os.makedirs(directory, exist_ok=True)
+    test.to_feather(directory + '/new_features_test.feather')
+
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     target = args[0]
     db_name = args[1]
     graph_type = args[2].lower()
-    alpha = args[3]
-    alpha = float(alpha) 
-    discretization_type = args[4].lower()
-    train_path = args[5]
-    test_path = args[6]
-    _dir = args[7]
-    _graph_dir = args[8]
+    train_path = args[3]
+    test_path = args[4]
+    _dir = args[5]
+    _graph_dir = args[6]
     
-    # "data/discretized/"+ db_name +"/discretized_train_data_"+ discretization_type +".csv"
+    trainset = pd.read_feather('data/preprocessed/bondora/preprocessed_data_train.feather')
+    testset  = pd.read_feather('data/preprocessed/bondora/preprocessed_data_test.feather')
     
-    train_discretized_data  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
-    train_discretized_data.drop(columns='Unnamed: 0', inplace=True)
+    with open(_graph_dir + db_name + "/graph_"+ graph_type.lower() ,"rb" ) as f:
+        graph = pickle.load(f)
     
-    test_discretized_data  = pd.read_csv(test_path, dtype='object', keep_default_na=False, na_values=[""])
-    test_discretized_data.drop(columns='Unnamed: 0', inplace=True)
-    
-    paid_columns_repartition = {}
-    unpaid_columns_repartition = {}
-    paid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == '0']
-    unpaid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == '1']
-    
-    number_of_paid_items = 0
-    for col in train_discretized_data.columns.drop(target):
-        paid_columns_repartition[col]= {}
-        for key, value in paid_discretized_data[col].value_counts(normalize=True).items():
-            paid_columns_repartition[col][key] = value
-            number_of_paid_items += 1
-    
-    number_of_unpaid_items = 0        
-    for col in train_discretized_data.columns.drop(target):
-        unpaid_columns_repartition[col]= {}
-        for key, value in unpaid_discretized_data[col].value_counts(normalize=True).items():
-            unpaid_columns_repartition[col][key] = value 
-            number_of_unpaid_items += 1
-    
-    with open(_graph_dir + db_name + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
-        graph_data = pickle.load(f)
 
-    main(train_discretized_data, test_discretized_data,  graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  
-         graph_type,  discretization_type, paid_columns_repartition, unpaid_columns_repartition, number_of_paid_items, number_of_unpaid_items, _dir)
+    main(graph, trainset.index, testset.index, db_name)
     
     
     

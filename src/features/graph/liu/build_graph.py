@@ -35,9 +35,9 @@ if __name__ == "__main__":
     test_path = args[5]
     _dir = args[6]
      
-    trainset  = pd.read_csv('data/preprocessed/' + db_name + '/preprocessed_data_train.csv', dtype='object', keep_default_na=False, na_values=[""], index_col=0, index=True)
+    trainset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_train.feather')
     
-    testset  = pd.read_csv('data/preprocessed/' + db_name + '/preprocessed_data_test.csv', dtype='object', keep_default_na=False, na_values=[""], index_col=0, index=True)
+    testset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_test.feather')
     testset.drop(columns=[target], inplace=True)
     
     df = pd.concat([trainset, testset], axis=0)
