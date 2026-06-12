@@ -46,8 +46,8 @@ def main(G, train_index, test_index, trainset, df, target, db_name):
     degree_df = pd.DataFrame([degree_pos, degree_neg]).T
     degree_df.columns = ['degree_pos', 'degree_neg']
     
-    train = degree_df.loc[train_index]
-    test = degree_df.loc[test_index]
+    train = degree_df.iloc[train_index]
+    test = degree_df.iloc[test_index]
     
     directory = _dir + db_name + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
@@ -72,9 +72,10 @@ if __name__ == "__main__":
     trainset = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_train.feather')
     
     testset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_test.feather')
-    testset.drop(columns=target, inplace=True)
     
-    with open(_graph_dir + db_name + "/graph_liu","rb" ) as f:
+    # testset.drop(columns=target, inplace=True)
+    
+    with open(_graph_dir + db_name + '/graph_gui' ,"rb" ) as f:
         graph = pickle.load(f)
     df = pd.concat([trainset, testset])
 

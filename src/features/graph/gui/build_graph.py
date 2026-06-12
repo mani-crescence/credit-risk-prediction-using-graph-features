@@ -1,7 +1,7 @@
 import sys, os, pickle
 import pandas as pd
 import networkx as nx
-from sklearn.metrics.pairwise import nan_euclidean_distances
+from sklearn.metrics.pairwise import *
 
 def main(df):
     
@@ -13,7 +13,8 @@ def main(df):
         G.add_node(index)
 
     # Compute pairwise Euclidean distances
-    distances = nan_euclidean_distances(df)
+    # distances = euclidean_distances(df.values)
+    distances = nan_euclidean_distances(df.values)
     
     threshold = distances.mean()
 
@@ -24,15 +25,20 @@ def main(df):
                 weight = 1.0 / distances[i, j] 
                 G.add_edge(i, j, weight=weight)
                 
-    mst = nx.minimum_spanning_tree(G)    
+    mst = nx.minimum_spanning_tree(G)  
+    
+    # print(len(mst.nodes))  
     
     # def edge_filter(u, v):
     #     return (u, v) in mst.edges()
 
     # # Create a filtered subgraph based on the edge filter
-    # filtered_graph = G.edge_subgraph((u, v) for u, v in G.edges() if edge_filter(u, v))        
-                
-    return mst         
+    # filtered_graph = G.edge_subgraph((u, v) for u, v in G.edges() if edge_filter(u, v))   
+    
+    # print(len(filtered_graph.nodes))  
+    # exit()
+              
+    return mst        
     
    
 

@@ -7,10 +7,14 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["bondora"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
+db_names = ["bondora", "prosper", "sme"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "bip", "bip", "mod", "mod", "gui", "liu_v1", "liu_v2"] #, "liu", "gui", "loan"]#, "gui"]
-discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
+graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "bip", "mod", "mod",  "loan"] #, "liu", "gui", "loan"]#, "gui"]
+discretizations = [None, None, None, None, "uns", "sup", "uns", "sup", None]
+
+# graphs = [None, "bip", "bip", "mod", "mod", "gui", "liu_v1", "liu_v2"] #, "liu", "gui", "loan"]#, "gui"]
+# discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
+
 models = ["log", "svm", "rf", "mlp"]
 metrics = ["acc", "f1"]
 
@@ -173,7 +177,7 @@ def generate_best_combination():
             for db in db_names:
                 with open('outputs/general_results/results/' + db + '/predictions/classic/metrics_results.txt', 'r') as file:
                     classic = ast.literal_eval(file.read())
-                classic = classic['CLASSIC']
+                classic = classic['BASELINE']
 
                 max_value = - math.inf
                 best_conf = ''
@@ -233,9 +237,9 @@ def generate_best_combination():
             file.write(code)
 
 if __name__ == "__main__":
-    a = 0
-    # generate_result_with_stepwise()
-    generate_result_without_stepwise()
+    # a = 0
+    generate_result_with_stepwise()
+    # generate_result_without_stepwise()
     # launch_attributes_importance()
     # attributes_classification()
     # generate_best_combination()

@@ -40,7 +40,6 @@ def main(train_data, test_data, discretization_type):
            
     return graph            
     
-   
 
 if __name__ == "__main__":
     args =  sys.argv[1:]   

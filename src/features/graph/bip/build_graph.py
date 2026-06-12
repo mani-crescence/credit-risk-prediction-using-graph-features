@@ -13,9 +13,9 @@ def build(graph, data, set_type, discretization_type = None):
             
             for j, w in row.items():
                 if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
-                    graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
+                    graph.add_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip', type='attribute', bipartite=1)
                     
-                graph.add_edge('tr_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+                graph.add_edge('tr_u' + str(i), str(j) + '_' + str(w) + '_' + discretization_type + '_bip')
 
         return graph
         
@@ -25,9 +25,9 @@ def build(graph, data, set_type, discretization_type = None):
             
             for j, w in row.items():
                 if not graph.has_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip'):
-                    graph.add_node(str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip', type='attribute', bipartite=1)
+                    graph.add_node(str(j) + '_' + str(w) + '_' + discretization_type + '_bip', type='attribute', bipartite=1)
                     
-                graph.add_edge('ts_u'+ str(i), str(j)+ '_'+ str(w)+'_'+discretization_type+'_bip')
+                graph.add_edge('ts_u' + str(i), str(j) + '_'+ str(w) + '_' + discretization_type+'_bip')
         
         return graph     
 
@@ -51,7 +51,9 @@ if __name__ == "__main__":
     graph = build(inter_graph, testset, "test", discretization_type) 
     
     descriptors_attributes = [node for node, data_ in inter_graph.nodes(data=True) if data_['type'] == 'attribute']
+    
     graph_data = {"graph": graph, "descriptors": descriptors_attributes}  
+    
     
     directory = _dir + db_name + '/'  
     os.makedirs(directory, exist_ok=True)

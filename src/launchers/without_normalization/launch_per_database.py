@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import pandas as pd 
 from itertools import combinations, product
 
-discretization_types =  ["UNS", "SUP"] 
+discretization_types =  ["UNS"]#, "SUP"] 
 discretization_for_attributes_types = ["UNS_", "SUP_"]
 alphas = [0.1]#, 0.3, 0.5, 0.7, 0.85, 0.9]    
 process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
@@ -17,8 +17,8 @@ graphs = ["bip", "bip", "mod", "mod", None, None]
 discretizations = ["uns", "sup", "uns", "sup", "na", None]
 models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]
 metrics = ["acc", "f1"]
-state_of_art_graphs = ["LIU", "GUI"]
-standard_proposed_graphs = ["MOD", "BIP"]
+state_of_art_graphs = [] #["LIU", "GUI"]
+standard_proposed_graphs = ["MOD"]#, "BIP"]
 proposed_complete_graph = ["LOAN"]
 
 
@@ -544,6 +544,7 @@ def launch_predict_with_stepwise(db_name):
     classic_config_path = "data/without_normalization/with_stepwise/configurations/"+ db_name+"/configuration_classic.txt" 
     
     commands = []
+    print('yes, i\'m there')
     
     for graph_type in state_of_art_graphs:
             train_path = 'data/without_normalization/graph_features/' + db_name.lower() + '/' + graph_type.lower() + '/new_features_train.csv'
@@ -554,18 +555,18 @@ def launch_predict_with_stepwise(db_name):
                             format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, 
                                      classic_train_path, classic_test_path, classic_config_path, None]))
         
-    for graph_type in proposed_complete_graph:
-        train_directory = 'data/without_normalization/graph_features/' + db_name.lower() + "/" + graph_type .lower() + '/train'
-        test_directory = 'data/without_normalization/graph_features/' + db_name.lower() +"/" + graph_type .lower() + '/test'
+    # for graph_type in proposed_complete_graph:
+    #     train_directory = 'data/without_normalization/graph_features/' + db_name.lower() + "/" + graph_type .lower() + '/train'
+    #     test_directory = 'data/without_normalization/graph_features/' + db_name.lower() +"/" + graph_type .lower() + '/test'
         
-        config_path = "data/without_normalization/with_stepwise/configurations/" + db_name.lower() + "/configuration_" + graph_type.lower() + ".txt"
+    #     config_path = "data/without_normalization/with_stepwise/configurations/" + db_name.lower() + "/configuration_" + graph_type.lower() + ".txt"
 
-        for alpha in alphas: 
-            train_path = train_directory + '/new_features_' + str(alpha) + '.csv'
-            test_path = test_directory + '/new_features_' + str(alpha) + '.csv'
-            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} """.
-                            format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, 
-                                     classic_train_path, classic_test_path, alpha, classic_config_path]))
+    #     for alpha in alphas: 
+    #         train_path = train_directory + '/new_features_' + str(alpha) + '.csv'
+    #         test_path = test_directory + '/new_features_' + str(alpha) + '.csv'
+    #         commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} """.
+    #                         format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, 
+    #                                  classic_train_path, classic_test_path, alpha, classic_config_path]))
 
                 
     for graph_type in standard_proposed_graphs:
@@ -700,7 +701,7 @@ if __name__ == "__main__":
     # launch_predict(db_name)
     # launch_predict_classic_with_stepwise(db_name)
     # launch_predict_with_stepwise(db_name)
-    launch_print(db_name)
-    launch_print_with_stepwise(db_name)
+    # launch_print(db_name)
+    # launch_print_with_stepwise(db_name)
     # launch_plot(db_name)
  

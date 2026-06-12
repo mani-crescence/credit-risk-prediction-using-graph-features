@@ -4,6 +4,8 @@ import networkx as nx
           
 
 def main(G, train_index, test_index, db_name):
+    
+    
    
     pagerank = nx.pagerank(G, weight='weight')
     
@@ -12,8 +14,9 @@ def main(G, train_index, test_index, db_name):
 
     df_node_attributes = pd.json_normalize(list(dict(G.nodes(data=True)).values()))
     
-    train = df_node_attributes.loc[train_index]
-    test = df_node_attributes.loc[test_index]
+    
+    train = df_node_attributes.iloc[train_index]
+    test = df_node_attributes.iloc[test_index]
     
     directory = _dir + db_name + '/' + graph_type
     os.makedirs(directory, exist_ok=True)

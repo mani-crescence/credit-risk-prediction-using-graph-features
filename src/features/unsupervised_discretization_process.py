@@ -3,12 +3,17 @@ import sys, os, pickle
 
 def main(data, type_of_set, db_name, type_of_normalization):
     
+    
+    
     directory = "engine/" + type_of_normalization + "/discretization/" + db_name + "/"
     # os.makedirs(directory, exist_ok=True)
     numeric_data = data.select_dtypes('float')
     
-    discretized_data = pd.DataFrame()
+    discretized_data = pd.DataFrame(index=data.index)
+    
     for col in numeric_data.columns:
+        if len(numeric_data[col].unique()) < 2:
+            continue
         
         att = data[col].values
         att = att.reshape(-1, 1)    
@@ -19,6 +24,7 @@ def main(data, type_of_set, db_name, type_of_normalization):
         
     new_data = data.drop(columns=numeric_data.columns)
     data = pd.concat([new_data, discretized_data], axis=1)    
+    
         
     directory = "data/" + type_of_normalization + "/discretized/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)  
@@ -34,15 +40,8 @@ if __name__ == "__main__":
     type_of_normalization = args[3]
     type_of_set = args[4]
     
-    
-    
 
     partial_preprocessed_data  = pd.read_feather(path)
-    
-    # try:
-    #     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace = True)
-    # except:
-    #     print("Column 'Unnamed: 0' not existed!") 
     
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
     

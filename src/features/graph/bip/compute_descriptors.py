@@ -33,7 +33,7 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
     
     directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/train'
     os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
         
     graph_descriptors = pd.DataFrame()
     graph_descriptors_for_gy = pd.DataFrame()
@@ -58,7 +58,7 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
     
     directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/test'
     os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
       
     print(f"finish processed ===> {discretization_type} with alpha {alpha} ")
 
@@ -75,16 +75,16 @@ if __name__ == "__main__":
     _dir = args[7]
     _graph_dir = args[8]
    
-    train_discretized_data  = pd.read_csv(train_path, dtype='object', keep_default_na=False, na_values=[""])
-    train_discretized_data.drop(columns='Unnamed: 0', inplace=True, errors='ignore')
-    
-    test_discretized_data  = pd.read_csv(test_path,  dtype='object', keep_default_na=False, na_values=[""])
-    test_discretized_data.drop(columns='Unnamed: 0', inplace=True, errors='ignore')
+    train_discretized_data  = pd.read_feather(train_path)
+    test_discretized_data  = pd.read_feather(test_path)
+    test_discretized_data.drop([target], axis=1, inplace=True)
     
     paid_columns_repartition = {}
     unpaid_columns_repartition = {}
-    paid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == '0']
-    unpaid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == '1']
+    paid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == False]
+    unpaid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == True ]
+    
+    
     
     number_of_paid_items = 0
     for col in train_discretized_data.columns.drop(target):

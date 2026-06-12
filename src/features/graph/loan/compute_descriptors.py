@@ -12,41 +12,38 @@ def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type,
     
     graph_descriptors = pd.DataFrame()
     
-    for row in train_data.itertuples():
+    for i , _ in train_data.iterrows():
         
         graph_copy = graph.copy() 
         
-        dict_row = row._asdict()
-        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u'+ str(dict_row['Index'])], 'weight', descriptors)
+        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u'+ str(i)], 'weight', descriptors)
         
-        graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+        graph_descriptors.loc[i, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
         
-        print('tr_u'+ str(dict_row['Index']), ' done!')
+        print('tr_u'+ str(i), ' done!')
         
     graph_descriptors = graph_descriptors.astype(float)
     
     directory = _dir + db_name + '/' + graph_type +'/train'
     os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
     
     graph_descriptors = pd.DataFrame()   
-    for row in test_data.itertuples():
-        dict_row = row._asdict()
+    for i , _ in test_data.iterrows():
         graph_copy = graph.copy()
         
-        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['ts_u'+ str(dict_row['Index'])], "weight", descriptors)
+        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['ts_u'+ str(i)], "weight", descriptors)
         
-        
-        print('ts_u'+ str(dict_row['Index']), ' done!')
+        print('ts_u'+ str(i), ' done!')
                    
-        graph_descriptors.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+        graph_descriptors.loc[i, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
         
     graph_descriptors = graph_descriptors[descriptors]
     graph_descriptors = graph_descriptors.astype(float)
     
     directory = _dir + db_name + '/' + graph_type +'/test'
     os.makedirs(directory, exist_ok=True)
-    graph_descriptors.to_csv(directory + '/new_features_' +  str(alpha)+'.csv')
+    graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
     
     print(f"finish processed ===>  with alpha {alpha} ")
 
@@ -62,14 +59,9 @@ if __name__ == "__main__":
     _graph_dir = args[6]
     _dir = args[7]
     
-    # print(args)
-    # exit()
-    
-    trainset  = pd.read_csv(train_path, keep_default_na=False, na_values=[""])
-    trainset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
-    
-    testset  = pd.read_csv(test_path, keep_default_na=False, na_values=[""])
-    testset.drop(columns=['Unnamed: 0', target], inplace=True, errors='ignore')
+    trainset  = pd.read_feather(train_path)
+    testset  = pd.read_feather(test_path)
+    testset.drop(columns=[target], inplace=True)
     
     with open(_graph_dir + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
         graph_data = pickle.load(f)

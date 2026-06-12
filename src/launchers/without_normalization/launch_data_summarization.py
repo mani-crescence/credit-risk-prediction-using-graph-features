@@ -174,7 +174,7 @@ def generate_best_combination():
             for db in db_names:
                 with open('outputs/general_results/results/' + db + '/predictions/classic/metrics_results.txt', 'r') as file:
                     classic = ast.literal_eval(file.read())
-                classic = classic['CLASSIC']
+                classic = classic['BASELINE']
 
                 max_value = - math.inf
                 best_conf = ''
@@ -235,8 +235,8 @@ def generate_best_combination():
 
 if __name__ == "__main__":
     a = 0
-    generate_result_with_stepwise()
-    generate_result_without_stepwise()
+    # generate_result_with_stepwise()
+    # generate_result_without_stepwise()
     # launch_attributes_importance()
     # attributes_classification()
     # generate_best_combination()

@@ -34,7 +34,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_d
             f.write(str(configurations))        
       
     else:
-        configurations['CLASSIC'] = ordinary_descriptors + [target]
+        configurations['BASELINE'] = ordinary_descriptors + [target]
         with open(directory + '/configuration_classic.txt', 'w') as f:
             f.write(str(configurations))
             
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     classic_train_path = args[5]
     new_descriptor_train_path = args[6]
 
-    classic_data = pd.read_csv(classic_train_path, index_col = 0, keep_default_na = False, na_values = [""])
+    classic_data = pd.read_feather(classic_train_path)
     target_values = classic_data[target].unique()
     
     
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     if graph_type == 'None':
         graph_type = ast.literal_eval(graph_type)
         
-    train_new_descriptors = pd.read_csv(new_descriptor_train_path, index_col=0, keep_default_na=False, na_values=[""])
+    train_new_descriptors = pd.read_feather(new_descriptor_train_path)
     
     new_descriptors = list(train_new_descriptors.columns)
     

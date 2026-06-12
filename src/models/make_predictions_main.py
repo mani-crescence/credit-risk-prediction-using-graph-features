@@ -13,7 +13,8 @@ import ast
 from ..features.select_features_with_pvalue import *
 
 
-def processing(classic_train_path, classic_test_path, classic_config_path, configurations, original_directory, path, alpha = None, discretization_type = None):
+def processing(classic_train_path, classic_test_path, classic_config_path, configurations, 
+               original_directory, path, alpha = None, discretization_type = None):
     
     classic_result_path = original_directory + "/classic/metrics_results.txt"
     trainset = pd.read_feather(classic_train_path)
@@ -36,9 +37,14 @@ def processing(classic_train_path, classic_test_path, classic_config_path, confi
     train_new_descriptors = pd.read_feather(train_data_path)
     test_new_descriptors = pd.read_feather(test_data_path)
     
+    
+    
     final_trainset = pd.concat([trainset, train_new_descriptors], axis=1)
     final_testset = pd.concat([testset, test_new_descriptors], axis=1)
     
+    # print(final_trainset.columns, '\n')
+    # print(final_testset.columns)
+    # exit()
     
     results_real, results_with_percent = build_predictions(models, final_trainset, final_testset, configurations, target, classic_result)
 

@@ -17,10 +17,7 @@ def build_shap_plot(model, model_name, X_train, X_test, directory, discretizatio
         max_evals = 256
     else:
       max_evals = 2 * num_features + 1
-    #
-    # if model == "dtree" or model == "xgb":
-    #     explainer = shap.TreeExplainer(model)
-    # else:
+      
     explainer = shap.Explainer(model.predict, X_train)
     shap_values = explainer(X_test, max_evals=max_evals)
     shap_values_array = shap_values.values
@@ -55,8 +52,8 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
         'f1': "{:.4f}".format(f1)
         }, {},  model
     else:
-        classic_acc = float(classic_result["CLASSIC"][model_name]['acc'])
-        classic_f1 = float(classic_result["CLASSIC"][model_name]['f1'])
+        classic_acc = float(classic_result["BASELINE"][model_name]['acc'])
+        classic_f1 = float(classic_result["BASELINE"][model_name]['f1'])
 
         if classic_acc == 0:
             percent_acc = 0

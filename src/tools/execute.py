@@ -135,6 +135,7 @@ def build_predictions(models, trainset, testset, configurations, target, classic
 
     for config_name, config_att in configurations.items():
         print(config_name)
+        
         if len(config_att) > 1:
             tr_set = tr[config_att]
             ts_set = ts[config_att]
@@ -572,7 +573,7 @@ def save_global_result(data, db_names, metrics, model):
 def save_global_result_(data, models, metrics, db, directory):
     code = r"\begin{table}[H]" + "\n"
     code += r"\centering" + "\n"
-    code += r"\scalebox{0.7}{" + "\n"
+    code += r"\resizebox{\textwidth}{!}{" + "\n"
     code += r"\begin{tabular}{"
     nb_db = len(models) * len(metrics)
     code += r"|l|"
@@ -583,8 +584,8 @@ def save_global_result_(data, models, metrics, db, directory):
     code += r"\multirow{2}{*}{Configurations}"
 
     for model in models:
-        code += r"& \multicolumn{" + r"2}{" + r"c|}{"+ r"{}".format(model) + r"}"
-    code += r" \\ \cline{2-" +r"{}".format(nb_db-1) + "} \n"
+        code += r"& \multicolumn{" + r"2}{" + r"c|}{"+ r"{}".format(model) + r"}" 
+    code += r" \\ \cmidrule(rl){2-3} \cmidrule(rl){4-5} \cmidrule(rl){6-7} \cmidrule(rl){8-9}"
 
     for _ in models:
         for metric in metrics:
@@ -593,9 +594,10 @@ def save_global_result_(data, models, metrics, db, directory):
 
     for conf_name, conf_values in data.items():
         code += r"{}".format(conf_name)
-        # exit(conf_values)
-        for metric_name, metric_values in conf_values.items():
-            for name, value in metric_values.items():
+        
+       
+        for _, metric_values in conf_values.items():
+            for _, value in metric_values.items():
                     code += "& {}".format(value)
 
         code +=  r"\\"  + "  \hline" + "\n"
@@ -731,17 +733,17 @@ def compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_
             couples[couple[0]] = {} 
         couples[couple[0]][couple[1]]  = value   
     
-
+    
     gx_paid = 0     
     for k1, v1 in paid_proportion_of_columns.items(): 
         for ka, va in v1.items():
-            gx_paid += float(va)* float(couples[k1][ka])
+            gx_paid += float(va)* float(couples[k1][str(ka)])
    
        
     gx_unpaid = 0     
     for k1, v1 in unpaid_proportion_of_columns.items() : 
         for ka, va in v1.items():
-            gx_unpaid += float(va)*float(couples[k1][ka])     
+            gx_unpaid += float(va)*float(couples[k1][str(ka)])     
             
     return (gx_paid / number_of_paid_items), (gx_unpaid / number_of_unpaid_items )         
              

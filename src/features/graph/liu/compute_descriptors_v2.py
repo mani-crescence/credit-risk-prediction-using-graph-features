@@ -11,11 +11,10 @@ def main(G, train_index, test_index, db_name):
     degree_centrality = nx.degree_centrality(G)
     closeness_centrality = nx.closeness_centrality(G, distance='weight')
     betweenness_centrality = nx.betweenness_centrality(G, weight='weight')
-    eigenvector_centrality = nx.eigenvector_centrality(G, weight='weight')
+    # eigenvector_centrality = nx.eigenvector_centrality(G, weight='weight')
 
     # Compute more centrality measures
     pagerank = nx.pagerank(G, weight='weight')
-    # HITS algorithm returns two dictionaries keyed by node containing hub scores and authority scores
     hubs, authorities = nx.hits(G, max_iter=1000)
 
 
@@ -24,7 +23,7 @@ def main(G, train_index, test_index, db_name):
         G.nodes[node_id]['degree_centrality'] = degree_centrality[node_id]
         G.nodes[node_id]['closeness_centrality'] = closeness_centrality[node_id]
         G.nodes[node_id]['betweenness_centrality'] = betweenness_centrality[node_id]
-        G.nodes[node_id]['eigenvector_centrality'] = eigenvector_centrality[node_id]
+        # G.nodes[node_id]['eigenvector_centrality'] = eigenvector_centrality[node_id]
 
         G.nodes[node_id]['pagerank'] = pagerank[node_id]
         G.nodes[node_id]['hub_score'] = hubs[node_id]
@@ -35,8 +34,10 @@ def main(G, train_index, test_index, db_name):
     
     df_node_attributes = df_node_attributes[df_node_attributes.columns[df_node_attributes.isnull().sum() == 0]]
     
-    train = df_node_attributes.loc[train_index]
-    test = df_node_attributes.loc[test_index]
+    train = df_node_attributes.iloc[train_index]
+    test = df_node_attributes.iloc[test_index]
+    # print(train.head())
+    # exit()
     
     directory = _dir + db_name + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
@@ -58,11 +59,11 @@ if __name__ == "__main__":
     _graph_dir = args[6]
     
     trainset = pd.read_feather('data/preprocessed/bondora/preprocessed_data_train.feather')
-    
     testset  = pd.read_feather('data/preprocessed/bondora/preprocessed_data_test.feather')
-    testset.drop(columns=target, inplace=True)
     
-    with open(_graph_dir + db_name + "/graph_liu","rb" ) as f:
+    # testset.drop(columns=target, inplace=True)
+    
+    with open(_graph_dir + db_name + '/graph_gui' ,"rb" ) as f:
         graph = pickle.load(f)
     
 

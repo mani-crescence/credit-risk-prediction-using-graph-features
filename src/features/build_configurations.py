@@ -34,7 +34,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_d
             
       
     else:
-        configurations['CLASSIC'] = ordinary_descriptors + [target]
+        configurations['BASELINE'] = ordinary_descriptors + [target]
         with open(directory + '/configuration_classic.txt', 'w') as f:
             f.write(str(configurations))
        

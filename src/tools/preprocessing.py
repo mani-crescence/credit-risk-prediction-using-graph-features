@@ -333,6 +333,8 @@ def convert_int_to_float(data, attributes):
 #     return data
 
 def kmeans_discretization_engine(attribute) :
+    
+    
     optimal_discretization = {
             'score' : 0,
             'engine' : None,
@@ -344,6 +346,9 @@ def kmeans_discretization_engine(attribute) :
         kmeans.fit(attribute)
         cluster_labels = kmeans.predict(attribute)
         
+        # print(cluster_labels)
+        
+        # # continue
         silhouette_avg = silhouette_score(attribute, cluster_labels)
         
         if silhouette_avg > optimal_discretization['score']:

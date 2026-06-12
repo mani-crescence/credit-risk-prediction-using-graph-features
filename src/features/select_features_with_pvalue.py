@@ -73,13 +73,12 @@ if __name__ == "__main__" :
     train_path = args[2]
     save_dir = args[3]
     
-    final_trainset = pd.read_csv(train_path, keep_default_na=False, na_values=[""])
-    final_trainset.drop(columns=['Unnamed: 0'], inplace=True, errors='ignore')
+    final_trainset = pd.read_feather(train_path)
 
     selected_attributes = stepwise_selection(final_trainset.drop(columns=[target]), final_trainset[target])
     
     configurations = {}
-    configurations['CLASSIC_WITH_STEPWISE'] = selected_attributes + [target]
+    configurations['BASELINE_WITH_STEPWISE'] = selected_attributes + [target]
     os.makedirs(save_dir, exist_ok=True)
     with open(save_dir + '/selected_features.txt', 'w') as f:
             f.write(str(configurations))

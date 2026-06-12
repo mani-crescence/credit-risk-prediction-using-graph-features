@@ -16,6 +16,7 @@ def main(data, label, db_name, normalization_label):
     new_data = data.drop(columns=numeric_data.columns)
     data = pd.concat([new_data, discretized_data], axis=1)
     
+    
     directory = "data/" + normalization_label + "/discretized/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)  
     data.to_feather(directory + 'discretized_' + label + '_data_sup.feather')
@@ -27,15 +28,8 @@ if __name__ == "__main__":
     path = args[2]
     type_of_normalization = args[3]
     type_of_set = args[4]
-    
-    
 
     partial_preprocessed_data  = pd.read_feather(path)
-    
-    # try:
-    #     partial_preprocessed_data.drop(columns=['Unnamed: 0'], inplace = True)
-    # except:
-    #     print("Column 'Unnamed: 0' not existed!") 
     
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
     
