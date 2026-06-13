@@ -41,10 +41,7 @@ def processing(classic_train_path, classic_test_path, classic_config_path, confi
     
     final_trainset = pd.concat([trainset, train_new_descriptors], axis=1)
     final_testset = pd.concat([testset, test_new_descriptors], axis=1)
-    
-    # print(final_trainset.columns, '\n')
-    # print(final_testset.columns)
-    # exit()
+   
     
     results_real, results_with_percent = build_predictions(models, final_trainset, final_testset, configurations, target, classic_result)
 

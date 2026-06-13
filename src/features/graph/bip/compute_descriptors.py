@@ -1,11 +1,59 @@
 import sys, os, pickle, ast
 import pandas as pd
 import networkx as nx
-from ....tools.execute import pagerank_personalized, compute_gx_class
+from ....tools.execute import pagerank_personalized
+
+
+def compute_gx_class(pagerank_columns_attributes, pagerank_indices_attributes, graph_type, discretization_type, indices_value_proportion, 
+                                              columns_value_proportion, target, label):
+    couples = {}
+    pagerank_attributes_copy = pagerank_columns_attributes.copy()
+    columns_value_proportion_copy = columns_value_proportion.copy()
+    
+    if label == 'test':
+        del pagerank_attributes_copy['st_0_' + discretization_type + '_' + graph_type]
+        del pagerank_attributes_copy['st_1_' + discretization_type + '_' + graph_type]
+        del columns_value_proportion_copy[target]
+
+    for key, value in pagerank_attributes_copy.items():
+        sub = "_" + discretization_type + "_" + graph_type
+        couple = key.replace(sub, "")
+        couple = couple.split("_", 1)
+        
+        if couple[0] not in couples:
+            couples[couple[0]] = {} 
+        couples[couple[0]][couple[1]]  = value   
+        
+    
+    gx_paid = 0     
+    for k1, v1 in columns_value_proportion_copy.items(): 
+        for ka, va in v1.items():
+            gx_paid += float(va[0])* float(couples[k1][str(ka)])
+   
+      
+    gx_unpaid = 0     
+    for k1, v1 in columns_value_proportion_copy.items() : 
+        for ka, va in v1.items():
+            gx_unpaid += float(va[1])*float(couples[k1][str(ka)])   
+    
+        
+    gx_ind_paid = 0     
+    for k1, v1 in pagerank_indices_attributes.items(): 
+        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][0])
+     
+    
+    gx_ind_unpaid = 0     
+    for k1, v1 in pagerank_indices_attributes.items() : 
+        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][1])  
+        
+    return (gx_paid + gx_ind_paid), (gx_unpaid + gx_ind_unpaid )         
+             
+    
+ 
 
 
 def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  graph_type, discretization_type, 
-         paid_proportion_of_columns, unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, _dir):
+         indices_value_proportion, columns_value_proportion, _dir):
     
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
@@ -16,20 +64,24 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
         
         graph_copy = graph.copy()     
             
-        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u' + str(row.Index)], None, descriptors)
+        pagerank_attributes = pagerank_personalized(graph_copy, alpha, ['tr_u' + str(row.Index)], None, graph_copy.nodes)
         
         
-        gx_paid, gx_unpaid = compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns,
-                                              unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target)
+        pagerank_columns_attributes = {key : value for key, value in pagerank_attributes.items()  if key in descriptors}
+        
+        pagerank_indices_attributes = {key : value for key, value in pagerank_attributes.items()  if key not in descriptors}
+        
+        
+        gx_paid, gx_unpaid = compute_gx_class(pagerank_columns_attributes, pagerank_indices_attributes, graph_type, discretization_type, indices_value_proportion, 
+                                              columns_value_proportion, target, 'train')
         
         graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
         graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
         
-        
-    
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
     graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
 
+    
     
     directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/train'
     os.makedirs(directory, exist_ok=True)
@@ -42,18 +94,24 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
         
         graph_copy = graph.copy()
         
-        pagerank_attributes  = pagerank_personalized(graph_copy, alpha, ['ts_u' + str(row.Index)], None, descriptors)
+        pagerank_attributes  = pagerank_personalized(graph_copy, alpha, ['ts_u' + str(row.Index)], None, graph_copy.nodes)
         graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
         
-        gx_paid, gx_unpaid = compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns, unpaid_proportion_of_columns,
-                                              number_of_paid_items, number_of_unpaid_items, target)
-        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
+        pagerank_columns_attributes = {key : value for key, value in pagerank_attributes.items()  if key in descriptors}
+        pagerank_indices_attributes = {key : value for key, value in pagerank_attributes.items()  if key not in descriptors}
         
-    
+        gx_paid, gx_unpaid = compute_gx_class(pagerank_columns_attributes, pagerank_indices_attributes, graph_type, discretization_type, indices_value_proportion, 
+                                              columns_value_proportion, target, 'test')
+        
+        graph_descriptors.loc[row.Index, ['gx_paid', 'gx_unpaid']] = [gx_paid, gx_unpaid]
+        graph_descriptors_for_gy.loc[row.Index, list(pagerank_attributes.keys())] = list(pagerank_attributes.values())
+        
+   
     # COMPUTATION OF GY
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' + graph_type] > graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
+    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' + graph_type] > 
+                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
 
     
     directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/test'
@@ -77,34 +135,34 @@ if __name__ == "__main__":
    
     train_discretized_data  = pd.read_feather(train_path)
     test_discretized_data  = pd.read_feather(test_path)
+    full_df = pd.concat([train_discretized_data, test_discretized_data], axis=0)
     test_discretized_data.drop([target], axis=1, inplace=True)
     
-    paid_columns_repartition = {}
-    unpaid_columns_repartition = {}
-    paid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == False]
-    unpaid_discretized_data = train_discretized_data.loc[train_discretized_data[target] == True ]
+    columns_value_proportion = {}
+    indices_value_proportion = {}
     
+    for index, row in full_df.iterrows():
+        indices_value_proportion[index]={}
     
-    
-    number_of_paid_items = 0
-    for col in train_discretized_data.columns.drop(target):
-        paid_columns_repartition[col]= {}
-        for key, value in paid_discretized_data[col].value_counts(normalize=True).items():
-            paid_columns_repartition[col][key] = value
-            number_of_paid_items += 1
-      
-    number_of_unpaid_items = 0
-    for col in train_discretized_data.columns.drop(target):
-        unpaid_columns_repartition[col]= {}
-        for key, value in unpaid_discretized_data[col].value_counts(normalize=True).items():
-            unpaid_columns_repartition[col][key] = value  
-            number_of_unpaid_items += 1
+    for index, row in full_df.iterrows():
+        if row[target] == 0:
+            indices_value_proportion[index][0] = 1
+            indices_value_proportion[index][1] = 0
             
-
+        if row[target] == 1:
+            indices_value_proportion[index][0] = 0
+            indices_value_proportion[index][1] = 1    
+            
+ 
+    for i in train_discretized_data.columns:
+         proportion = pd.crosstab(train_discretized_data[i], train_discretized_data[target], normalize='index')
+         columns_value_proportion[i] = proportion.to_dict(orient='index')
+   
     with open( _graph_dir + db_name + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
         graph_data = pickle.load(f)
         
    
     main(train_discretized_data, test_discretized_data, graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  graph_type, 
-          discretization_type, paid_columns_repartition, unpaid_columns_repartition, number_of_paid_items, number_of_unpaid_items, _dir)
+          discretization_type, indices_value_proportion, columns_value_proportion,  _dir)
     
+ 

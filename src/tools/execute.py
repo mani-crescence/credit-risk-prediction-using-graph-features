@@ -462,22 +462,7 @@ def result(directory, discretization_type, graph_type):
 
     elif  discretization_type == "None" and graph_type != "None":
         path = directory + "real/" + graph_type.lower() + "/metrics_results.txt"
-        # for item in os.listdir(files_dir):
-        #     paths.append(os.path.join(files_dir, item))
-
-        # for path in paths:
-        #     with open(path, "r") as f:
-        #         file = ast.literal_eval(f.read())
-
-        #     for config_name, models in file.items():
-        #         max_result[config_name] = {}
-        #         for model, metrics in models.items():
-        #             max_result[config_name][model] = {}
-        #             for metric, _ in metrics.items():
-        #                 max_result[config_name][model][metric] = -math.inf
-        #     break
-
-        # for path in paths:
+       
         with open(path, "r") as f:
             file = ast.literal_eval(f.read())
             
@@ -492,15 +477,7 @@ def result(directory, discretization_type, graph_type):
         with open(directory + "real/" + graph_type.lower() + '/main_results_r.txt', 'w') as file:
             file.write(str(max_result))
 
-    #     with open(directory + "real/predictions/" + graph_type.lower()  + '/best_alpha_values_r.txt', 'w') as file:
-    #         file.write(str(best_alpha_values))
-
-    # elif discretization_type != "None" and graph_type == "None":
-    #     files_dir = directory + "real/predictions/na/"
-    #     max_result = load_result(files_dir)
-    #     os.makedirs(files_dir, exist_ok=True)
-    #     with open(files_dir + '/main_results_r.txt', 'w') as file:
-    #         file.write(str(max_result))
+    
     else:
         files_dir = directory + "/classic/"
         max_result = load_result(files_dir)
@@ -571,21 +548,22 @@ def save_global_result(data, db_names, metrics, model):
         file.write(code)
 
 def save_global_result_(data, models, metrics, db, directory):
+    # print(data)
     code = r"\begin{table}[H]" + "\n"
     code += r"\centering" + "\n"
     code += r"\resizebox{\textwidth}{!}{" + "\n"
     code += r"\begin{tabular}{"
     nb_db = len(models) * len(metrics)
-    code += r"|l|"
+    code += r"l"
     for _ in range(nb_db):
-        code += r"c|"
+        code += r"l"
     code += r"} \hline" + "\n"
 
     code += r"\multirow{2}{*}{Configurations}"
 
     for model in models:
-        code += r"& \multicolumn{" + r"2}{" + r"c|}{"+ r"{}".format(model) + r"}" 
-    code += r" \\ \cmidrule(rl){2-3} \cmidrule(rl){4-5} \cmidrule(rl){6-7} \cmidrule(rl){8-9}"
+        code += r"& \multicolumn{" + r"2}{" + r"c}{"+ r"{}".format(model) + r"}" 
+    code += r" \\ " + "\n" + "\cmidrule(rl){2-3} \cmidrule(rl){4-5} \cmidrule(rl){6-7} \cmidrule(rl){8-9} \n"
 
     for _ in models:
         for metric in metrics:
@@ -600,7 +578,7 @@ def save_global_result_(data, models, metrics, db, directory):
             for _, value in metric_values.items():
                     code += "& {}".format(value)
 
-        code +=  r"\\"  + "  \hline" + "\n"
+        code +=  r"\\"  + "\n"
 
 
     # for conf, dbs in data.items():
@@ -613,7 +591,7 @@ def save_global_result_(data, models, metrics, db, directory):
 
     code += r"\end{tabular}" + "\n"
     code += r"}" + "\n"
-    code += r"\caption{" +"Résulats généraux suivant le modèle " + r"{}".format(db)  + "} \n"
+    code += r"\caption{" +"Résulats généraux de " + r"{}".format(db)  + "} \n"
     code += r"\label{global-results}" +"\n"
     code += r"\end{table}" + "\n"
 
@@ -714,47 +692,8 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
         
     test_centralities_df.to_csv(directory + '/new_features_test.csv')
     
-def compute_gx_class(pagerank_attributes, graph_type, discretization_type, paid_proportion_of_columns, 
-                     unpaid_proportion_of_columns, number_of_paid_items, number_of_unpaid_items, target):
-    couples = {}
-    pagerank_attributes_copy = pagerank_attributes.copy()
-    
-    
-    del pagerank_attributes_copy['st_0_' + discretization_type + '_' + graph_type]
-    del pagerank_attributes_copy['st_1_' + discretization_type + '_' + graph_type]
+     
 
-    for key, value in pagerank_attributes_copy.items():
-        
-        sub = "_" + discretization_type + "_" + graph_type
-        couple = key.replace(sub, "")
-        couple = couple.split("_", 1)
-        
-        if couple[0] not in couples:
-            couples[couple[0]] = {} 
-        couples[couple[0]][couple[1]]  = value   
-    
-    
-    gx_paid = 0     
-    for k1, v1 in paid_proportion_of_columns.items(): 
-        for ka, va in v1.items():
-            gx_paid += float(va)* float(couples[k1][str(ka)])
-   
-       
-    gx_unpaid = 0     
-    for k1, v1 in unpaid_proportion_of_columns.items() : 
-        for ka, va in v1.items():
-            gx_unpaid += float(va)*float(couples[k1][str(ka)])     
-            
-    return (gx_paid / number_of_paid_items), (gx_unpaid / number_of_unpaid_items )         
-             
-    
-      
-        
-        
-        
-        
-        
-        
         
         
         

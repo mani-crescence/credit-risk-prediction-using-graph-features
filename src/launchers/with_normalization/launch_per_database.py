@@ -7,7 +7,7 @@ from itertools import combinations, product
 
 discretization_types =  ["UNS", "SUP"] 
 discretization_for_attributes_types = ["UNS_", "SUP_"]
-alphas = [0.15, 0.5, 0.85]#, 0.3, 0.5, 0.7, 0.85, 0.9]    
+alphas = [0.1] # [0.15, 0.5, 0.85]#, 0.3, 0.5, 0.7, 0.85, 0.9]    
 process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
 plot_type = ["UNS","SUP"] 
 pagerank_type = ["PER", "GLO"]
@@ -18,7 +18,7 @@ discretizations = ["uns", "sup", "uns", "sup", "na", None]
 models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]
 metrics = ["acc", "f1"]
 state_of_art_graphs = ["LIU_V2", "GUI", "LIU_V1"]#, "LIU_V2",  
-standard_proposed_graphs = ["BIP", "MOD"] #,  
+standard_proposed_graphs = ["MOD"]#, "MOD"] #,  
 proposed_complete_graph = ["LOAN"]
 
 
@@ -138,12 +138,12 @@ def launch_compute_descriptors(db_name):
                                 format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, discretization_type.lower(), train_path, test_path, _dir, _graph_dir]))
      
      
-    train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train.feather"
-    test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test.feather"
-    for graph_type in proposed_complete_graph:
-         for alpha in alphas:
-            commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
-                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir]))
+    # train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train.feather"
+    # test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test.feather"
+    # for graph_type in proposed_complete_graph:
+    #      for alpha in alphas:
+    #         commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
+    #                     format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir]))
         
                      
     # for graph_type in state_of_art_graphs:  
@@ -476,7 +476,7 @@ if __name__ == "__main__":
     # launch_config_without_stepwise(db_name)
     # launch_predict_classic(db_name)
     # launch_predict(db_name)
-    # launch_print(db_name)
+    launch_print(db_name)
     
     # launch_stepwise_selection(db_name)
     # launch_config_with_stepwise(db_name)
@@ -715,8 +715,6 @@ if __name__ == "__main__":
 #         p.wait()     
 #         print(f"modeling train-test command  completed.")   
  
- 
-     
 # def launch_split(db_name):
 #     commands = []
 #     commands.append(""" make run_splitting_{0} DB_NAME={1}""".format(*[db_name.lower(), db_name.lower()]))
@@ -774,11 +772,10 @@ if __name__ == "__main__":
 
 #     for p in processes:
 #         p.wait()
-
-         
+       
     
-    # commands.append("""make run_graph_modeling_complete_{0} DB_NAME={1}  _DIR={2} """.
-    #                 format(*[db_name.lower(), db_name.lower(),  _dir]))
+# commands.append("""make run_graph_modeling_complete_{0} DB_NAME={1}  _DIR={2} """.
+#                 format(*[db_name.lower(), db_name.lower(),  _dir]))
  
 # launch_create_edges_for_complete_graph(db_name)
 # launch_relate_edges_for_complete_graph(db_name)

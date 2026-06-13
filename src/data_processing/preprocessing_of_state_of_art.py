@@ -24,10 +24,14 @@ def clean_data(df, useless_columns):
     partial_preprocessed_data = df.copy()
 
     object_columns = df.select_dtypes("object").columns.to_list()
+    
 
     encoder = OneHotEncoder(sparse_output=False)
     
     columns_encoded = encoder.fit_transform(df[object_columns])
+    
+    # print(df.head())
+    # exit()
     
     data_one_hot_encoded = pd.DataFrame(columns_encoded, columns=encoder.get_feature_names_out(object_columns)).astype('float')
     

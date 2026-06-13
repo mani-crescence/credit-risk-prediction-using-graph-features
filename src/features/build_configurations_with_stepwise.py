@@ -27,11 +27,17 @@ def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_d
         with open(directory + '/configuration_'+graph_type.lower() + '_'+ disc_type.lower() + '.txt', 'w') as f:
             f.write(str(configurations))
     
-    elif  graph_type is not None and disc_type is None:
+    elif  graph_type is not None and disc_type is None and graph_type != 'LOAN':
         configurations[graph_type] = new_descriptors + ordinary_descriptors + [target]  
             
         with open(directory + '/configuration_' + graph_type.lower() + '.txt', 'w') as f:
-            f.write(str(configurations))        
+            f.write(str(configurations))    
+                
+    elif graph_type == 'LOAN':
+        configurations[graph_type + '_GX_ORD'] = new_descriptors + ordinary_descriptors +  [target]
+        configurations[graph_type + '_GX_ORD'].remove("gy") 
+        configurations[graph_type + '_GY_ORD'] =  ["gy"] + ordinary_descriptors + [target]
+        configurations[graph_type + '_GXY_ORD'] = new_descriptors + ordinary_descriptors + [target]        
       
     else:
         configurations['BASELINE'] = ordinary_descriptors + [target]
