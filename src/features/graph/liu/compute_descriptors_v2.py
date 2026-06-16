@@ -2,7 +2,7 @@ import sys, os, pickle, ast
 import pandas as pd
 import networkx as nx
 from xgboost import data
-from ....tools.execute import pagerank_personalized, compute_gx_class
+from ....tools.execute import pagerank_personalized
           
 
 def main(G, train_index, test_index, db_name):
@@ -58,8 +58,8 @@ if __name__ == "__main__":
     _dir = args[5]
     _graph_dir = args[6]
     
-    trainset = pd.read_feather('data/preprocessed/bondora/preprocessed_data_train.feather')
-    testset  = pd.read_feather('data/preprocessed/bondora/preprocessed_data_test.feather')
+    trainset = pd.read_feather(train_path)
+    testset  = pd.read_feather(test_path)
     
     # testset.drop(columns=target, inplace=True)
     

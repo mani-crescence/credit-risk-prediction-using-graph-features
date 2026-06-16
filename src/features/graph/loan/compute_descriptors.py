@@ -10,12 +10,21 @@ def compute_gx_class(pagerank_indices_attributes, indices_value_proportion):
         
     gx_ind_paid = 0     
     for k1, v1 in pagerank_indices_attributes.items(): 
-        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][0])
+        try:
+            gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][0])
+        except:
+            # print("node ", k1, "not in trainset !")   
+            pass 
      
     
     gx_ind_unpaid = 0     
     for k1, v1 in pagerank_indices_attributes.items() : 
-        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][1])  
+        try:
+            gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][1])  
+        except:
+            # print("node ", k1, "not in trainset !")    
+            pass
+        
         
     return  gx_ind_paid, gx_ind_unpaid        
              
@@ -97,14 +106,13 @@ if __name__ == "__main__":
     
     trainset  = pd.read_feather(train_path)
     testset  = pd.read_feather(test_path)
-    full_df = pd.concat([trainset, testset], axis=0)
     testset.drop([target], axis=1, inplace=True)
     indices_value_proportion={}
     
-    for index, row in full_df.iterrows():
+    for index, row in trainset.iterrows():
         indices_value_proportion[index]={}
     
-    for index, row in full_df.iterrows():
+    for index, row in trainset.iterrows():
         if row[target] == 0:
             indices_value_proportion[index][0] = 1
             indices_value_proportion[index][1] = 0

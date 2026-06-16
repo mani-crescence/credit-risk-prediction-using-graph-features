@@ -1,18 +1,23 @@
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import sys, os, pickle
+import numpy as np
 
 def main(data, label, db_name, normalization_label):
     
     directory = "engine/" + normalization_label + "/discretization/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)
     numeric_data = data.select_dtypes('float')
+    discretized_data = pd.DataFrame(index=data.index)
     
     
-    os.makedirs(directory, exist_ok=True)
-    with open(directory + 'tree_discretization_engine' , 'rb') as file:
-        tree_engine = pickle.load(file)
+    for col in numeric_data.columns:
+        with open(directory + 'mdlp_engine_' + col , 'rb') as file:
+            mdlp_engine = pickle.load(file)
         
-    discretized_data = tree_engine.transform(numeric_data)   
+        splits = mdlp_engine.splits 
+        bins = np.digitize(numeric_data[col], splits)
+        discretized_data[col] = bins
+    
     new_data = data.drop(columns=numeric_data.columns)
     data = pd.concat([new_data, discretized_data], axis=1)
     

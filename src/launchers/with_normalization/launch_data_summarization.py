@@ -7,10 +7,10 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["lending_club"] #["bondora", "prosper", "sme"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
+db_names = ["bondora", "prosper", "sme"] # ["lending_club"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "bip", "mod", "mod",  "loan"] #, "liu", "gui", "loan"]#, "gui"]
-discretizations = [None, None, None, None, "uns", "sup", "uns", "sup", None]
+graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] #, "liu", "gui", "loan"]#, "gui"] "bip", "mod",
+discretizations = [None, None, None, None, "sup", "sup", None] # "uns",  "uns",
 
 # graphs = [None, "bip", "bip", "mod", "mod", "gui", "liu_v1", "liu_v2"] #, "liu", "gui", "loan"]#, "gui"]
 # discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
@@ -238,7 +238,7 @@ def generate_best_combination():
 
 if __name__ == "__main__":
     # a = 0
-    # generate_result_with_stepwise()
+    generate_result_with_stepwise()
     generate_result_without_stepwise()
     # launch_attributes_importance()
     # attributes_classification()

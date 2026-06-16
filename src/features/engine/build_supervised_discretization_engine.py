@@ -1,7 +1,8 @@
 import pandas as pd
 import sys, os
 import pickle
-from feature_engine.discretisation import DecisionTreeDiscretiser
+# from feature_engine.discretisation import DecisionTreeDiscretiser
+from optbinning import MDLP
 
 
 if __name__ == "__main__":
@@ -17,20 +18,16 @@ if __name__ == "__main__":
     partial_preprocessed_data  = pd.read_feather(path)
     
     numeric_data = partial_preprocessed_data.select_dtypes('float')
-    partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
+    partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("int")
     
+    for col in numeric_data.columns:
+        mdlp = MDLP(min_samples_split=2, min_samples_leaf=2) 
+        mdlp.fit(numeric_data[col], 
+                partial_preprocessed_data[target])
     
-          
-    disc = DecisionTreeDiscretiser(
-                cv=3, scoring='neg_mean_squared_error',
-                variables=numeric_data.columns.tolist(),
-                param_grid={'max_depth': [1, 2, 3]},
-                bin_output='bin_number') 
+        with open(directory + 'mdlp_engine_' + col, 'wb') as file:
+            pickle.dump(mdlp, file)
     
-    disc.fit(numeric_data, partial_preprocessed_data[target])
-    with open(directory + 'tree_discretization_engine' , 'wb') as file:
-        pickle.dump(disc, file)
-        
 
     
     

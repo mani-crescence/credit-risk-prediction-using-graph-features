@@ -39,12 +39,21 @@ def compute_gx_class(pagerank_columns_attributes, pagerank_indices_attributes, g
         
     gx_ind_paid = 0     
     for k1, v1 in pagerank_indices_attributes.items(): 
-        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][0])
+        try :
+            gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][0])
+        except:
+            # print("node ", k1, "not in trainset !")    
+            pass
      
     
     gx_ind_unpaid = 0     
     for k1, v1 in pagerank_indices_attributes.items() : 
-        gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][1])  
+        try :
+            gx_ind_paid += float(v1)* float(indices_value_proportion[int(k1[4:])][1])  
+        except:
+            # print("node ", k1, "not in trainset !")
+            pass
+                
         
     return (gx_paid + gx_ind_paid), (gx_unpaid + gx_ind_unpaid )         
              
@@ -135,16 +144,15 @@ if __name__ == "__main__":
    
     train_discretized_data  = pd.read_feather(train_path)
     test_discretized_data  = pd.read_feather(test_path)
-    full_df = pd.concat([train_discretized_data, test_discretized_data], axis=0)
     test_discretized_data.drop([target], axis=1, inplace=True)
     
     columns_value_proportion = {}
     indices_value_proportion = {}
     
-    for index, row in full_df.iterrows():
+    for index, row in train_discretized_data.iterrows():
         indices_value_proportion[index]={}
     
-    for index, row in full_df.iterrows():
+    for index, row in train_discretized_data.iterrows():
         if row[target] == 0:
             indices_value_proportion[index][0] = 1
             indices_value_proportion[index][1] = 0

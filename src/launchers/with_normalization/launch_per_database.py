@@ -5,20 +5,10 @@ from dotenv import load_dotenv
 import pandas as pd 
 from itertools import combinations, product
 
-discretization_types =  ["UNS", "SUP"] 
-discretization_for_attributes_types = ["UNS_", "SUP_"]
-alphas = [0.1] # [0.15, 0.5, 0.85]#, 0.3, 0.5, 0.7, 0.85, 0.9]    
-process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
-plot_type = ["UNS","SUP"] 
-pagerank_type = ["PER", "GLO"]
-graph_types = ["LIU"]  #"MOD", "BIP", "LOAN"]#, "MOD", "LOAN"]#, "MOD", "BIP"] 
-graph_type_for_prediction = ["MOD", "BIP"]
-graphs = ["bip", "bip", "mod", "mod", None, None]
-discretizations = ["uns", "sup", "uns", "sup", "na", None]
-models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]
-metrics = ["acc", "f1"]
-state_of_art_graphs = ["LIU_V2", "GUI", "LIU_V1"]#, "LIU_V2",  
-standard_proposed_graphs = ["MOD"]#, "MOD"] #,  
+discretization_types =  ["SUP"] 
+alphas = [0.1,0.15, 0.5, 0.85]
+state_of_art_graphs = ["LIU_V2", "GUI", "LIU_V1"] 
+standard_proposed_graphs = ["BIP", "MOD"]   
 proposed_complete_graph = ["LOAN"]
 
 
@@ -138,17 +128,17 @@ def launch_compute_descriptors(db_name):
                                 format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, discretization_type.lower(), train_path, test_path, _dir, _graph_dir]))
      
      
-    # train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train.feather"
-    # test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test.feather"
-    # for graph_type in proposed_complete_graph:
-    #      for alpha in alphas:
-    #         commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
-    #                     format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir]))
+    train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train.feather"
+    test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test.feather"
+    for graph_type in proposed_complete_graph:
+         for alpha in alphas:
+            commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
+                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir]))
         
                      
-    # for graph_type in state_of_art_graphs:  
-    #     commands.append(""" make run_compute_descriptors_""" + graph_type.lower() + """_{0}  BD_NAME={1} GRAPH_TYPE={2} TRAIN_PATH={3} TEST_PATH={4} _DIR={5} GRAPH_DIR={6}  """.
-    #                     format(*[db_name.lower(), db_name.lower(), graph_type.lower(), train_path, test_path, _dir, _graph_dir]))
+    for graph_type in state_of_art_graphs:  
+        commands.append(""" make run_compute_descriptors_""" + graph_type.lower() + """_{0}  BD_NAME={1} GRAPH_TYPE={2} TRAIN_PATH={3} TEST_PATH={4} _DIR={5} GRAPH_DIR={6}  """.
+                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), train_path, test_path, _dir, _graph_dir]))
         
     processes = []
     
@@ -466,25 +456,23 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
     
-    # launch_preprocess(db_name)
-    # launch_build_engine_for_unsupervized_discretization(db_name)
-    # launch_build_engine_for_supervized_discretization(db_name)
-    # launch_unsupervised_discretization(db_name)
-    # launch_supervised_discretization(db_name)
-    # launch_graph_modeling(db_name)
-    # launch_compute_descriptors(db_name)
-    # launch_config_without_stepwise(db_name)
-    # launch_predict_classic(db_name)
-    # launch_predict(db_name)
+    launch_preprocess(db_name)
+    launch_build_engine_for_supervized_discretization(db_name)
+    launch_supervised_discretization(db_name)
+    launch_graph_modeling(db_name)
+    launch_compute_descriptors(db_name)
+    launch_config_without_stepwise(db_name)
+    launch_predict_classic(db_name)
+    launch_predict(db_name)
     launch_print(db_name)
     
-    # launch_stepwise_selection(db_name)
-    # launch_config_with_stepwise(db_name)
-    # launch_predict_classic_with_stepwise(db_name)
-    # launch_predict_with_stepwise(db_name)
-    # launch_print_with_stepwise(db_name)
+    #---------------------STEPWISE SECTION----------------------#
     
-    # launch_plot(db_name)
+    launch_stepwise_selection(db_name)
+    launch_config_with_stepwise(db_name)
+    launch_predict_classic_with_stepwise(db_name)
+    launch_predict_with_stepwise(db_name)
+    launch_print_with_stepwise(db_name)
     
     
     
@@ -783,3 +771,17 @@ if __name__ == "__main__":
 # launch_build_engine_for_preprocessing(db_name)
 # launch_preprocess_train(db_name)
 # launch_preprocess_test(db_name)
+
+# launch_build_engine_for_unsupervized_discretization(db_name)
+# launch_unsupervised_discretization(db_name)
+# pagerank_type = ["PER", "GLO"]
+# graph_types = ["LIU"]  #"MOD", "BIP", "LOAN"]#, "MOD", "LOAN"]#, "MOD", "BIP"] 
+# graph_type_for_prediction = ["MOD", "BIP"]
+# graphs = ["bip", "bip", "mod", "mod", None, None]
+# discretizations = ["uns", "sup", "uns", "sup", "na", None]
+# models =[ "log", "svm", "rf", "dtree", "lda", "xgb"]
+# metrics = ["acc", "f1"]
+# process_type_prediction = ["UNS", "SUP", "SUP_", "UNS_"]
+#"UNS",  
+# discretization_for_attributes_types = ["UNS_", "SUP_"]
+# plot_type = ["UNS","SUP"] 

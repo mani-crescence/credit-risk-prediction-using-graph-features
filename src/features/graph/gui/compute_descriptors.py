@@ -37,8 +37,8 @@ if __name__ == "__main__":
     _dir = args[5]
     _graph_dir = args[6]
     
-    trainset = pd.read_feather('data/preprocessed/bondora/preprocessed_data_train.feather')
-    testset  = pd.read_feather('data/preprocessed/bondora/preprocessed_data_test.feather')
+    trainset = pd.read_feather(train_path)
+    testset  = pd.read_feather(test_path)
     
     with open(_graph_dir + db_name + "/graph_"+ graph_type.lower() ,"rb" ) as f:
         graph = pickle.load(f)
