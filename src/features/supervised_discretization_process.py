@@ -2,7 +2,7 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import sys, os, pickle
 import numpy as np
 
-def main(data, label, db_name, normalization_label):
+def main(data, label, db_name, normalization_label, sub):
     
     directory = "engine/" + normalization_label + "/discretization/" + db_name+ "/"
     os.makedirs(directory, exist_ok=True)
@@ -22,7 +22,7 @@ def main(data, label, db_name, normalization_label):
     data = pd.concat([new_data, discretized_data], axis=1)
     
     
-    directory = "data/" + normalization_label + "/discretized/" + db_name+ "/"
+    directory = "data/" + normalization_label + "/discretized/" + db_name + "/" + sub + "/"
     os.makedirs(directory, exist_ok=True)  
     data.to_feather(directory + 'discretized_' + label + '_data_sup.feather')
 
@@ -33,12 +33,13 @@ if __name__ == "__main__":
     path = args[2]
     type_of_normalization = args[3]
     type_of_set = args[4]
+    sub = args[5]
 
     partial_preprocessed_data  = pd.read_feather(path)
     
     partial_preprocessed_data[target] = partial_preprocessed_data[target].astype("object")
     
-    main(partial_preprocessed_data, type_of_set, db_name, type_of_normalization)
+    main(partial_preprocessed_data, type_of_set, db_name, type_of_normalization, sub)
     
 
 

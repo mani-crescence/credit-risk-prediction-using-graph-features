@@ -6,7 +6,7 @@ PYTHON_INTERPRETER= python3
 SRC_DIR = -m src.
 PRE_DIR = -m src.data_processing.
 
-all: run
+# all: run
 
 run_all_dbs_with_normalization:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_all_databases $(DB_NAME)
@@ -27,6 +27,8 @@ run_summarization:  run_summarize_data_with_normalization # run_summarize_data_w
 run_graph: 
 	$(PYTHON_INTERPRETER) $(SRC_DIR)main_graph_launch $(DB_NAME)
 
+run: run_all_dbs_with_normalization 	run_summarization
+
 
 
 
@@ -35,7 +37,7 @@ run_graph:
 ########################################################### DATA PREPROCESSING COMMANDS #######################################################################################
 
 run_splitting_bondora:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_BONDORA)	$(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TARGET_VALUES_BONDORA)
+	$(PYTHON_INTERPRETER) $(PRE_DIR)splitting $(DB_NAME) $(DB_PATH_BONDORA)	$(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TARGET_VALUES_BONDORA) 
 
 run_engine_building_pre_bondora:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)build_preprocess_engine $(DB_NAME) $(TRAINSET_PATH_BONDORA) $(TARGET_NAME_BONDORA)
@@ -53,7 +55,7 @@ run_preprocess_test_bondora:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_BONDORA) $(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(TEST_LABEL)
 
 run_preprocess_bondora:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_BONDORA) $(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_BONDORA) $(TARGET_NAME_BONDORA) $(USELESS_ATTRIBUTES_BONDORA)  $(SAMPLE_BONDORA)
 
 run_supervised_discretization_bondora:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_BONDORA)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
@@ -183,7 +185,7 @@ run_preprocess_test_lending_club:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_LENDING_CLUB) $(TARGET_NAME_LENDING_CLUB) $(USELESS_ATTRIBUTES_LENDING_CLUB)  $(TEST_LABEL)
 
 run_preprocess_lending_club:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_LENDING_CLUB) $(TARGET_NAME_LENDING_CLUB) $(USELESS_ATTRIBUTES_LENDING_CLUB)  
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_LENDING_CLUB) $(TARGET_NAME_LENDING_CLUB) $(USELESS_ATTRIBUTES_LENDING_CLUB)  $(SAMPLE_LENDING_CLUB) 
 
 run_supervised_discretization_lending_club:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_LENDING_CLUB)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
@@ -313,7 +315,7 @@ run_preprocess_test_prosper:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_PROSPER) $(TARGET_NAME_PROSPER) $(USELESS_ATTRIBUTES_PROSPER)  $(TEST_LABEL)
 
 run_preprocess_prosper:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_PROSPER) $(TARGET_NAME_PROSPER) $(USELESS_ATTRIBUTES_PROSPER)  
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_PROSPER) $(TARGET_NAME_PROSPER) $(USELESS_ATTRIBUTES_PROSPER)  $(SAMPLE_PROSPER)
 
 run_supervised_discretization_prosper:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_PROSPER)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 
@@ -444,7 +446,7 @@ run_preprocess_test_sme:
 	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing $(DB_NAME) $(TESTSET_PATH_SME) $(TARGET_NAME_SME) $(USELESS_ATTRIBUTES_SME)  $(TEST_LABEL)
 
 run_preprocess_sme:
-	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_SME) $(TARGET_NAME_SME) $(USELESS_ATTRIBUTES_SME)  
+	$(PYTHON_INTERPRETER) $(PRE_DIR)preprocessing_of_state_of_art $(DB_NAME) $(DB_PATH_SME) $(TARGET_NAME_SME) $(USELESS_ATTRIBUTES_SME)  $(SAMPLE_SME)
 
 run_supervised_discretization_sme:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)features.supervised_discretization_process  $(DB_NAME)  $(TARGET_NAME_SME)  "$(_PATH)"  $(NORMALIZATION_LABEL)  $(DATA_LABEL) 

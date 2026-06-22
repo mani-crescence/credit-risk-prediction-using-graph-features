@@ -7,7 +7,7 @@ import os
 import pickle
 
 
-def preprocess_main(data, db_name, target):
+def preprocess_main(data, db_name, target, sub):
     data[target]  = data[target].astype('object') 
     ############# STANDARDIZATION  ###############
     int_attributes = data.select_dtypes('int').columns
@@ -17,7 +17,7 @@ def preprocess_main(data, db_name, target):
     for col in numerical_attributes:
         parameters = standardization_engine(numerical_data, col, 0.25, 0.75)
         
-        directory = "engine/preprocessing/" + db_name+ "/"
+        directory = "engine/preprocessing/" + db_name + "/" + str(sub) + "/"
         os.makedirs(directory, exist_ok=True)
         with open(directory + col + '_params_stan.txt' , 'w') as file:
             file.write(str(parameters))
@@ -38,10 +38,11 @@ if __name__== "__main__":
     db_name = args[0]
     path = args[1]
     target = args[2]
+    sub = args[3] 
     
     data = pd.read_feather(path)
     
-    preprocess_main(data, db_name, target)
+    preprocess_main(data, db_name, target, sub)
 
 
 

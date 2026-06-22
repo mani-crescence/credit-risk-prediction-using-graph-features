@@ -6,14 +6,12 @@ import pandas as pd
 
 
 def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors = None, graph_type = None,
-                          disc_type = None,  target_values = None):
-    # print(new_descriptors)
-    # exit()
+                          disc_type = None,  target_values = None, sub = None):
     
     configurations = {}
     targets = []
     
-    directory = save_dir + '/' + db_name + '/'
+    directory = save_dir + '/' + db_name + '/' + sub + '/'
     os.makedirs(directory, exist_ok=True)
     
     if graph_type is not None and disc_type is not None:
@@ -59,6 +57,7 @@ if __name__ == '__main__':
     graph_type = args[4]
     classic_train_path = args[5]
     new_descriptor_train_path = args[6]
+    sub = args[7]
 
     classic_data = pd.read_feather(classic_train_path)
     target_values = classic_data[target].unique()
@@ -75,7 +74,8 @@ if __name__ == '__main__':
     train_new_descriptors = pd.read_feather(new_descriptor_train_path)
     
     new_descriptors = list(train_new_descriptors.columns)
-    build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors, graph_type, disc_type, target_values)
+    build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors, 
+                         graph_type, disc_type, target_values, sub)
     
     
     

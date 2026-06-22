@@ -5,13 +5,13 @@ import pandas as pd
 from .select_features_with_pvalue import *
 
 
-def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors = None, graph_type = None,
-                          disc_type = None,  target_values = None):
+def  build_configurations(ordinary_descriptors, target, db_name, save_dir,  new_descriptors = None, graph_type = None,
+                          disc_type = None,  target_values = None, sub = None):
     
     configurations = {}
     targets = []
     
-    directory = save_dir + '/' + db_name + '/'
+    directory = save_dir + '/' + db_name + '/' + sub + '/'
     os.makedirs(directory, exist_ok=True)
     
     
@@ -56,6 +56,7 @@ if __name__ == '__main__':
     graph_type = args[4]
     classic_train_path = args[5]
     new_descriptor_train_path = args[6]
+    sub = args[7]
 
     classic_data = pd.read_feather(classic_train_path)
     target_values = classic_data[target].unique()
@@ -79,7 +80,8 @@ if __name__ == '__main__':
     
     new_descriptors = list(train_new_descriptors.columns)
     
-    build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors, graph_type, disc_type, target_values)
+    build_configurations(ordinary_descriptors, target, db_name, save_dir, new_descriptors, 
+                         graph_type, disc_type, target_values, sub)
     
     
     

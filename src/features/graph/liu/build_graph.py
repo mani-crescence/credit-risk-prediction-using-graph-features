@@ -21,7 +21,7 @@ def main(df):
                 weight = 1.0 / distances[i, j] 
                 G.add_edge(i, j, weight=weight)
                 
-    mst = nx.minimum_spanning_tree(G)  
+    mst = nx.minimum_spanning_tree(G, algorithm='prim')  
     return mst          
     
 

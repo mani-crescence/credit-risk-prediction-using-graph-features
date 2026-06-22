@@ -30,8 +30,6 @@ def clean_data(df, useless_columns):
     
     columns_encoded = encoder.fit_transform(df[object_columns])
     
-    # print(df.head())
-    # exit()
     
     data_one_hot_encoded = pd.DataFrame(columns_encoded, columns=encoder.get_feature_names_out(object_columns)).astype('float')
     
@@ -50,14 +48,6 @@ def clean_data(df, useless_columns):
     
     # Drop these columns from the DataFrame
     data_preprocessed = data_preprocessed.drop(data_preprocessed[to_drop], axis=1)
-    
-    # columns = list(set(partial_preprocessed_data.columns).intersection(set(data_preprocessed.columns )))
-    # print(sorted(columns  + object_columns))
-    # print('\n \n')
-    # print(sorted(list(set(partial_preprocessed_data.columns) - set(to_drop))))
-    
-    # print(sorted(columns  + object_columns) == sorted(list(set(partial_preprocessed_data.columns) - set(to_drop))))
-    # exit()
     
     return data_preprocessed, partial_preprocessed_data[sorted(list(set(partial_preprocessed_data.columns) - set(to_drop)))]
 
@@ -95,7 +85,6 @@ def remove_highly_correlated_features(df, target, threshold=0.8):
     return df_filtered, correlation_matrix, features_to_remove
 
 def create_balanced_sample(df, df_partial, n, target, replace = False):
-  
     df_sample = pd.concat(
         [
             df[df[target] == 0].sample(n=n, random_state=1, replace=replace),
@@ -116,6 +105,7 @@ if __name__== "__main__":
     target = args[2]
     unuseful_attributes = args[3]
     unuseful_attributes = ast.literal_eval(unuseful_attributes)
+    number_of_sample = int(args[4])
     
     data = pd.read_csv(path)
     
@@ -140,7 +130,7 @@ if __name__== "__main__":
     
     df[target] = df[target].astype('bool')
     
-    df_sample, df_sample_partial = create_balanced_sample(df, partial_preprocessed_data, 100, target)
+    df_sample, df_sample_partial = create_balanced_sample(df, partial_preprocessed_data, number_of_sample, target)
     
     trainset, testset = train_test_split(df_sample, test_size=0.2, random_state=42) 
     

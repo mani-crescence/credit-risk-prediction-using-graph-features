@@ -7,7 +7,7 @@ import pandas as pd
 from itertools import islice
 import math
 
-db_names = ["bondora", "prosper", "sme"] # ["lending_club"] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
+db_names = ["prosper", "sme", "lending_club","bondora"]#, [] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
 discretization_types =  ["SUP", "UNS"]
 graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] #, "liu", "gui", "loan"]#, "gui"] "bip", "mod",
 discretizations = [None, None, None, None, "sup", "sup", None] # "uns",  "uns",

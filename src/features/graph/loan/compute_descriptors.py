@@ -125,7 +125,7 @@ if __name__ == "__main__":
     with open(_graph_dir + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
         graph_data = pickle.load(f)
     
-    # print(graph_data["graph"].nodes)    
+    # print(graph_data["graph"])    
     # exit()
     
     main(trainset, testset, graph_data["graph"], graph_data["descriptors"],  db_name, 
