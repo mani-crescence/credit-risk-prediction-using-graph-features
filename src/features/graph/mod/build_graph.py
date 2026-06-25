@@ -50,9 +50,9 @@ if __name__ == "__main__":
     train_path = args[4]
     test_path = args[5]
     _dir = args[6]
+    sub = args[7]
      
     trainset  = pd.read_feather(train_path)
-    
     testset  = pd.read_feather(test_path)
     testset.drop(columns=[target], inplace=True)
     
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     descriptors_attributes = [node for node, data_ in graph.nodes(data=True) if data_['type'] == 'attribute']
     graph_data = {"graph": graph, "descriptors": descriptors_attributes}  
     
-    directory = _dir  + db_name + '/'  
+    directory = _dir  + db_name + '/sub' + sub + '/' 
     os.makedirs(directory, exist_ok=True)
     with open(directory + 'graph_' + graph_type.lower() + '_' + discretization_type, 'wb') as file:
         pickle.dump(graph_data, file)

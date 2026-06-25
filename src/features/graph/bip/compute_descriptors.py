@@ -62,7 +62,7 @@ def compute_gx_class(pagerank_columns_attributes, pagerank_indices_attributes, g
 
 
 def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  graph_type, discretization_type, 
-         indices_value_proportion, columns_value_proportion, _dir):
+         indices_value_proportion, columns_value_proportion, _dir, sub):
     
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
@@ -92,7 +92,7 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
 
     
     
-    directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/train'
+    directory = _dir + bd_name + '/sub' + sub + '/' + graph_type + '/' + discretization_type +'/train'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
         
@@ -123,7 +123,7 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
                                graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")    
 
     
-    directory = _dir + bd_name + '/' + graph_type + '/' + discretization_type +'/test'
+    directory = _dir + bd_name + '/sub' + sub + '/' + graph_type + '/' + discretization_type +'/test'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
       
@@ -141,6 +141,7 @@ if __name__ == "__main__":
     test_path = args[6]
     _dir = args[7]
     _graph_dir = args[8]
+    sub = args[9]
    
     train_discretized_data  = pd.read_feather(train_path)
     test_discretized_data  = pd.read_feather(test_path)
@@ -166,11 +167,11 @@ if __name__ == "__main__":
          proportion = pd.crosstab(train_discretized_data[i], train_discretized_data[target], normalize='index')
          columns_value_proportion[i] = proportion.to_dict(orient='index')
    
-    with open( _graph_dir + db_name + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
+    with open( _graph_dir + db_name + '/sub' + sub  + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
         graph_data = pickle.load(f)
         
    
     main(train_discretized_data, test_discretized_data, graph_data["graph"], graph_data["descriptors"], target, db_name, alpha,  graph_type, 
-          discretization_type, indices_value_proportion, columns_value_proportion,  _dir)
+          discretization_type, indices_value_proportion, columns_value_proportion,  _dir, sub)
     
  

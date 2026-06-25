@@ -11,8 +11,9 @@ if __name__ == "__main__":
     target = args[1]
     path = args[2]
     dir_= args[3]
+    sub = args[4]
     
-    directory = dir_ + db_name+ "/"
+    directory = dir_ + db_name + "/sub" + sub + "/"
     os.makedirs(directory, exist_ok=True)
     
     partial_preprocessed_data  = pd.read_feather(path)

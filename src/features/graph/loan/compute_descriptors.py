@@ -31,7 +31,7 @@ def compute_gx_class(pagerank_indices_attributes, indices_value_proportion):
     
  
 
-def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type, _dir, indices_value_proportion):
+def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type, _dir, indices_value_proportion, sub):
     
     print(f'############## processing  with  alpha ==>{alpha} ######################')
     
@@ -60,7 +60,7 @@ def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type,
     graph_descriptors["gy"] = (graph_descriptors_for_gy[target +'_' + graph_type + '_1'] > 
                                graph_descriptors_for_gy[target +'_' + graph_type + '_0']).astype("int8")    
 
-    directory = _dir + db_name + '/' + graph_type +'/train'
+    directory = _dir + db_name + '/sub' + sub + '/' + graph_type +'/train'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
     
@@ -86,7 +86,7 @@ def main(train_data, test_data, graph, descriptors, db_name, alpha,  graph_type,
     graph_descriptors["gy"] = (graph_descriptors_for_gy[target +'_' + graph_type + '_1'] > 
                                graph_descriptors_for_gy[target +'_' + graph_type + '_0']).astype("int8") 
     
-    directory = _dir + db_name + '/' + graph_type +'/test'
+    directory = _dir + db_name + '/sub' + sub +'/' + graph_type +'/test'
     os.makedirs(directory, exist_ok=True)
     graph_descriptors.to_feather(directory + '/new_features_' +  str(alpha)+'.feather')
     
@@ -103,6 +103,8 @@ if __name__ == "__main__":
     test_path = args[5]
     _graph_dir = args[6]
     _dir = args[7]
+    sub = args[8]
+   
     
     trainset  = pd.read_feather(train_path)
     testset  = pd.read_feather(test_path)
@@ -122,14 +124,11 @@ if __name__ == "__main__":
             indices_value_proportion[index][1] = 1  
     
     
-    with open(_graph_dir + db_name + "/graph_" + graph_type.lower(),"rb" ) as f:
+    with open(_graph_dir + db_name + '/sub' + sub + "/graph_" + graph_type.lower(),"rb" ) as f:
         graph_data = pickle.load(f)
     
-    # print(graph_data["graph"])    
-    # exit()
-    
     main(trainset, testset, graph_data["graph"], graph_data["descriptors"],  db_name, 
-         alpha, graph_type, _dir, indices_value_proportion)
+         alpha, graph_type, _dir, indices_value_proportion, sub)
     
     
     

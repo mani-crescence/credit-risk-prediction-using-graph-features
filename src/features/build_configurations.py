@@ -11,7 +11,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, save_dir, new_d
     configurations = {}
     targets = []
     
-    directory = save_dir + '/' + db_name + '/' + sub + '/'
+    directory = save_dir + '/' + db_name + '/sub' + sub + '/'
     os.makedirs(directory, exist_ok=True)
     
     if graph_type is not None and disc_type is not None:

@@ -11,7 +11,7 @@ def  build_configurations(ordinary_descriptors, target, db_name, save_dir,  new_
     configurations = {}
     targets = []
     
-    directory = save_dir + '/' + db_name + '/' + sub + '/'
+    directory = save_dir + '/' + db_name + '/sub' + sub + '/'
     os.makedirs(directory, exist_ok=True)
     
     
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     target_values = classic_data[target].unique()
     
     
-    with open(save_dir + '/' + db_name + '/selected_features.txt', 'r') as f:
+    with open(save_dir + db_name +  '/sub' + sub + '/selected_features.txt', 'r') as f:
             selected_features = ast.literal_eval(f.read())
     
     for _, value in selected_features.items():

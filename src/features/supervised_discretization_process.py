@@ -4,7 +4,7 @@ import numpy as np
 
 def main(data, label, db_name, normalization_label, sub):
     
-    directory = "engine/" + normalization_label + "/discretization/" + db_name+ "/"
+    directory = "engine/" + normalization_label + "/discretization/" + db_name + "/sub" + sub + "/"
     os.makedirs(directory, exist_ok=True)
     numeric_data = data.select_dtypes('float')
     discretized_data = pd.DataFrame(index=data.index)
@@ -22,7 +22,7 @@ def main(data, label, db_name, normalization_label, sub):
     data = pd.concat([new_data, discretized_data], axis=1)
     
     
-    directory = "data/" + normalization_label + "/discretized/" + db_name + "/" + sub + "/"
+    directory = "data/" + normalization_label + "/discretized/" + db_name + "/sub" + sub + "/"
     os.makedirs(directory, exist_ok=True)  
     data.to_feather(directory + 'discretized_' + label + '_data_sup.feather')
 

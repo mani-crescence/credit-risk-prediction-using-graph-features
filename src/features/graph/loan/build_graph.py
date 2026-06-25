@@ -89,7 +89,7 @@ pd.set_option('display.max_columns', None)
 #     with open(directory + 'graph_' + graph_type.lower(), 'wb') as file:
 #         pickle.dump(graph_data, file)    
 
-def main(train_data, test_data, target, _dir):
+def main(train_data, test_data, target, _dir, sub):
     
     graph = nx.Graph()
     
@@ -129,8 +129,9 @@ def main(train_data, test_data, target, _dir):
             graph.add_edge('tr_u' + str(i), 'ts_u' + str(j), weight=weight)    
         
     mst = nx.minimum_spanning_tree(graph, algorithm='prim') 
-    graph_data = {"graph": mst, "descriptors" : [target + '_loan_0', target + '_loan_1']}        
-    directory = _dir + db_name + '/'  
+    graph_data = {"graph": mst, "descriptors" : [target + '_loan_0', target + '_loan_1']}     
+       
+    directory = _dir + db_name + '/sub' + sub + '/' 
     os.makedirs(directory, exist_ok=True)
     with open(directory + 'graph_' + graph_type.lower(), 'wb') as file:
         pickle.dump(graph_data, file)    
@@ -145,11 +146,12 @@ if __name__ == "__main__":
     train_path = args[3]
     test_path = args[4]
     _dir = args[5]
+    sub = args[6]
     
     trainset  = pd.read_feather(train_path)
     testset  = pd.read_feather(test_path)
     testset.drop(columns=[target], inplace=True) 
     
   
-    main(trainset, testset, target, _dir)
+    main(trainset, testset, target, _dir, sub)
     

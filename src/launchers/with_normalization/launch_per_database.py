@@ -3,12 +3,12 @@ import sys, ast, os
 from dotenv import load_dotenv
 
 discretization_types =  ["SUP"] 
-alphas = [0.1, 0.15, 0.5, 0.85]
-state_of_art_graphs = ["LIU_V2", "GUI", "LIU_V1"] 
+alphas = [0.1]#, 0.15, 0.5, 0.85]
+state_of_art_graphs = ["GUI",  "LIU_V1", "LIU_V2"] #, ,
 standard_proposed_graphs = ["BIP", "MOD"]   
 proposed_complete_graph = ["LOAN"]
 
-MAX_WORKERS = 2
+MAX_WORKERS = 4
 semaphore = threading.Semaphore(MAX_WORKERS)
 
 
@@ -60,24 +60,27 @@ def launch_graph_modeling(db_name, sub):
     
     for graph_type in standard_proposed_graphs:
         for discretization_type in discretization_types:
-            train_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_train_data_" + discretization_type.lower() + '_' + sub + ".feather"
-            test_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_test_data_" + discretization_type.lower() + '_' + sub + ".feather"
+            train_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub + "/discretized_train_data_" + discretization_type.lower() +  ".feather"
+            test_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub  + "/discretized_test_data_" + discretization_type.lower() + ".feather"
            
             
             commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} SUB={7} """.
                         format(*[db_name.lower(), db_name.lower(), graph_type.lower(), discretization_type.lower(), train_path, test_path, _dir, sub]))
     
     for graph_type in proposed_complete_graph:
-         train_path = "data/preprocessed/"+ db_name +"/partial_preprocessed_data_train_" + sub + ".feather"
-         test_path = "data/preprocessed/"+ db_name +"/partial_preprocessed_data_test_" + sub + ".feather"
+         train_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_train_" + sub + ".feather"
+         test_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_test_" + sub + ".feather"
          
          commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} TRAIN_PATH={3} TEST_PATH={4} _DIR={5} SUB={6} """.
                          format(*[db_name.lower(), db_name.lower(), graph_type.lower(), train_path, test_path, _dir, sub]))
  
-
-    for graph_type in ["LIU", "GUI"]: 
+ 
+    train_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_train_" + sub + ".feather"
+    test_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_test_" + sub + ".feather"
+    
+    for graph_type in ["LIU", "GUI"]: #,
             commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} SUB={7}""".
-                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), None, None, None,  _dir, sub]))
+                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), None, train_path, test_path,  _dir, sub]))
        
            
     threads = []
@@ -98,20 +101,20 @@ def launch_compute_descriptors(db_name, sub):
     
     for graph_type in standard_proposed_graphs:
         for discretization_type in discretization_types:
-            train_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_train_data_" + discretization_type.lower() + "_" + sub + ".feather"
-            test_path = "data/with_normalization/discretized/" + db_name.lower() + "/discretized_test_data_" + discretization_type.lower() + "_" + sub + ".feather"
+            train_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub + "/discretized_train_data_" + discretization_type.lower() + ".feather"
+            test_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub + "/discretized_test_data_" + discretization_type.lower() + ".feather"
            
             for alpha in alphas:
-                commands.append(""" make run_compute_descriptors_""" + graph_type.lower() + """_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3} DISCRETIZATION_TYPE={4} TRAIN_PATH={5} TEST_PATH={6} _DIR={7} GRAPH_DIR={8} SUB={9}""".
-                                format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, discretization_type.lower(), train_path, test_path, _dir, _graph_dir, sub]))
+                commands.append(""" make run_compute_descriptors_""" + graph_type.lower() + """_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3} DISCRETIZATION_TYPE={4} TRAIN_PATH={5} TEST_PATH={6} _DIR={7} GRAPH_DIR={8} """.
+                                format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, discretization_type.lower(), train_path, test_path, _dir, _graph_dir]))
      
      
     train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train_" + sub + ".feather"
     test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test_" + sub + ".feather"
     for graph_type in proposed_complete_graph:
          for alpha in alphas:
-            commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} SUB={8}""".
-                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir, sub]))
+            commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
+                        format(*[db_name.lower(), db_name.lower(), graph_type.lower(), alpha, train_path, test_path, _graph_dir, _dir]))
         
                      
     for graph_type in state_of_art_graphs:  
@@ -139,7 +142,7 @@ def launch_config_without_stepwise(db_name, sub):
   
     for graph_type in state_of_art_graphs:
         
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower() + "/new_features_train.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/new_features_train.feather"
         
         commands.append("""make run_make_configurations_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
@@ -147,13 +150,13 @@ def launch_config_without_stepwise(db_name, sub):
 
     for graph_type in standard_proposed_graphs:    
         for discretization_type in discretization_types:
-            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower()  +"/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
+            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  + "/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
             
             commands.append("""make run_make_configurations_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                             format(*[db_name.lower(), save_dir, discretization_type, graph_type, classic_train_path, new_descriptor_train_path]))
             
     for graph_type in proposed_complete_graph:
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
         
         commands.append("""make run_make_configurations_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
@@ -170,8 +173,8 @@ def launch_config_without_stepwise(db_name, sub):
         
 def launch_config_with_stepwise(db_name, sub):
     
-    classic_train_path = "data/preprocessed/"+ db_name + "/" + sub + "/preprocessed_data_train.feather"
-    save_dir = 'data/with_normalization/with_stepwise/configurations'
+    classic_train_path = "data/preprocessed/"+ db_name + "/preprocessed_data_train_" + sub + ".feather"
+    save_dir = 'data/with_normalization/with_stepwise/configurations/'
       
     commands = []
 
@@ -180,7 +183,7 @@ def launch_config_with_stepwise(db_name, sub):
   
     for graph_type in state_of_art_graphs:
         
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower() + "/new_features_train.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/new_features_train.feather"
         
         commands.append("""make run_make_configurations_with_stepwise_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
@@ -188,13 +191,13 @@ def launch_config_with_stepwise(db_name, sub):
 
     for graph_type in standard_proposed_graphs:    
         for discretization_type in discretization_types:
-            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower()  +"/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
+            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  +"/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
             
             commands.append("""make run_make_configurations_with_stepwise_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                             format(*[db_name.lower(), save_dir, discretization_type, graph_type, classic_train_path, new_descriptor_train_path]))
             
     for graph_type in proposed_complete_graph:
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
         
         commands.append("""make run_make_configurations_with_stepwise_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
@@ -209,8 +212,8 @@ def launch_config_with_stepwise(db_name, sub):
         t.join()        
 
 def launch_stepwise_selection(db_name, sub):
-    train_path = "data/preprocessed/"+ db_name + "/" + sub + "/preprocessed_data_train.feather"
-    save_dir = 'data/with_normalization/with_stepwise/configurations/'+ db_name.lower() 
+    train_path = "data/preprocessed/"+ db_name + "/preprocessed_data_train_" + sub + ".feather"
+    save_dir = 'data/with_normalization/with_stepwise/configurations/'+ db_name.lower() + "/sub" + sub
     
     command = """make run_select_features_{0} DB_NAME={1} TRAIN_PATH={2} SAVE_DIR={3} SUB={4} """.format(
         *[db_name.lower(), db_name.lower(), train_path, save_dir, sub])
@@ -218,49 +221,49 @@ def launch_stepwise_selection(db_name, sub):
     subprocess.run(command, shell=True)
    
 def launch_predict(db_name, sub):
-    save_dir = 'reports/with_normalization/without_stepwise/'+ db_name + "/" + sub + "/metrics"
-    classic_train_path = "data/preprocessed/"+ db_name + "/" + sub + "/preprocessed_data_train.feather"
-    classic_test_path = "data/preprocessed/"+ db_name + "/" + sub + "/preprocessed_data_test.feather"
-    classic_config_path = "data/with_normalization/without_stepwise/configurations/"+ db_name + "/" + sub + "/configuration_classic.txt" 
+    save_dir = 'reports/with_normalization/without_stepwise/'+ db_name + "/sub" + sub + "/metrics"
+    classic_train_path = "data/preprocessed/"+ db_name + "/preprocessed_data_train_" + sub + ".feather"
+    classic_test_path = "data/preprocessed/"+ db_name +  "/preprocessed_data_test_" + sub + ".feather"
+    classic_config_path = "data/with_normalization/without_stepwise/configurations/"+ db_name + "/sub" + sub + "/configuration_classic.txt" 
     
     commands = []
     
     for graph_type in state_of_art_graphs:
-            train_path = 'data/with_normalization/graph_features/' + db_name.lower() +  "/" + sub + "/" + graph_type.lower() + '/new_features_train.feather'
-            test_path = 'data/with_normalization/graph_features/' + db_name.lower() + "/" + sub + '/' + graph_type.lower() + '/new_features_test.feather'
-            config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower()+"/configuration_" + graph_type.lower() + ".txt"
+            train_path = 'data/with_normalization/graph_features/' + db_name.lower() +  "/sub" + sub + "/" + graph_type.lower() + '/new_features_train.feather'
+            test_path = 'data/with_normalization/graph_features/' + db_name.lower() + "/sub" + sub + '/' + graph_type.lower() + '/new_features_test.feather'
+            config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower() +  "/sub" + sub + "/"  + "/configuration_" + graph_type.lower() + ".txt"
 
-            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10}  CLASSIC_CONFIG_PATH={11} SUB={12} """.
+            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10}  CLASSIC_CONFIG_PATH={11}  """.
                             format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir,
-                                     classic_train_path, classic_test_path, None, classic_config_path, sub]))
+                                     classic_train_path, classic_test_path, None, classic_config_path]))
         
     for graph_type in proposed_complete_graph:
-        train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + "/" + graph_type .lower() + '/train'
-        test_directory = 'data/with_normalization/graph_features/' + db_name.lower() +  "/" + sub + "/" + graph_type .lower() + '/test'
+        train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + "/" + graph_type .lower() + '/train'
+        test_directory = 'data/with_normalization/graph_features/' + db_name.lower() +  "/sub" + sub + "/" + graph_type .lower() + '/test'
         
-        config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower() + "/configuration_" + graph_type.lower() + ".txt"
+        config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower() + "/sub" + sub + "/configuration_" + graph_type.lower() + ".txt"
 
         for alpha in alphas: 
             train_path = train_directory + '/new_features_' + str(alpha) + '.feather'
             test_path = test_directory + '/new_features_' + str(alpha) + '.feather'
-            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} SUB={12} """.
+            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} """.
                             format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, classic_train_path, classic_test_path,
-                                     alpha, classic_config_path, sub]))
+                                     alpha, classic_config_path]))
 
                 
     for graph_type in standard_proposed_graphs:
         for disc_type in discretization_types:
-            train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type .lower() + "/" +  disc_type.lower() + '/train'
-            test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type .lower() + "/" + disc_type.lower() + '/test' 
+            train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type .lower() + "/" +  disc_type.lower() + '/train'
+            test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type .lower() + "/" + disc_type.lower() + '/test' 
             
-            config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower() + "/" + sub + "/configuration_" + graph_type.lower() + "_" + disc_type.lower() + ".txt"
+            config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower() + "/sub" + sub + "/configuration_" + graph_type.lower() + "_" + disc_type.lower() + ".txt"
 
             for alpha in alphas: 
                 train_path = train_directory + '/new_features_' + str(alpha) + '.feather'
                 test_path = test_directory + '/new_features_' + str(alpha) + '.feather'
-                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} SUB={12} """.
+                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7}  CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11}  """.
                                 format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, graph_type, config_path, save_dir, classic_train_path, classic_test_path,
-                                         alpha, classic_config_path], sub))
+                                         alpha, classic_config_path]))
                 
 
     threads = []
@@ -273,10 +276,10 @@ def launch_predict(db_name, sub):
         t.join()
 
 def launch_predict_classic(db_name, sub):
-    train_path = "data/preprocessed/"+ db_name   +  "/" + sub +"/preprocessed_data_train.feather"
-    test_path = "data/preprocessed/"+ db_name   +  "/" + sub +"/preprocessed_data_test.feather"
-    config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower()  +  "/" + sub +  "/configuration_classic.txt" 
-    save_dir = 'reports/with_normalization/without_stepwise/' + db_name.lower()  +  "/" + sub + '/metrics/'
+    train_path = "data/preprocessed/"+ db_name  + "/preprocessed_data_train_" + sub + ".feather"
+    test_path = "data/preprocessed/"+ db_name   + "/preprocessed_data_test_" + sub + ".feather"
+    config_path = "data/with_normalization/without_stepwise/configurations/" + db_name.lower()  +  "/sub" + sub +  "/configuration_classic.txt" 
+    save_dir = 'reports/with_normalization/without_stepwise/' + db_name.lower()  +  "/sub" + sub + '/metrics/'
     
     command = """make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3} DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} SUB={8} """.format(
         *[db_name.lower(), db_name.lower(), train_path, test_path, None, None, config_path,  save_dir, sub])
@@ -284,49 +287,49 @@ def launch_predict_classic(db_name, sub):
     subprocess.run(command, shell=True)
 
 def launch_predict_with_stepwise(db_name, sub):
-    save_dir = 'reports/with_normalization/with_stepwise/'+ db_name  +  "/" + sub + '/metrics'
-    classic_train_path = "data/preprocessed/"+ db_name  +  "/" + sub +"/preprocessed_data_train.feather"
-    classic_test_path = "data/preprocessed/"+ db_name  +  "/" + sub + "/preprocessed_data_test.feather"
-    classic_config_path = "data/with_normalization/with_stepwise/configurations/"+ db_name  +  "/" + sub +"/configuration_classic.txt" 
+    save_dir = 'reports/with_normalization/with_stepwise/'+ db_name  +  "/sub" + sub + '/metrics'
+    classic_train_path = "data/preprocessed/"+ db_name  + "/preprocessed_data_train_" + sub + ".feather"
+    classic_test_path = "data/preprocessed/"+ db_name   + "/preprocessed_data_test_" + sub + ".feather"
+    classic_config_path = "data/with_normalization/with_stepwise/configurations/"+ db_name  +  "/sub" + sub +"/configuration_classic.txt" 
     
     commands = []
     
     for graph_type in state_of_art_graphs:
-            train_path = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type.lower() + '/new_features_train.feather'
-            test_path = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type.lower() + '/new_features_test.feather'
-            config_path = "data/with_normalization/with_stepwise/configurations/"  + db_name.lower()  +  "/" + sub+ "/configuration_" + graph_type.lower() + ".txt"
+            train_path = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type.lower() + '/new_features_train.feather'
+            test_path = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type.lower() + '/new_features_test.feather'
+            config_path = "data/with_normalization/with_stepwise/configurations/"  + db_name.lower()  +  "/sub" + sub + "/configuration_" + graph_type.lower() + ".txt"
 
-            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} CLASSIC_CONFIG_PATH={10} ALPHA={11} SUB={12} """.
+            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} CLASSIC_CONFIG_PATH={10} ALPHA={11} """.
                             format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, 
-                                     classic_train_path, classic_test_path, classic_config_path, None, sub]))
+                                     classic_train_path, classic_test_path, classic_config_path, None]))
         
     for graph_type in proposed_complete_graph:
-        train_directory = 'data/with_normalization/graph_features/' + db_name.lower() +  "/" + sub + "/" + graph_type .lower() + '/train'
-        test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub +"/" + graph_type .lower() + '/test'
+        train_directory = 'data/with_normalization/graph_features/' + db_name.lower() +  "/sub" + sub + "/" + graph_type .lower() + '/train'
+        test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub +"/" + graph_type .lower() + '/test'
         
-        config_path = "data/with_normalization/with_stepwise/configurations/" + db_name.lower()  +  "/" + sub + "/configuration_" + graph_type.lower() + ".txt"
+        config_path = "data/with_normalization/with_stepwise/configurations/" + db_name.lower()  +  "/sub" + sub + "/configuration_" + graph_type.lower() + ".txt"
 
         for alpha in alphas: 
             train_path = train_directory + '/new_features_' + str(alpha) + '.feather'
             test_path = test_directory + '/new_features_' + str(alpha) + '.feather'
-            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} SUB={12}""".
+            commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} """.
                             format(*[db_name.lower(), db_name.lower(), train_path, test_path, None, graph_type, config_path, save_dir, 
-                                     classic_train_path, classic_test_path, alpha, classic_config_path, sub]))
+                                     classic_train_path, classic_test_path, alpha, classic_config_path]))
 
                 
     for graph_type in standard_proposed_graphs:
         for disc_type in discretization_types:
-            train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type .lower() + "/" +  disc_type.lower() + '/train'
-            test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/" + sub + '/' + graph_type .lower() + "/" + disc_type.lower() + '/test' 
+            train_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type .lower() + "/" +  disc_type.lower() + '/train'
+            test_directory = 'data/with_normalization/graph_features/' + db_name.lower()  +  "/sub" + sub + '/' + graph_type .lower() + "/" + disc_type.lower() + '/test' 
             
-            config_path = "data/with_normalization/with_stepwise/configurations/" + db_name.lower()  +  "/" + sub + "/configuration_" + graph_type.lower() + "_" + disc_type.lower() + ".txt"
+            config_path = "data/with_normalization/with_stepwise/configurations/" + db_name.lower()  +  "/sub" + sub + "/configuration_" + graph_type.lower() + "_" + disc_type.lower() + ".txt"
 
             for alpha in alphas: 
                 train_path = train_directory + '/new_features_' + str(alpha) + '.feather'
                 test_path = test_directory + '/new_features_' + str(alpha) + '.feather'
-                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} SUB={12}""".
+                commands.append("""make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3}  DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} CLASSIC_TRAIN_PATH={8} CLASSIC_TEST_PATH={9} ALPHA={10} CLASSIC_CONFIG_PATH={11} """.
                                 format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, graph_type, config_path, save_dir, 
-                                         classic_train_path, classic_test_path, alpha, classic_config_path, sub]))
+                                         classic_train_path, classic_test_path, alpha, classic_config_path]))
 
     threads = []
     for cmd in commands:
@@ -338,10 +341,10 @@ def launch_predict_with_stepwise(db_name, sub):
         t.join()
 
 def launch_predict_classic_with_stepwise(db_name, sub):
-    train_path = "data/preprocessed/"+ db_name  +  "/" + sub+"/preprocessed_data_train.feather"
-    test_path = "data/preprocessed/"+ db_name  +  "/" + sub +"/preprocessed_data_test.feather"
-    config_path = "data/with_normalization/with_stepwise/configurations/" + db_name  +  "/" + sub + "/configuration_classic.txt" 
-    save_dir = 'reports/with_normalization/with_stepwise/'+ db_name  +  "/" + sub + '/metrics/'
+    train_path = "data/preprocessed/"+ db_name  + "/preprocessed_data_train_" + sub + ".feather"
+    test_path = "data/preprocessed/"+ db_name   + "/preprocessed_data_test_" + sub + ".feather"
+    config_path = "data/with_normalization/with_stepwise/configurations/" + db_name  +  "/sub" + sub + "/configuration_classic.txt" 
+    save_dir = 'reports/with_normalization/with_stepwise/'+ db_name  +  "/sub" + sub + '/metrics/'
     
     command = """make run_make_predictions_{0} DB_NAME={1} TRAIN_PATH={2} TEST_PATH={3} DISCRETIZATION_TYPE={4} GRAPH_TYPE={5} CONFIG_PATH={6} SAVE_DIR={7} SUB={8} """.format(
         *[db_name.lower(), db_name.lower(), train_path, test_path, None, None, config_path,  save_dir, sub])
@@ -350,7 +353,7 @@ def launch_predict_classic_with_stepwise(db_name, sub):
  
 def launch_print(db_name, sub):
     
-    directory = "reports/with_normalization/without_stepwise/" + db_name  +  "/" + sub + "/metrics/"
+    directory = "reports/with_normalization/without_stepwise/" + db_name  +  "/sub" + sub + "/metrics/"
     
     commands = ["""make run_print_{0} DB_NAME={1} _DIR={2} DISCRETIZATION_TYPE={3} GRAPH_TYPE={4} SUB={5} """.
                 format(*[db_name.lower(), db_name.lower(), directory, None, None, sub])]
@@ -381,7 +384,7 @@ def launch_print(db_name, sub):
  
 def launch_print_with_stepwise(db_name, sub):
     
-    directory = "reports/with_normalization/with_stepwise/" + db_name  +  "/" + sub + "/metrics/"
+    directory = "reports/with_normalization/with_stepwise/" + db_name  +  "/sub" + sub + "/metrics/"
     
     commands = ["""make run_print_{0} DB_NAME={1} _DIR={2} DISCRETIZATION_TYPE={3} GRAPH_TYPE={4} SUB={5} """.
                 format(*[db_name.lower(), db_name.lower(), directory, None, None, sub])]
@@ -434,7 +437,9 @@ if __name__ == "__main__":
     db_name = args[0]
     sub = args[1]
     
-    launch_preprocess(db_name, sub)
+    
+    # launch_preprocess(db_name, sub)
+    
     launch_build_engine_for_supervized_discretization(db_name, sub)
     launch_supervised_discretization(db_name, sub)
     launch_graph_modeling(db_name, sub)

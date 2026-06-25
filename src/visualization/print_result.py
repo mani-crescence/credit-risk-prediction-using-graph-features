@@ -1,7 +1,7 @@
 import sys
 from ..tools.execute import *
 
-def main_print(directory, discretization_type = None, graph_type = None):
+def main_print(directory, discretization_type = None, graph_type = None, sub=None):
     result(directory, discretization_type, graph_type)
 
 
@@ -11,7 +11,8 @@ if __name__ == "__main__":
     directory = args[1]
     discretization_type = args[2]
     graph_type = args[3]
+    sub = args[4]
 
     # directory = "reports/"+db_name+"/metrics/"
-    main_print(directory, discretization_type, graph_type)
+    main_print(directory, discretization_type, graph_type, sub)
 

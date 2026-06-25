@@ -81,6 +81,7 @@ if __name__ == "__main__":
     classic_train_path = args[8]
     classic_test_path = args[9]
     classic_config_path = args[10]
+    # sub = args[11]
     
     cost_data = None
     cost_attributes = None
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     
     models = {
         'log': LogisticRegression(random_state=16, max_iter=1000), 
-        'svm': svm.SVC(),
+        'svm': svm.SVC(probability=True),
         'rf': RandomForestClassifier(), 
         'mlp': MLPClassifier(random_state=1, max_iter=1000)
     }
@@ -109,6 +110,9 @@ if __name__ == "__main__":
 
         real_results, _ = build_predictions(models, final_trainset, final_testset,  configurations, target, classic_result)
         
+        # print(real_results)
+        # exit()
+        
         directory_ = directory + '/classic'
         os.makedirs(directory_, exist_ok=True)
         with open(directory_ + '/metrics_results.txt', 'w') as file:
@@ -116,7 +120,7 @@ if __name__ == "__main__":
 
     elif discretization_type != 'None' and graph_type != 'None':
         alpha = args[11]
-        directory_ = graph_type.lower() +'/'+ discretization_type.lower()
+        directory_ = '/'+ graph_type.lower() +'/'+ discretization_type.lower()
 
         processing(classic_train_path, classic_test_path, classic_config_path, configurations, directory, directory_, alpha)
 

@@ -16,7 +16,7 @@ discretizations = [None, None, None, None, "sup", "sup", None] # "uns",  "uns",
 # discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
 
 models = ["LR", "SVM", "RF", "MLP"]
-metrics = ["ACC", "F1"]
+metrics = ["ACC", "F1", "RAP", "PRE", "AUC", "ROC"]
 
 def launch_attributes_importance():
     commands = []
@@ -35,43 +35,108 @@ def launch_attributes_importance():
 
 def generate_result_without_stepwise():
     global_results = {}
+    results = {}
     save_dir = "reports/with_normalization/without_stepwise/summary"
 
     for db in db_names:
         global_results[db] = {}
-        for graph, discretization in zip(graphs, discretizations):
-            if discretization is None and graph is not None:
-                with open('reports/with_normalization/without_stepwise/' + db + '/metrics/real/' + graph + '/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            elif discretization is None and graph is None:
-                with open('reports/with_normalization/without_stepwise/'+ db +'/metrics/classic/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            else:
-                with open('reports/with_normalization/without_stepwise/'+ db +'/metrics/real/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            global_results[db].update(result)
-
+        n=0
+        for i in range(1,6):
+            n+=1
+            results[i]={}
+            for graph, discretization in zip(graphs, discretizations):
+                if discretization is None and graph is not None:
+                    with open('reports/with_normalization/without_stepwise/' + db + '/sub' + str(i) + '/metrics/real/' + graph + '/main_results_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                elif discretization is None and graph is None:
+                    with open('reports/with_normalization/without_stepwise/'+ db + '/sub' + str(i) + '/metrics/classic/main_results_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                else:
+                    with open('reports/with_normalization/without_stepwise/'+ db + '/sub' + str(i) + '/metrics/real/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                results[i].update(result)        
+        
+        means = {}  
+        
+        for sub, sub_value in results.items(): 
+            for conf, conf_value in sub_value.items():
+                means[conf] = {}
+                for model, model_value in conf_value.items():
+                    means[conf][model] = {}
+                    for metric, _ in model_value.items():                
+                       means[conf][model][metric] = 0
+                      
+        for sub, sub_value in results.items(): 
+            for conf, conf_value in sub_value.items():
+                for model, model_value in conf_value.items():
+                    for metric, metric_value in model_value.items():
+                        means[conf][model][metric] += results[sub][conf][model][metric]
+        
+        for conf, conf_value in sub_value.items():
+            for model, model_value in conf_value.items():
+                for metric, _ in model_value.items():                
+                    means[conf][model][metric]/= n
+                    means[conf][model][metric] = round(means[conf][model][metric], 3)
+                        
+                
+        global_results[db].update(means)
         save_global_result_(global_results[db], models, metrics, db, save_dir)
+        print("End of ", db, " summarization without stepwise")
+        results = {}
 
 def generate_result_with_stepwise():
     global_results = {}
+    results = {}
     save_dir = "reports/with_normalization/with_stepwise/summary"
 
     for db in db_names:
         global_results[db] = {}
-        for graph, discretization in zip(graphs, discretizations):
-            if discretization is None and graph is not None:
-                with open('reports/with_normalization/with_stepwise/' + db + '/metrics/real/' + graph + '/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            elif discretization is None and graph is None:
-                with open('reports/with_normalization/with_stepwise/'+ db +'/metrics/classic/main_results_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            else:
-                with open('reports/with_normalization/with_stepwise/'+ db +'/metrics/real/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
-                    result = ast.literal_eval(file.read())
-            global_results[db].update(result)
-
+        n=0
+        for i in range(1,6):
+            n+=1
+            results[i]={}
+            for graph, discretization in zip(graphs, discretizations):
+                if discretization is None and graph is not None:
+                    with open('reports/with_normalization/with_stepwise/' + db + '/sub' + str(i) + '/metrics/real/' + graph + '/main_results_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                elif discretization is None and graph is None:
+                    with open('reports/with_normalization/with_stepwise/'+ db + '/sub' + str(i) + '/metrics/classic/main_results_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                else:
+                    with open('reports/with_normalization/with_stepwise/'+ db  + '/sub' + str(i) + '/metrics/real/'+ graph + '/main_results_' + graph + '_'+ discretization +'_r.txt') as file:
+                        result = ast.literal_eval(file.read())
+                results[i].update(result)
+                   
+                 
+        means = {}  
+        
+        for sub, sub_value in results.items(): 
+            for conf, conf_value in sub_value.items():
+                means[conf] = {}
+                for model, model_value in conf_value.items():
+                    means[conf][model] = {}
+                    for metric, _ in model_value.items():                
+                       means[conf][model][metric] = 0
+                      
+        for sub, sub_value in results.items(): 
+            for conf, conf_value in sub_value.items():
+                for model, model_value in conf_value.items():
+                    for metric, metric_value in model_value.items():
+                        means[conf][model][metric] += results[sub][conf][model][metric]
+        
+        for conf, conf_value in sub_value.items():
+            for model, model_value in conf_value.items():
+                for metric, _ in model_value.items():                
+                    means[conf][model][metric]/= n
+                    means[conf][model][metric] = round(means[conf][model][metric], 3)
+                        
+                           
+             
+        global_results[db].update(means)
         save_global_result_(global_results[db], models, metrics, db, save_dir)
+        
+        print("End of ", db, " summarization with stepwise ")
+        results = {}
         
 def attributes_classification():
 

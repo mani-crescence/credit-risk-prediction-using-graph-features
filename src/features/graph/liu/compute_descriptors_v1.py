@@ -7,10 +7,14 @@ def compute_personalized_degree(df_sample, X_train, dense_matrix, target):
 
     sample_numbers = len(df_sample)
     
+    
     print('sample_numbers', sample_numbers)
 
     degree_pos = np.zeros(len(df_sample), dtype=int)
     degree_neg = np.zeros(len(df_sample), dtype=int)
+    
+    # print(len(df_sample.index))
+    
 
     for i in range(dense_matrix.shape[0]):  
         all_indices = set(range(sample_numbers))
@@ -33,27 +37,34 @@ def compute_personalized_degree(df_sample, X_train, dense_matrix, target):
 
         if (i + 1) % 1000 == 0:
             print(i + 1)
+    # print(len(dense_matrix[0]))
+    # exit()        
             
     return  degree_pos, degree_neg      
   
   
-def main(G, train_index, test_index, trainset, df, target, db_name):
+def main(G, train_index, test_index, trainset, df, target, db_name, sub):
     A = nx.adjacency_matrix(G)
     dense_matrix = A.toarray()
-
+    
     degree_pos, degree_neg = compute_personalized_degree(df, trainset, dense_matrix, target)
 
     degree_df = pd.DataFrame([degree_pos, degree_neg]).T
+    degree_df.index = df.index
+    
+    # print(degree_df.head())
+    # exit()
+    
     degree_df.columns = ['degree_pos', 'degree_neg']
     
-    train = degree_df.iloc[train_index]
-    test = degree_df.iloc[test_index]
+    train = degree_df.loc[train_index]
+    test = degree_df.loc[test_index]
     
-    directory = _dir + db_name + '/' + graph_type
+    directory = _dir + db_name + '/sub' + sub + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
     train.to_feather(directory + '/new_features_train.feather')
 
-    directory = _dir + db_name + '/' + graph_type
+    directory = _dir + db_name + '/sub' + sub + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
     test.to_feather(directory + '/new_features_test.feather')
     
@@ -68,6 +79,7 @@ if __name__ == "__main__":
     test_path = args[4]
     _dir = args[5]
     _graph_dir = args[6]
+    sub = args[7]
     
     trainset = pd.read_feather(train_path)
     
@@ -75,11 +87,13 @@ if __name__ == "__main__":
     
     # testset.drop(columns=target, inplace=True)
     
-    with open(_graph_dir + db_name + '/graph_gui' ,"rb" ) as f:
+    with open(_graph_dir + db_name + '/sub' + sub + '/graph_liu' ,"rb" ) as f:
         graph = pickle.load(f)
+   
+    
     df = pd.concat([trainset, testset])
 
-    main(graph, trainset.index, testset.index, trainset, df, target, db_name)
+    main(graph, trainset.index, testset.index, trainset, df, target, db_name, sub)
     
     
     

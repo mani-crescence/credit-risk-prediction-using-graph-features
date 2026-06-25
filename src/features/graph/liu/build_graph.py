@@ -11,6 +11,7 @@ def main(df):
     for index, _ in df.iterrows():
         G.add_node(index)
 
+    
     distances = gower.gower_matrix(df)
 
     threshold = distances.mean()
@@ -20,6 +21,8 @@ def main(df):
             if distances[i, j] < threshold:
                 weight = 1.0 / distances[i, j] 
                 G.add_edge(i, j, weight=weight)
+                
+              
                 
     mst = nx.minimum_spanning_tree(G, algorithm='prim')  
     return mst          
@@ -34,16 +37,22 @@ if __name__ == "__main__":
     train_path = args[4]
     test_path = args[5]
     _dir = args[6]
+    sub = args[7]
      
-    trainset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_train.feather')
+    # trainset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_train_' + sub + '.feather')
+    # testset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_test_' + sub + '.feather')
     
-    testset  = pd.read_feather('data/preprocessed/' + db_name + '/preprocessed_data_test.feather')
+    trainset  = pd.read_feather(train_path)
+    testset  = pd.read_feather(test_path)
     testset.drop(columns=[target], inplace=True)
     
+    
+    
     df = pd.concat([trainset, testset], axis=0)
+  
     graph  = main(df)
     
-    directory = _dir  + db_name + '/'  
+    directory = _dir  + db_name + '/sub' + sub + '/'  
     os.makedirs(directory, exist_ok=True) 
     with open(directory + 'graph_' + graph_type.lower() , 'wb') as file:
         pickle.dump(graph, file)

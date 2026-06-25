@@ -5,7 +5,7 @@ from xgboost import data
 from ....tools.execute import pagerank_personalized
           
 
-def main(G, train_index, test_index, db_name):
+def main(G, train_index, test_index, db_name, df):
    
     # Compute centrality measures
     degree_centrality = nx.degree_centrality(G)
@@ -32,18 +32,19 @@ def main(G, train_index, test_index, db_name):
     
     df_node_attributes = pd.json_normalize(list(dict(G.nodes(data=True)).values()))
     
+    df_node_attributes.index = df.index
+    
     df_node_attributes = df_node_attributes[df_node_attributes.columns[df_node_attributes.isnull().sum() == 0]]
     
-    train = df_node_attributes.iloc[train_index]
-    test = df_node_attributes.iloc[test_index]
-    # print(train.head())
-    # exit()
+    train = df_node_attributes.loc[train_index]
+    test = df_node_attributes.loc[test_index]
+
     
-    directory = _dir + db_name + '/' + graph_type
+    directory = _dir + db_name + '/sub' + sub + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
     train.to_feather(directory + '/new_features_train.feather')
 
-    directory = _dir + db_name + '/' + graph_type
+    directory = _dir + db_name + '/sub' + sub + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
     test.to_feather(directory + '/new_features_test.feather')
 
@@ -57,17 +58,20 @@ if __name__ == "__main__":
     test_path = args[4]
     _dir = args[5]
     _graph_dir = args[6]
+    sub = args[7]
     
     trainset = pd.read_feather(train_path)
     testset  = pd.read_feather(test_path)
     
+    df = pd.concat([trainset, testset], axis=0)
+    
     # testset.drop(columns=target, inplace=True)
     
-    with open(_graph_dir + db_name + '/graph_gui' ,"rb" ) as f:
+    with open(_graph_dir + db_name + '/sub' + sub + '/graph_liu' ,"rb" ) as f:
         graph = pickle.load(f)
     
 
-    main(graph, trainset.index, testset.index, db_name)
+    main(graph, trainset.index, testset.index, db_name, df)
     
     
     
