@@ -110,8 +110,6 @@ if __name__ == "__main__":
 
         real_results, _ = build_predictions(models, final_trainset, final_testset,  configurations, target, classic_result)
         
-        # print(real_results)
-        # exit()
         
         directory_ = directory + '/classic'
         os.makedirs(directory_, exist_ok=True)

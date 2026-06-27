@@ -3,8 +3,8 @@ import sys, ast, os
 from dotenv import load_dotenv
 
 discretization_types =  ["SUP"] 
-alphas = [0.1]#, 0.15, 0.5, 0.85]
-state_of_art_graphs = ["GUI",  "LIU_V1", "LIU_V2"] #, ,
+alphas = [0.1, 0.15, 0.5, 0.85]
+state_of_art_graphs =  ["GUI",  "LIU_V1", "LIU_V2"] 
 standard_proposed_graphs = ["BIP", "MOD"]   
 proposed_complete_graph = ["LOAN"]
 
@@ -62,7 +62,6 @@ def launch_graph_modeling(db_name, sub):
         for discretization_type in discretization_types:
             train_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub + "/discretized_train_data_" + discretization_type.lower() +  ".feather"
             test_path = "data/with_normalization/discretized/" + db_name.lower() + "/sub" + sub  + "/discretized_test_data_" + discretization_type.lower() + ".feather"
-           
             
             commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} SUB={7} """.
                         format(*[db_name.lower(), db_name.lower(), graph_type.lower(), discretization_type.lower(), train_path, test_path, _dir, sub]))
@@ -78,7 +77,7 @@ def launch_graph_modeling(db_name, sub):
     train_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_train_" + sub + ".feather"
     test_path = "data/preprocessed/"+ db_name + "/partial_preprocessed_data_test_" + sub + ".feather"
     
-    for graph_type in ["LIU", "GUI"]: #,
+    for graph_type in ["LIU", "GUI"]: 
             commands.append("""make run_graph_modeling_""" + graph_type.lower() + """_{0} DB_NAME={1} GRAPH_TYPE={2} DISCRETIZATION_TYPE={3}  TRAIN_PATH={4} TEST_PATH={5} _DIR={6} SUB={7}""".
                         format(*[db_name.lower(), db_name.lower(), graph_type.lower(), None, train_path, test_path,  _dir, sub]))
        
@@ -111,6 +110,7 @@ def launch_compute_descriptors(db_name, sub):
      
     train_path = "data/preprocessed/"+ db_name +"/preprocessed_data_train_" + sub + ".feather"
     test_path = "data/preprocessed/"+ db_name +"/preprocessed_data_test_" + sub + ".feather"
+    
     for graph_type in proposed_complete_graph:
          for alpha in alphas:
             commands.append(""" make run_compute_descriptors_loan_{0}  BD_NAME={1} GRAPH_TYPE={2} ALPHA={3}  TRAIN_PATH={4} TEST_PATH={5}  GRAPH_DIR={6} _DIR={7} """.
@@ -437,8 +437,7 @@ if __name__ == "__main__":
     db_name = args[0]
     sub = args[1]
     
-    
-    # launch_preprocess(db_name, sub)
+    # # launch_preprocess(db_name, sub)
     
     launch_build_engine_for_supervized_discretization(db_name, sub)
     launch_supervised_discretization(db_name, sub)

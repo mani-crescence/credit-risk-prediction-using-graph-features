@@ -47,8 +47,6 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
     
     y_probs = model.predict_proba(X_te)[:, 1]
     
-    # print(y_probs)
-    # exit()
     
     
     accuracy = metrics.accuracy_score(y_te,y_pred)
@@ -58,6 +56,8 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
     fpr, tpr, thresholds = metrics.roc_curve(y_te, y_probs)
     auc = metrics.auc(fpr, tpr)
     roc_auc = metrics.roc_auc_score(y_te, y_probs)
+    pre, rap, thresholds = metrics.precision_recall_curve(y_te, y_probs)
+    pr_auc = metrics.auc(rap, pre)
 
     if classic_result is None:
         return {
@@ -67,6 +67,7 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
         'precision': "{:.4f}".format(rappel),
         'auc': "{:.4f}".format(auc),
         'roc_auc' : "{:.4f}".format(roc_auc),
+        'pr_auc' : "{:.4f}".format(pr_auc),
         }, {},  model
     else:
         classic_acc = float(classic_result["BASELINE"][model_name]['acc'])
@@ -75,6 +76,7 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
         classic_precision = float(classic_result["BASELINE"][model_name]['precision'])
         classic_auc = float(classic_result["BASELINE"][model_name]['auc'])
         classic_roc_auc = float(classic_result["BASELINE"][model_name]['roc_auc'])
+        classic_pr_auc = float(classic_result["BASELINE"][model_name]['pr_auc'])
 
         if classic_acc == 0:
             percent_acc = 0
@@ -105,6 +107,12 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
             percent_roc_auc = 0
         else:
             percent_roc_auc = ((float(roc_auc) - classic_roc_auc)/classic_roc_auc)*100    
+            
+        if classic_pr_auc == 0:
+            percent_pr_auc = 0
+        else:
+            percent_pr_auc = ((float(pr_auc) - classic_pr_auc)/classic_pr_auc)*100    
+    
     
 
         return  {
@@ -113,14 +121,16 @@ def evaluation(model, model_name, X_tr, y_tr, X_te, y_te, classic_result = None)
         'rap': "{:.4f}".format(rappel),
         'pre': "{:.4f}".format(precision),
         'auc': "{:.4f}".format(auc),
-        'roc': "{:.4f}".format(roc_auc)
+        'roc': "{:.4f}".format(roc_auc),
+        'pr': "{:.4f}".format(pr_auc)
         }, {
-        'acc': "{:.3f}".format(percent_acc),
-        'f1': "{:.3f}".format(percent_f1),
+        'acc': "{:.4f}".format(percent_acc),
+        'f1': "{:.4f}".format(percent_f1),
         'rap': "{:.4f}".format(percent_rappel),
         'pre': "{:.4f}".format(percent_precision),
         'auc': "{:.4f}".format(percent_auc),
-        'roc': "{:.4f}".format(percent_roc_auc)
+        'roc': "{:.4f}".format(percent_roc_auc),
+        'pr': "{:.4f}".format(percent_pr_auc)
         }, model
 
 def train(models,train, test, target, classic_result = None):

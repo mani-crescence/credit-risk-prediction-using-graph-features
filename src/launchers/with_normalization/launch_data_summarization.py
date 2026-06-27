@@ -6,17 +6,16 @@ from ...tools.execute import save_global_result, save_global_result_
 import pandas as pd
 from itertools import islice
 import math
+from collections import defaultdict
 
-db_names = ["prosper", "sme", "lending_club","bondora"]#, [] #["aer", "lgd", "german", "thomas"]#]#["german", "hmeq", "australian", "japanese"]#, "hmeq"]
+db_names = [ "prosper",  "sme"]#, "lending_club","bondora","prosper","sme"] "lending_club",
 discretization_types =  ["SUP", "UNS"]
-graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] #, "liu", "gui", "loan"]#, "gui"] "bip", "mod",
-discretizations = [None, None, None, None, "sup", "sup", None] # "uns",  "uns",
+graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] 
+discretizations = [None, None, None, None, "sup", "sup", None]
 
-# graphs = [None, "bip", "bip", "mod", "mod", "gui", "liu_v1", "liu_v2"] #, "liu", "gui", "loan"]#, "gui"]
-# discretizations = [None, "uns", "sup", "uns", "sup", None, None, None]
 
 models = ["LR", "SVM", "RF", "MLP"]
-metrics = ["ACC", "F1", "RAP", "PRE", "AUC", "ROC"]
+metrics = ["ACC", "F1", "RAP", "PRE", "AUC", "ROC", "PR"]
 
 def launch_attributes_importance():
     commands = []
@@ -41,7 +40,7 @@ def generate_result_without_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,6):
+        for i in range(1,5):
             n+=1
             results[i]={}
             for graph, discretization in zip(graphs, discretizations):
@@ -56,27 +55,44 @@ def generate_result_without_stepwise():
                         result = ast.literal_eval(file.read())
                 results[i].update(result)        
         
-        means = {}  
+        # means = {}  
         
-        for sub, sub_value in results.items(): 
-            for conf, conf_value in sub_value.items():
-                means[conf] = {}
-                for model, model_value in conf_value.items():
-                    means[conf][model] = {}
-                    for metric, _ in model_value.items():                
-                       means[conf][model][metric] = 0
+        
+        # for sub, sub_value in results.items(): 
+        #     for conf, conf_value in sub_value.items():
+        #         means[conf] = {}
+        #         for model, model_value in conf_value.items():
+        #             means[conf][model] = {}
+        #             for metric, _ in model_value.items():                
+        #                means[conf][model][metric] = 0
                       
-        for sub, sub_value in results.items(): 
+        # for sub, sub_value in results.items(): 
+        #     for conf, conf_value in sub_value.items():
+        #         for model, model_value in conf_value.items():
+        #             for metric, metric_value in model_value.items():
+        #                 means[conf][model][metric] += results[sub][conf][model][metric]
+        
+        # for conf, conf_value in sub_value.items():
+        #     for model, model_value in conf_value.items():
+        #         for metric, _ in model_value.items():                
+        #             means[conf][model][metric]/= n
+        #             means[conf][model][metric] = round(means[conf][model][metric], 3)
+        
+        def nested_defaultdict():
+            return defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+
+        means = nested_defaultdict()
+
+        for sub_value in results.values():
             for conf, conf_value in sub_value.items():
                 for model, model_value in conf_value.items():
                     for metric, metric_value in model_value.items():
-                        means[conf][model][metric] += results[sub][conf][model][metric]
-        
-        for conf, conf_value in sub_value.items():
-            for model, model_value in conf_value.items():
-                for metric, _ in model_value.items():                
-                    means[conf][model][metric]/= n
-                    means[conf][model][metric] = round(means[conf][model][metric], 3)
+                        means[conf][model][metric] += metric_value
+
+        for conf_value in means.values():
+            for model_value in conf_value.values():
+                for metric in model_value:
+                    model_value[metric] = round(model_value[metric] / n, 3)                
                         
                 
         global_results[db].update(means)
@@ -92,7 +108,7 @@ def generate_result_with_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,6):
+        for i in range(1,5):
             n+=1
             results[i]={}
             for graph, discretization in zip(graphs, discretizations):
@@ -108,28 +124,44 @@ def generate_result_with_stepwise():
                 results[i].update(result)
                    
                  
-        means = {}  
+        # means = {}  
         
-        for sub, sub_value in results.items(): 
-            for conf, conf_value in sub_value.items():
-                means[conf] = {}
-                for model, model_value in conf_value.items():
-                    means[conf][model] = {}
-                    for metric, _ in model_value.items():                
-                       means[conf][model][metric] = 0
+        # for sub, sub_value in results.items(): 
+        #     for conf, conf_value in sub_value.items():
+        #         means[conf] = {}
+        #         for model, model_value in conf_value.items():
+        #             means[conf][model] = {}
+        #             for metric, _ in model_value.items():                
+        #                means[conf][model][metric] = 0
                       
-        for sub, sub_value in results.items(): 
+        # for sub, sub_value in results.items(): 
+        #     for conf, conf_value in sub_value.items():
+        #         for model, model_value in conf_value.items():
+        #             for metric, metric_value in model_value.items():
+        #                 means[conf][model][metric] += results[sub][conf][model][metric]
+        
+        # for conf, conf_value in sub_value.items():
+        #     for model, model_value in conf_value.items():
+        #         for metric, _ in model_value.items():                
+        #             means[conf][model][metric]/= n
+        #             means[conf][model][metric] = round(means[conf][model][metric], 3)
+        
+        def nested_defaultdict():
+            return defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+
+        means = nested_defaultdict()
+
+        for sub_value in results.values():
             for conf, conf_value in sub_value.items():
                 for model, model_value in conf_value.items():
                     for metric, metric_value in model_value.items():
-                        means[conf][model][metric] += results[sub][conf][model][metric]
-        
-        for conf, conf_value in sub_value.items():
-            for model, model_value in conf_value.items():
-                for metric, _ in model_value.items():                
-                    means[conf][model][metric]/= n
-                    means[conf][model][metric] = round(means[conf][model][metric], 3)
-                        
+                        means[conf][model][metric] += metric_value
+        # print(means)                 
+        # exit()
+        for conf_value in means.values():
+            for model_value in conf_value.values():
+                for metric in model_value:
+                    model_value[metric] = round(model_value[metric] / n, 3)                 
                            
              
         global_results[db].update(means)

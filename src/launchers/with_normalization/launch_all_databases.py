@@ -1,7 +1,7 @@
 import subprocess, threading
  
 
-all_db_names = ["BONDORA"] #, "SME", "PROSPER", , "LENDING_CLUB", "BONDORA"] 
+all_db_names = ["SME", "PROSPER", "LENDING_CLUB", "BONDORA"] #, "SME", "PROSPER", , "LENDING_CLUB", "BONDORA"] 
 MAX_WORKERS = 4
 semaphore = threading.Semaphore(MAX_WORKERS)
 

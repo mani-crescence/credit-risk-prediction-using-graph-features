@@ -599,33 +599,115 @@ def save_global_result_(data, models, metrics, db, directory):
     with open(directory + "/general_results_"+ db + "_r.tex", "w", encoding="utf-8") as file:
         file.write(code)
 
-def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target, _dir):
+# def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, target, _dir):
     
-    directory = _dir + db_name +'/' + graph_type +'/'
+#     directory = _dir + db_name +'/' + graph_type +'/'
    
-    os.makedirs(directory, exist_ok=True)
+#     os.makedirs(directory, exist_ok=True)
     
-    training_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
-    test_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
+#     training_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
+#     test_centralities_df = pd.DataFrame(columns=['deg0', 'deg1'])
     
+    
+#     ### COMPUTATION OF DEGREE CENTRALITIES IN TRAINING SET    
+    
+#     for i, _ in  trainset.iterrows():
+        
+#         neighbors = list(nx.all_neighbors(graph, 'tr_u' + str(i)) ) 
+        
+#         all_nodes = graph.nodes(data=True)
+        
+#         training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
+        
+#         training_neighbors = [node for node in training_nodes if node in neighbors]
+       
+#         indexes = []
+        
+#         for node in training_neighbors:
+#             number = (re.findall(r'\d+',  node))[0]
+#             indexes.append(int(number)) 
+         
+#         subset = pd.DataFrame(trainset, index=indexes) 
+        
+#         subset[target] = subset[target].astype(int)
+        
+#         targets = {1: 0, 0: 0}
+         
+#         target_counts = subset[target].value_counts().to_dict() 
+        
+#         if 1 in target_counts:
+#             targets[1]= target_counts[1]
+            
+#         if 0 in target_counts:
+#             targets[0]= target_counts[0]
+        
+#         training_centralities_df.loc[i] = [targets[0] , targets[1]]
+      
+#     max = training_centralities_df.max()  
+#     training_centralities_df['deg0'] = training_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else training_centralities_df['deg0']
+#     training_centralities_df['deg1'] = training_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else training_centralities_df['deg1']
+     
+    
+#     training_centralities_df.to_csv(directory + '/new_features_train.csv')
+        
+        
+        
+#     ### COMPUTATION OF DEGREE CENTRALITIES IN TESTING SET    
+    
+#     for i, _ in  testset.iterrows():
+#         neighbors = list(nx.all_neighbors(graph, 'ts_u' + str(i)) ) 
+        
+#         all_nodes = graph.nodes(data=True)
+        
+#         training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
+        
+#         test_neighbors = [node for node in training_nodes if node in neighbors]
+       
+#         indexes = []
+        
+#         for node in test_neighbors:
+#             number = (re.findall(r'\d+',  node))[0]
+#             indexes.append(int(number)) 
+         
+#         subset = pd.DataFrame(trainset , index=indexes) 
+#         subset[target] = subset[target].astype(int)
+        
+#         targets = {1: 0, 0: 0}
+         
+#         target_counts = subset[target].value_counts().to_dict() 
+        
+#         if 1 in target_counts:
+#             targets[1]= target_counts[1]
+            
+#         if 0 in target_counts:
+#             targets[0]= target_counts[0]
+       
+#         test_centralities_df.loc[i] = [targets[0] , targets[1]]
+    
+    
+#     max = test_centralities_df.max()  
+    
+#     test_centralities_df['deg0'] = test_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else test_centralities_df['deg0']
+#     test_centralities_df['deg1'] = test_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else test_centralities_df['deg1']
+        
+#     test_centralities_df.to_csv(directory + '/new_features_test.csv')
+    
+def compute_degree_personalized(graph, trainset, db_name, graph_type, target, _dir, data):
+    
+    df = pd.DataFrame(columns=['degree_pos', 'degree_neg'])
     
     ### COMPUTATION OF DEGREE CENTRALITIES IN TRAINING SET    
     
-    for i, _ in  trainset.iterrows():
+    for i, _ in  data.iterrows():
         
-        neighbors = list(nx.all_neighbors(graph, 'tr_u' + str(i)) ) 
+        neighbors = list(nx.all_neighbors(graph, i)) 
+        training_neighbors = [node for node in trainset.index  if node in neighbors]
+        # print(training_neighbors)
         
-        all_nodes = graph.nodes(data=True)
-        
-        training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
-        
-        training_neighbors = [node for node in training_nodes if node in neighbors]
-       
         indexes = []
         
         for node in training_neighbors:
-            number = (re.findall(r'\d+',  node))[0]
-            indexes.append(int(number)) 
+            indexes.append(int(node)) 
          
         subset = pd.DataFrame(trainset, index=indexes) 
         
@@ -641,58 +723,16 @@ def compute_degree_centralities(graph, trainset, testset,  db_name, graph_type, 
         if 0 in target_counts:
             targets[0]= target_counts[0]
         
-        training_centralities_df.loc[i] = [targets[0] , targets[1]]
+        df.loc[i] = [targets[0] , targets[1]]
       
-    max = training_centralities_df.max()  
-    training_centralities_df['deg0'] = training_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else training_centralities_df['deg0']
-    training_centralities_df['deg1'] = training_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else training_centralities_df['deg1']
+    max = df.max()  
+    
+    df['degree_pos'] = df['degree_pos'] / max['degree_pos'] if max['degree_pos'] != 0 else df['degree_pos']
+    df['degree_neg'] = df['degree_neg'] / max['degree_neg'] if max['degree_neg'] != 0 else df['degree_neg']
      
+    return df
+   
     
-    training_centralities_df.to_csv(directory + '/new_features_train.csv')
-        
-        
-        
-    ### COMPUTATION OF DEGREE CENTRALITIES IN TESTING SET    
-    
-    for i, _ in  testset.iterrows():
-        neighbors = list(nx.all_neighbors(graph, 'ts_u' + str(i)) ) 
-        
-        all_nodes = graph.nodes(data=True)
-        
-        training_nodes = [node  for node, att in all_nodes if att.get("type") == 'train']
-        
-        test_neighbors = [node for node in training_nodes if node in neighbors]
-       
-        indexes = []
-        
-        for node in test_neighbors:
-            number = (re.findall(r'\d+',  node))[0]
-            indexes.append(int(number)) 
-         
-        subset = pd.DataFrame(trainset , index=indexes) 
-        subset[target] = subset[target].astype(int)
-        
-        targets = {1: 0, 0: 0}
-         
-        target_counts = subset[target].value_counts().to_dict() 
-        
-        if 1 in target_counts:
-            targets[1]= target_counts[1]
-            
-        if 0 in target_counts:
-            targets[0]= target_counts[0]
-       
-        test_centralities_df.loc[i] = [targets[0] , targets[1]]
-    
-    
-    max = test_centralities_df.max()  
-    
-    test_centralities_df['deg0'] = test_centralities_df['deg0'] / max['deg0'] if max['deg0'] != 0 else test_centralities_df['deg0']
-    test_centralities_df['deg1'] = test_centralities_df['deg1'] / max['deg1'] if max['deg1'] != 0 else test_centralities_df['deg1']
-        
-    test_centralities_df.to_csv(directory + '/new_features_test.csv')
-    
-     
 
         
         

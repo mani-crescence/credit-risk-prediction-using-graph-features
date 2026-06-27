@@ -1,21 +1,18 @@
 import sys, os, pickle, ast
 import pandas as pd, numpy as np
 import networkx as nx
+from ....tools.execute import compute_degree_personalized
   
           
 def compute_personalized_degree(df_sample, X_train, dense_matrix, target):
 
     sample_numbers = len(df_sample)
     
-    
     print('sample_numbers', sample_numbers)
 
     degree_pos = np.zeros(len(df_sample), dtype=int)
     degree_neg = np.zeros(len(df_sample), dtype=int)
     
-    # print(len(df_sample.index))
-    
-
     for i in range(dense_matrix.shape[0]):  
         all_indices = set(range(sample_numbers))
         exclude_i = all_indices - {i}
@@ -37,9 +34,7 @@ def compute_personalized_degree(df_sample, X_train, dense_matrix, target):
 
         if (i + 1) % 1000 == 0:
             print(i + 1)
-    # print(len(dense_matrix[0]))
-    # exit()        
-            
+    
     return  degree_pos, degree_neg      
   
   
@@ -52,14 +47,15 @@ def main(G, train_index, test_index, trainset, df, target, db_name, sub):
     degree_df = pd.DataFrame([degree_pos, degree_neg]).T
     degree_df.index = df.index
     
-    # print(degree_df.head())
-    # exit()
-    
     degree_df.columns = ['degree_pos', 'degree_neg']
     
     train = degree_df.loc[train_index]
     test = degree_df.loc[test_index]
     
+    # train = compute_degree_personalized(G, trainset, db_name, 'liu', target, _dir, trainset)
+    # test = compute_degree_personalized(G, trainset, db_name, 'liu', target, _dir, testset)
+    
+   
     directory = _dir + db_name + '/sub' + sub + '/' + graph_type
     os.makedirs(directory, exist_ok=True)
     train.to_feather(directory + '/new_features_train.feather')
@@ -82,15 +78,12 @@ if __name__ == "__main__":
     sub = args[7]
     
     trainset = pd.read_feather(train_path)
-    
     testset  = pd.read_feather(test_path)
-    
-    # testset.drop(columns=target, inplace=True)
+    testset.drop(columns=target, inplace=True)
     
     with open(_graph_dir + db_name + '/sub' + sub + '/graph_liu' ,"rb" ) as f:
         graph = pickle.load(f)
-   
-    
+     
     df = pd.concat([trainset, testset])
 
     main(graph, trainset.index, testset.index, trainset, df, target, db_name, sub)

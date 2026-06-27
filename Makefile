@@ -2,7 +2,7 @@ include .env
 export QT_QPA_PLATFORM=offscreen
 
 # Variables
-PYTHON_INTERPRETER= python3
+PYTHON_INTERPRETER=  nice -5  python3
 SRC_DIR = -m src.
 PRE_DIR = -m src.data_processing.
 
