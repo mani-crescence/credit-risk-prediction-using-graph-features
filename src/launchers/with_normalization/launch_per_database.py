@@ -1,15 +1,15 @@
 import subprocess, threading
-import sys, ast, os
+import sys, ast, os, random
 from dotenv import load_dotenv
 
 discretization_types =  ["SUP"] 
-alphas = [0.1, 0.15, 0.5, 0.85]
-state_of_art_graphs =  ["GUI",  "LIU_V1", "LIU_V2"] 
-standard_proposed_graphs = ["BIP", "MOD"]   
+alphas = [0.15, 0.5] #, 0.15, 0.5, 0.85]
+state_of_art_graphs =  ["GUI", "LIU_V1", "LIU_V2"] 
+standard_proposed_graphs = ["BIP", "MOD"] #]#, "MOD"]   
 proposed_complete_graph = ["LOAN"]
-
-MAX_WORKERS = 4
-semaphore = threading.Semaphore(MAX_WORKERS)
+rand_alpha = random.choice(alphas)
+BATCH_SIZE = 4
+# semaphore = threading.Semaphore(MAX_WORKERS)
 
 
 load_dotenv()
@@ -20,7 +20,6 @@ def run_command(cmd, db_name):
             process.wait()
             print(f"##################### {db_name} processing completed. ############################")
     
-
 def launch_preprocess(db_name):
     command = """ make run_preprocess_{0} DB_NAME={1} """.format(*[db_name.lower(), db_name.lower()])
 
@@ -82,15 +81,19 @@ def launch_graph_modeling(db_name, sub):
                         format(*[db_name.lower(), db_name.lower(), graph_type.lower(), None, train_path, test_path,  _dir, sub]))
        
            
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
-        
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
+    
 def launch_compute_descriptors(db_name, sub):
     
     _dir = 'data/with_normalization/graph_features/'
@@ -121,14 +124,18 @@ def launch_compute_descriptors(db_name, sub):
         commands.append(""" make run_compute_descriptors_""" + graph_type.lower() + """_{0}  BD_NAME={1} GRAPH_TYPE={2} TRAIN_PATH={3} TEST_PATH={4} _DIR={5} GRAPH_DIR={6} SUB={7} """.
                         format(*[db_name.lower(), db_name.lower(), graph_type.lower(), train_path, test_path, _dir, _graph_dir, sub]))
         
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
         
 def launch_config_without_stepwise(db_name, sub):
     
@@ -150,28 +157,33 @@ def launch_config_without_stepwise(db_name, sub):
 
     for graph_type in standard_proposed_graphs:    
         for discretization_type in discretization_types:
-            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  + "/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
+            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  + "/"+ discretization_type.lower()  + '/train/' + "new_features_" + str(rand_alpha) + ".feather"
             
             commands.append("""make run_make_configurations_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                             format(*[db_name.lower(), save_dir, discretization_type, graph_type, classic_train_path, new_descriptor_train_path]))
             
     for graph_type in proposed_complete_graph:
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_" + str(rand_alpha) + ".feather"
         
         commands.append("""make run_make_configurations_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
                 
             
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
         
 def launch_config_with_stepwise(db_name, sub):
+    
     
     classic_train_path = "data/preprocessed/"+ db_name + "/preprocessed_data_train_" + sub + ".feather"
     save_dir = 'data/with_normalization/with_stepwise/configurations/'
@@ -191,25 +203,29 @@ def launch_config_with_stepwise(db_name, sub):
 
     for graph_type in standard_proposed_graphs:    
         for discretization_type in discretization_types:
-            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  +"/"+ discretization_type.lower()  + '/train/' + "new_features_0.1.feather"
+            new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower()  +"/"+ discretization_type.lower()  + '/train/' + "new_features_" + str(rand_alpha) + ".feather"
             
             commands.append("""make run_make_configurations_with_stepwise_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                             format(*[db_name.lower(), save_dir, discretization_type, graph_type, classic_train_path, new_descriptor_train_path]))
             
     for graph_type in proposed_complete_graph:
-        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_0.1.feather"
+        new_descriptor_train_path = "data/with_normalization/graph_features/" + db_name.lower() + "/sub" + sub + "/" + graph_type.lower() + "/train/new_features_" + str(rand_alpha) + ".feather"
         
         commands.append("""make run_make_configurations_with_stepwise_{0}  SAVE_DIR={1} DISCRETIZATION_TYPE={2} GRAPH_TYPE={3} CLASSIC_TRAIN_PATH={4} NEW_DESCRIPTOR_TRAIN_PATH={5}""".
                         format(*[db_name.lower(), save_dir, None, graph_type, classic_train_path, new_descriptor_train_path]))
                 
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()        
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()       
 
 def launch_stepwise_selection(db_name, sub):
     train_path = "data/preprocessed/"+ db_name + "/preprocessed_data_train_" + sub + ".feather"
@@ -266,14 +282,18 @@ def launch_predict(db_name, sub):
                                          alpha, classic_config_path]))
                 
 
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
 
 def launch_predict_classic(db_name, sub):
     train_path = "data/preprocessed/"+ db_name  + "/preprocessed_data_train_" + sub + ".feather"
@@ -331,14 +351,18 @@ def launch_predict_with_stepwise(db_name, sub):
                                 format(*[db_name.lower(), db_name.lower(), train_path, test_path, disc_type, graph_type, config_path, save_dir, 
                                          classic_train_path, classic_test_path, alpha, classic_config_path]))
 
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
 
 def launch_predict_classic_with_stepwise(db_name, sub):
     train_path = "data/preprocessed/"+ db_name  + "/preprocessed_data_train_" + sub + ".feather"
@@ -373,14 +397,18 @@ def launch_print(db_name, sub):
                     format(*[db_name.lower(), db_name.lower(), directory, discretization, graph.lower(), sub]))
 
 
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
  
 def launch_print_with_stepwise(db_name, sub):
     
@@ -404,32 +432,36 @@ def launch_print_with_stepwise(db_name, sub):
                     format(*[db_name.lower(), db_name.lower(), directory, discretization, graph.lower(), sub]))
 
 
-    threads = []
-    for cmd in commands:
-        t = threading.Thread(target=run_command,  args=(cmd, db_name))
-        t.start()
-        threads.append(t)
-        
-    for t in threads:
-        t.join()
+    for i in range(0, len(commands), BATCH_SIZE):
+        batch = commands[i:i + BATCH_SIZE]
+        processes = []
+
+        # Start the batch
+        for cmd in batch:
+            p = subprocess.Popen(cmd, shell=True)
+            processes.append(p)
+
+        # Wait for the batch to finish
+        for p in processes:
+            p.wait()
          
-def launch_plot(db_name, sub):
-    for model in models:
-        for discretization_type in discretization_types:
-            train_descriptors_paths = []
-            test_descriptors_paths = []
-            for graph in ["BIP", "MOD"]:
-                best_alphas_path = 'outputs/general_results/results/'+ db_name +'/percent/predictions/' + graph.lower()  + '/best_alpha_values_' + graph.lower() + '_' + discretization_type.lower() + '.txt'
-                with open(best_alphas_path, "r") as file:
-                    alphas = ast.literal_eval(file.read())
+# def launch_plot(db_name, sub):
+#     for model in models:
+#         for discretization_type in discretization_types:
+#             train_descriptors_paths = []
+#             test_descriptors_paths = []
+#             for graph in ["BIP", "MOD"]:
+#                 best_alphas_path = 'outputs/general_results/results/'+ db_name +'/percent/predictions/' + graph.lower()  + '/best_alpha_values_' + graph.lower() + '_' + discretization_type.lower() + '.txt'
+#                 with open(best_alphas_path, "r") as file:
+#                     alphas = ast.literal_eval(file.read())
                     
-                alpha = alphas[model]
-                train_descriptors_paths.append('outputs/' + db_name + '/new_descriptors/' + graph.lower() + '/train/new_descriptors_data' + '_' + discretization_type.lower() + '_' +  graph.lower() + '_' + str(alpha) + '.feather')
-                test_descriptors_paths.append('outputs/' + db_name + '/new_descriptors/' + graph.lower() + '/test/new_descriptors_data' + '_' + discretization_type.lower()  + '_' + graph.lower() + '_' + str(alpha) + '.feather')
+#                 alpha = alphas[model]
+#                 train_descriptors_paths.append('outputs/' + db_name + '/new_descriptors/' + graph.lower() + '/train/new_descriptors_data' + '_' + discretization_type.lower() + '_' +  graph.lower() + '_' + str(alpha) + '.feather')
+#                 test_descriptors_paths.append('outputs/' + db_name + '/new_descriptors/' + graph.lower() + '/test/new_descriptors_data' + '_' + discretization_type.lower()  + '_' + graph.lower() + '_' + str(alpha) + '.feather')
             
-            subprocess.run("""make run_plot_{0} DB_NAME={1} TRAIN_DESCRIPTORS_PATHS={2} TEST_DESCRIPTORS_PATHS={3}  MODEL={4} DISCRETIZATION_TYPE={5} """.format(
-                *[db_name.lower(), db_name.lower(), '\"' + str(train_descriptors_paths) + '\"',
-                  f'\"{test_descriptors_paths}\"', model, discretization_type]), shell=True)
+#             subprocess.run("""make run_plot_{0} DB_NAME={1} TRAIN_DESCRIPTORS_PATHS={2} TEST_DESCRIPTORS_PATHS={3}  MODEL={4} DISCRETIZATION_TYPE={5} """.format(
+#                 *[db_name.lower(), db_name.lower(), '\"' + str(train_descriptors_paths) + '\"',
+#                   f'\"{test_descriptors_paths}\"', model, discretization_type]), shell=True)
 
 
 if __name__ == "__main__":

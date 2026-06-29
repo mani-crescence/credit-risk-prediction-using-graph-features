@@ -8,7 +8,7 @@ from itertools import islice
 import math
 from collections import defaultdict
 
-db_names = [ "prosper",  "sme"]#, "lending_club","bondora","prosper","sme"] "lending_club",
+db_names = [ "prosper",  "sme", "bondora"]#["lending_club"] # , "lending_club","bondora"]#, "lending_club","bondora","prosper","sme"] "lending_club",
 discretization_types =  ["SUP", "UNS"]
 graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] 
 discretizations = [None, None, None, None, "sup", "sup", None]
@@ -40,7 +40,9 @@ def generate_result_without_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,5):
+        for i in range(1,6):
+            # if i == 2:
+            #     continue
             n+=1
             results[i]={}
             for graph, discretization in zip(graphs, discretizations):
@@ -56,7 +58,7 @@ def generate_result_without_stepwise():
                 results[i].update(result)        
         
         # means = {}  
-        
+        print(n)
         
         # for sub, sub_value in results.items(): 
         #     for conf, conf_value in sub_value.items():
@@ -108,7 +110,9 @@ def generate_result_with_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,5):
+        for i in range(1,6):
+            # if i == 2:
+            #     continue
             n+=1
             results[i]={}
             for graph, discretization in zip(graphs, discretizations):
@@ -123,7 +127,7 @@ def generate_result_with_stepwise():
                         result = ast.literal_eval(file.read())
                 results[i].update(result)
                    
-                 
+        print(n)         
         # means = {}  
         
         # for sub, sub_value in results.items(): 

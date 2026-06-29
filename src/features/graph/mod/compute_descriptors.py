@@ -14,7 +14,6 @@ def compute_gx_class(pagerank_columns_attributes, graph_type, discretization_typ
     if label == 'test':
         del pagerank_attributes_copy['st_0_' + discretization_type + '_' + graph_type]
         del pagerank_attributes_copy['st_1_' + discretization_type + '_' + graph_type]
-        del columns_value_proportion_copy[target]
 
     for key, value in pagerank_attributes_copy.items():
         sub = "_" + discretization_type + "_" + graph_type
@@ -25,8 +24,6 @@ def compute_gx_class(pagerank_columns_attributes, graph_type, discretization_typ
             couples[couple[0]] = {} 
         couples[couple[0]][couple[1]]  = value   
         
-    # print(couples) 
-    # exit()   
     
     gx_paid = 0     
     for k1, v1 in columns_value_proportion_copy.items(): 
@@ -41,11 +38,9 @@ def compute_gx_class(pagerank_columns_attributes, graph_type, discretization_typ
     
         
     return gx_paid, gx_unpaid       
-             
-           
-
+    
 def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  graph_type,  discretization_type ,
-         columns_value_proportion,  _dir, sub):
+         columns_value_proportion,  _dir, sub, paid_size, unpaid_size):
     
     print(f'############## processing {discretization_type} with  alpha ==>{alpha} ######################')
     
@@ -70,8 +65,8 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
         
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]    
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)    
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > 
-                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
+    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] / unpaid_size > 
+                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] / paid_size).astype("int8") 
     
     
     directory = _dir + bd_name + '/sub' + sub + '/' + graph_type + '/' +  discretization_type +'/train'
@@ -98,8 +93,8 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
     
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] > 
-                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type]).astype("int8")
+    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] / unpaid_size > 
+                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] / paid_size).astype("int8") 
     
     directory = _dir + bd_name + '/sub' + sub + '/'+ graph_type + '/' +  discretization_type +'/test'
     os.makedirs(directory, exist_ok=True)
@@ -125,19 +120,42 @@ if __name__ == "__main__":
     test_discretized_data  = pd.read_feather(test_path)
     test_discretized_data.drop([target], axis=1, inplace=True)
     
-    columns_value_proportion = {}
-            
- 
-    for i in train_discretized_data.columns:
-         proportion = pd.crosstab(train_discretized_data[i], train_discretized_data[target], normalize='index')
-         columns_value_proportion[i] = proportion.to_dict(orient='index')
+    train_paid = train_discretized_data.loc[train_discretized_data[target] == False]
+    train_unpaid = train_discretized_data.loc[train_discretized_data[target] == True]
+    
+    prob_train_paid = train_paid.shape[0] / train_discretized_data.shape[0]
+    prob_train_unpaid = train_unpaid.shape[0] / train_discretized_data.shape[0] 
+    
+    proportions = {}
+    
+    for col in train_discretized_data.columns.drop(target): 
+        probs = ( train_discretized_data.groupby(col)[target] 
+                 .value_counts(normalize=True) 
+                 .unstack(fill_value=0) )
+        
+        probs[0] = probs[0]/prob_train_paid
+        probs[1] = probs[1]/prob_train_unpaid
+        s = probs[0] + probs[1]
+        probs[0] = probs[0]/ s
+        probs[1] = probs[1]/ s
+        
+        proportions[col] = {}
+        
+        for value, row in probs.iterrows():
+            proportions[col][value] = {
+                cls : prob
+                for cls, prob in row.items()
+            }
+    
+    
+    
    
     with open( _graph_dir + db_name + "/sub" + sub + "/graph_"+ graph_type.lower() + '_' + discretization_type,"rb" ) as f:
         graph_data = pickle.load(f)
         
    
     main(train_discretized_data, test_discretized_data, graph_data["graph"], graph_data["descriptors"], target, 
-         db_name, alpha,  graph_type, discretization_type, columns_value_proportion,  _dir, sub)
+         db_name, alpha,  graph_type, discretization_type, proportions,  _dir, sub, train_paid.shape[0], train_unpaid.shape[0]  )
     
     
     
