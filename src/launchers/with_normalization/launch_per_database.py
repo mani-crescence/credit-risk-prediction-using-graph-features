@@ -3,13 +3,12 @@ import sys, ast, os, random
 from dotenv import load_dotenv
 
 discretization_types =  ["SUP"] 
-alphas = [0.15, 0.5] #, 0.15, 0.5, 0.85]
+alphas = [0.15, 0.5, 0.9]
 state_of_art_graphs =  ["GUI", "LIU_V1", "LIU_V2"] 
-standard_proposed_graphs = ["BIP", "MOD"] #]#, "MOD"]   
+standard_proposed_graphs = ["BIP", "MOD"]
 proposed_complete_graph = ["LOAN"]
 rand_alpha = random.choice(alphas)
 BATCH_SIZE = 4
-# semaphore = threading.Semaphore(MAX_WORKERS)
 
 
 load_dotenv()
