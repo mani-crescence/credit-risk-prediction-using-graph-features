@@ -65,8 +65,8 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
         
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]    
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)    
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] / unpaid_size > 
-                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] / paid_size).astype("int8") 
+    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' + graph_type]  > 
+                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] ).astype("int8") 
     
     
     directory = _dir + bd_name + '/sub' + sub + '/' + graph_type + '/' +  discretization_type +'/train'
@@ -93,8 +93,8 @@ def main(train_data, test_data, graph, descriptors, target, bd_name, alpha,  gra
     
     graph_descriptors_for_gy = graph_descriptors_for_gy[descriptors]
     graph_descriptors_for_gy = graph_descriptors_for_gy.astype(float)
-    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type] / unpaid_size > 
-                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] / paid_size).astype("int8") 
+    graph_descriptors["gy"] = (graph_descriptors_for_gy[target + '_1'+ '_' + discretization_type + '_' +graph_type]  > 
+                               graph_descriptors_for_gy[target + '_0'+ '_' + discretization_type + '_' + graph_type] ).astype("int8") 
     
     directory = _dir + bd_name + '/sub' + sub + '/'+ graph_type + '/' +  discretization_type +'/test'
     os.makedirs(directory, exist_ok=True)
