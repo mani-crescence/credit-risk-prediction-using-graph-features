@@ -1,30 +1,30 @@
 import subprocess, threading
  
 
-all_db_names = ["SME", "PROSPER", "LENDING_CLUB", "BONDORA"]
+all_db_names = ["SME", "PROSPER",  "BONDORA"]# ["SME", "PROSPER", "LENDING_CLUB", "BONDORA"]
 
 
 def execution(db_names):
     
     dbs = []
     
-    for i in range(1, 6):
-        commands = []
+    # for i in range(1, 6):
+    commands = []
 
-        for db_name in db_names:
-            commands.append(
-                f"make run_with_normalization_{db_name.lower()} DB_NAME={db_name.lower()} SUB={i}"
-            )
-            dbs.append(db_name)
+    for db_name in db_names:
+        commands.append(
+            f"make run_with_normalization_{db_name.lower()} DB_NAME={db_name.lower()}"
+        )
+        dbs.append(db_name)
 
-        processes = []
+    processes = []
 
-        for cmd in commands:
-            p = subprocess.Popen(cmd, shell=True)
-            processes.append(p)
+    for cmd in commands:
+        p = subprocess.Popen(cmd, shell=True)
+        processes.append(p)
 
-        for p in processes:
-            p.wait()
+    for p in processes:
+        p.wait()
 
                                            
 if __name__ == "__main__":

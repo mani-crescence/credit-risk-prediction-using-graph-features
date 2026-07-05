@@ -140,7 +140,7 @@ run_without_normalization_bondora:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
 run_with_normalization_bondora:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) $(SUB)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME)
 
 
 
@@ -253,7 +253,7 @@ run_without_normalization_lending_club:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
 run_with_normalization_lending_club:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) $(SUB)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) 
 
 
 
@@ -367,7 +367,7 @@ run_without_normalization_prosper:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
 run_with_normalization_prosper:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) $(SUB)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) 
 
 
 
@@ -479,7 +479,7 @@ run_without_normalization_sme:
 	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.without_normalization.launch_per_database $(DB_NAME)
 
 run_with_normalization_sme:
-	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) $(SUB)
+	$(PYTHON_INTERPRETER) $(SRC_DIR)launchers.with_normalization.launch_per_database  $(DB_NAME) 
 
 
 

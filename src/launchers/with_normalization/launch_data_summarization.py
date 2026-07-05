@@ -8,7 +8,7 @@ from itertools import islice
 import math
 from collections import defaultdict
 
-db_names = [ "prosper",  "sme", "bondora"]#["lending_club"] # , "lending_club","bondora"]#, "lending_club","bondora","prosper","sme"] "lending_club",
+db_names = ["prosper"]#["lending_club", "prosper",  "sme", ] # , "lending_club","bondora"]#, "lending_club","bondora","prosper","sme"] "lending_club",
 discretization_types =  ["SUP", "UNS"]
 graphs = [None, "gui", "liu_v1", "liu_v2", "bip", "mod",  "loan"] 
 discretizations = [None, None, None, None, "sup", "sup", None]
@@ -40,7 +40,7 @@ def generate_result_without_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,6):
+        for i in range(1,5):
             # if i == 2:
             #     continue
             n+=1
@@ -110,7 +110,7 @@ def generate_result_with_stepwise():
     for db in db_names:
         global_results[db] = {}
         n=0
-        for i in range(1,6):
+        for i in range(1,5):
             # if i == 2:
             #     continue
             n+=1
