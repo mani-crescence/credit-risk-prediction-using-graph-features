@@ -3,12 +3,12 @@ import sys, ast, os, random
 from dotenv import load_dotenv
 
 discretization_types =  ["SUP"] 
-alphas = [0.15]#, 0.5, 0.9]
+alphas = [0.15, 0.5, 0.9]
 state_of_art_graphs =  ["GUI", "LIU_V1", "LIU_V2"] 
-standard_proposed_graphs = ["BIP"]#, "MOD"]
+standard_proposed_graphs = ["BIP", "MOD"]
 proposed_complete_graph = ["LOAN"]
 rand_alpha = random.choice(alphas)
-BATCH_SIZE = 2
+BATCH_SIZE = 4
 
 
 load_dotenv()
@@ -466,7 +466,6 @@ def launch_print_with_stepwise(db_name, sub):
 if __name__ == "__main__":
     args = sys.argv[1:]
     db_name = args[0]
-    # sub = args[1]
     
     # # launch_preprocess(db_name, sub)
     for i in range(1, 6):
@@ -481,7 +480,7 @@ if __name__ == "__main__":
         launch_predict(db_name, sub)
         launch_print(db_name, sub)
         
-       # # ---------------------STEPWISE SECTION----------------------#
+       # ---------------------STEPWISE SECTION----------------------#
         
         launch_stepwise_selection(db_name, sub)
         launch_config_with_stepwise(db_name, sub)

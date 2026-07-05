@@ -1,14 +1,13 @@
 import subprocess, threading
  
 
-all_db_names = ["SME", "PROSPER",  "BONDORA"]# ["SME", "PROSPER", "LENDING_CLUB", "BONDORA"]
+all_db_names = ["SME", "PROSPER", "LENDING_CLUB", "BONDORA"]
 
 
 def execution(db_names):
     
     dbs = []
     
-    # for i in range(1, 6):
     commands = []
 
     for db_name in db_names:
